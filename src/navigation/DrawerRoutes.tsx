@@ -15,7 +15,7 @@ export default function DrawerRoutes() {
       screenOptions={{
         drawerStyle: {
           backgroundColor: '#162B4D',
-          width: 250, // largura do Drawer
+          width: 235, // largura do Drawer
         },
         headerStyle: {
           backgroundColor: '#19325E',
