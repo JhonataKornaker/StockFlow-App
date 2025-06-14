@@ -1,6 +1,7 @@
 import CardCautelas from '@/components/CardCautelas';
 import { Screen } from '@/components/ScreenProps';
-import { FlatList, SafeAreaView, ScrollView, Text, View } from 'react-native';
+import { theme } from '@/styles/theme';
+import { FlatList, Text, View, StyleSheet } from 'react-native';
 
 export default function InicioScreen() {
   const listaDeCautelas = [
@@ -67,14 +68,13 @@ export default function InicioScreen() {
       patrimonios: [],
     },
   ];
+
   return (
-    <Screen>
+    <Screen style={styles.screen}>
       {listaDeCautelas.length === 0 ? (
-        <View className="h-[200px]">
-          <Text className="text-primary text-[25px] mb-6">
-            Cautelas Abertas
-          </Text>
-          <Text className="text-gray-400 text-base text-center">
+        <View style={styles.noCautelaContainer}>
+          <Text style={styles.title}>Cautelas Abertas</Text>
+          <Text style={styles.noCautelaText}>
             Nenhuma cautela aberta no momento.
           </Text>
         </View>
@@ -83,21 +83,50 @@ export default function InicioScreen() {
           data={listaDeCautelas}
           keyExtractor={(_, index) => index.toString()}
           renderItem={({ item }) => (
-            <View className="mb-4">
+            <View style={styles.cardContainer}>
               <CardCautelas cautelas={item} />
             </View>
           )}
           ListHeaderComponent={() => (
-            <Text className="text-primary text-[25px] mb-6">
-              Cautelas Abertas
-            </Text>
+            <Text style={styles.title}>Cautelas Abertas</Text>
           )}
-          contentContainerStyle={{ paddingBottom: 24 }}
+          contentContainerStyle={styles.flatListContent}
         />
       )}
-      <Text className="text-primary text-[25px] mb-6 mt-6">
-        Movimentação do Estoque
-      </Text>
+      <Text style={styles.movimentacaoText}>Movimentação do Estoque</Text>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    padding: 8, // p-2
+  },
+  noCautelaContainer: {
+    height: 200,
+  },
+  title: {
+    fontSize: 25,
+    color: theme.colors.primary, // text-primary
+    marginBottom: 6,
+    fontWeight: 'bold',
+  },
+  noCautelaText: {
+    fontSize: 16,
+    color: '#9ca3af', // text-gray-400
+    textAlign: 'center',
+  },
+  cardContainer: {
+    marginBottom: 16, // mb-4
+  },
+  flatListContent: {
+    paddingBottom: 24,
+  },
+  movimentacaoText: {
+    fontSize: 25,
+    color: theme.colors.primary,
+    fontWeight: 'bold',
+    marginTop: 6,
+    marginBottom: 6,
+  },
+});

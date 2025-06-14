@@ -1,21 +1,36 @@
-import { TouchableOpacity, Text, TouchableOpacityProps } from 'react-native';
-import { styled } from 'nativewind';
-
-const StyledButton = styled(TouchableOpacity);
+import {
+  TouchableOpacity,
+  Text,
+  TouchableOpacityProps,
+  StyleSheet,
+} from 'react-native';
 
 interface Props extends TouchableOpacityProps {
   title: string;
-  className?: string;
+  style?: object; // Alterado para 'style' ao invés de 'className'
 }
 
-export function Button({ title, className = '', ...rest }: Props) {
+export function Button({ title, style, ...rest }: Props) {
   return (
-    <StyledButton
-      className={`bg-white px-4 rounded-xl items-center justify-center w-[236px] h-[30px] ${className}`}
-      {...rest}
-    >
-      <Text className="text-primary font-semibold text-base">{title}</Text>
-    </StyledButton>
+    <TouchableOpacity style={[styles.button, style]} {...rest}>
+      <Text style={styles.text}>{title}</Text>
+    </TouchableOpacity>
   );
 }
 
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: 'white',
+    paddingHorizontal: 16, // px-4
+    borderRadius: 10, // rounded-xl
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 236,
+    height: 30,
+  },
+  text: {
+    color: '#162B4D', // text-primary (ajuste a cor conforme necessário)
+    fontSize: 16, // text-base
+    fontWeight: '600', // font-semibold
+  },
+});
