@@ -25,12 +25,12 @@ const styles = StyleSheet.create({
     borderRadius: 10, // rounded-xl
     justifyContent: 'center',
     alignItems: 'center',
-    width: 236,
-    height: 30,
+    width: '80%',
+    height: 40,
   },
   text: {
     color: '#162B4D', // text-primary (ajuste a cor conforme necessário)
-    fontSize: 16, // text-base
+    fontSize: 18, // text-base
     fontWeight: '600', // font-semibold
   },
 });
