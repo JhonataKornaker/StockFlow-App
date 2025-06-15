@@ -6,6 +6,8 @@ import { TouchableOpacity } from 'react-native';
 import { CopyPlus } from 'lucide-react-native';
 import DrawerMenuButton from '@/components/DrawerMenuButton';
 import { theme } from '@/styles/theme';
+import CadastroColaborador from '@/screens/CadastroColaborador';
+import CadastroPatrimonio from '@/screens/CadastroPatrimonio';
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +46,16 @@ export default function MainStackNavigator() {
         name="CadastroFerramentas"
         component={CadastroFerramentas}
         options={{ title: 'Cadastro de Ferramenta' }}
+      />
+      <Stack.Screen
+        name="CadastroColaborador"
+        component={CadastroColaborador}
+        options={{ title: 'Cadastro de Colaborador' }}
+      />
+      <Stack.Screen
+        name="CadastroPatrimonio"
+        component={CadastroPatrimonio}
+        options={{ title: 'Cadastro de Patrimônio' }}
       />
     </Stack.Navigator>
   );

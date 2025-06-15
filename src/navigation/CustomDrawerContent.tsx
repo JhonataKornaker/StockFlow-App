@@ -1,6 +1,6 @@
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import { View, Text, StyleSheet } from 'react-native';
-import { Home, Search, Settings, Wrench } from 'lucide-react-native';
+import { Home, Search, Settings, Users, Wrench } from 'lucide-react-native';
 
 export default function CustomDrawerContent(props: any) {
   const { navigation } = props;
@@ -33,12 +33,38 @@ export default function CustomDrawerContent(props: any) {
           }}
         />
         <DrawerItem
-          label="Cadastro Ferramentas"
+          label="Ferramentas"
           onPress={() =>
             navigation.navigate('Main', { screen: 'CadastroFerramentas' })
           }
           labelStyle={{ color: '#C5D4EB', fontWeight: 'bold', fontSize: 20 }}
           icon={({ size }) => <Wrench size={size} color={'#C5D4EB'} />}
+          style={{
+            backgroundColor: '#162B4D',
+            borderRadius: 8,
+            marginBottom: 8,
+          }}
+        />
+        <DrawerItem
+          label="Colaboradores"
+          onPress={() =>
+            navigation.navigate('Main', { screen: 'CadastroColaborador' })
+          }
+          labelStyle={{ color: '#C5D4EB', fontWeight: 'bold', fontSize: 20 }}
+          icon={({ size }) => <Users size={size} color={'#C5D4EB'} />}
+          style={{
+            backgroundColor: '#162B4D',
+            borderRadius: 8,
+            marginBottom: 8,
+          }}
+        />
+        <DrawerItem
+          label="Patrimonios"
+          onPress={() =>
+            navigation.navigate('Main', { screen: 'CadastroPatrimonio' })
+          }
+          labelStyle={{ color: '#C5D4EB', fontWeight: 'bold', fontSize: 20 }}
+          icon={({ size }) => <Users size={size} color={'#C5D4EB'} />}
           style={{
             backgroundColor: '#162B4D',
             borderRadius: 8,
