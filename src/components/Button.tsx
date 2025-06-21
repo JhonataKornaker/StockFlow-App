@@ -7,7 +7,7 @@ import {
 
 interface Props extends TouchableOpacityProps {
   title: string;
-  style?: object; // Alterado para 'style' ao invés de 'className'
+  style?: object;
 }
 
 export function Button({ title, style, ...rest }: Props) {
@@ -21,16 +21,16 @@ export function Button({ title, style, ...rest }: Props) {
 const styles = StyleSheet.create({
   button: {
     backgroundColor: 'white',
-    paddingHorizontal: 16, // px-4
-    borderRadius: 10, // rounded-xl
+    paddingHorizontal: 16,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     width: '80%',
     height: 40,
   },
   text: {
-    color: '#162B4D', // text-primary (ajuste a cor conforme necessário)
-    fontSize: 18, // text-base
-    fontWeight: '600', // font-semibold
+    color: '#162B4D',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
