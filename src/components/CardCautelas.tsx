@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 10,
-    color: '#007bff', // text-primary
+    color: '#007bff',
     fontWeight: 'bold',
   },
   itemContainer: {
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     borderBottomWidth: 1,
-    borderColor: '#D1D5DB', // border-gray-300
+    borderColor: '#D1D5DB',
     marginVertical: 4,
   },
 });

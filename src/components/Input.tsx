@@ -3,19 +3,23 @@ import { TextInput, TextInputProps, View, StyleSheet } from 'react-native';
 import { Search, Mail, AlertCircle, LucideIcon } from 'lucide-react-native';
 
 interface InputProps extends TextInputProps {
-  icon?: LucideIcon; // O componente de ícone (ex: Search)
+  icon?: LucideIcon;
   iconPosition?: 'left' | 'right';
   iconColors?: string;
   required?: boolean;
+  value?: string;
+  onChangeText?: (text: string) => void;
 }
 
 export function Input({
   icon: Icon,
   iconPosition = 'right',
-  iconColors = '#9CA3AF', // Cor padrão do ícone
+  iconColors = '#9CA3AF',
   required,
   placeholder,
-  style, // Removemos className e agora usamos style
+  style,
+  value,
+  onChangeText,
   ...props
 }: InputProps) {
   return (
@@ -32,6 +36,8 @@ export function Input({
         style={styles.input}
         placeholder={placeholder}
         placeholderTextColor="#9CA3AF"
+        value={value}
+        onChangeText={onChangeText}
         {...props}
       />
 
@@ -59,16 +65,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
-    borderRadius: 8, // Você pode ajustar o valor conforme necessário
-    borderColor: '#D1D5DB', // Cor da borda, ajuste conforme necessário
+    borderRadius: 8,
+    borderColor: '#D1D5DB',
     borderWidth: 1,
-    paddingHorizontal: 16, // px-4
-    paddingVertical: 8, // py-2
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   input: {
     flex: 1,
-    fontSize: 16, // text-base
-    color: '#1F2937', // text-gray-800
+    fontSize: 16,
+    color: '#1F2937',
   },
   iconLeft: {
     marginRight: 8,

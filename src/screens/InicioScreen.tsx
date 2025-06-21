@@ -1,9 +1,25 @@
 import CardCautelas from '@/components/CardCautelas';
 import { Screen } from '@/components/ScreenProps';
 import { theme } from '@/styles/theme';
-import { FlatList, Text, View, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { CopyPlus, Menu } from 'lucide-react-native';
+import {
+  FlatList,
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  StatusBar,
+  Platform,
+} from 'react-native';
+import { DrawerActions } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from '@/types/MainStackNavigator';
 
 export default function InicioScreen() {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+
   const listaDeCautelas = [
     {
       descricao: 'Entrega de Equipamentos de Segurança',
@@ -70,54 +86,78 @@ export default function InicioScreen() {
   ];
 
   return (
-    <Screen style={styles.screen}>
-      {listaDeCautelas.length === 0 ? (
-        <View style={styles.noCautelaContainer}>
-          <Text style={styles.title}>Cautelas Abertas</Text>
-          <Text style={styles.noCautelaText}>
-            Nenhuma cautela aberta no momento.
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={listaDeCautelas}
-          keyExtractor={(_, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.cardContainer}>
-              <CardCautelas cautelas={item} />
-            </View>
-          )}
-          ListHeaderComponent={() => (
+    <View
+      style={{
+        flex: 1,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+        backgroundColor: '#162B4D',
+      }}
+    >
+      {/* Header customizado */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+        >
+          <Menu color="#C5D4EB" size={24} />
+        </TouchableOpacity>
+
+        <Text style={styles.titleHeader}>StockFlow</Text>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Cautela')}>
+          <CopyPlus size={24} color="#C5D4EB" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Conteúdo da tela */}
+      <Screen style={styles.screen}>
+        {listaDeCautelas.length === 0 ? (
+          <View style={styles.noCautelaContainer}>
             <Text style={styles.title}>Cautelas Abertas</Text>
-          )}
-          contentContainerStyle={styles.flatListContent}
-        />
-      )}
-      <Text style={styles.movimentacaoText}>Movimentação do Estoque</Text>
-    </Screen>
+            <Text style={styles.noCautelaText}>
+              Nenhuma cautela aberta no momento.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={listaDeCautelas}
+            keyExtractor={(_, index) => index.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.cardContainer}>
+                <CardCautelas cautelas={item} />
+              </View>
+            )}
+            ListHeaderComponent={() => (
+              <Text style={styles.title}>Cautelas Abertas</Text>
+            )}
+            contentContainerStyle={styles.flatListContent}
+          />
+        )}
+        <Text style={styles.movimentacaoText}>Movimentação do Estoque</Text>
+      </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
-    padding: 8, // p-2
+    padding: 8,
   },
   noCautelaContainer: {
     height: 200,
   },
   title: {
     fontSize: 25,
-    color: theme.colors.primary, // text-primary
+    color: theme.colors.primary,
     marginBottom: 6,
     fontWeight: 'bold',
   },
   noCautelaText: {
     fontSize: 16,
-    color: '#9ca3af', // text-gray-400
+    color: '#9ca3af',
     textAlign: 'center',
   },
   cardContainer: {
-    marginBottom: 16, // mb-4
+    marginBottom: 16,
   },
   flatListContent: {
     paddingBottom: 24,
@@ -128,5 +168,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 6,
     marginBottom: 6,
+  },
+  header: {
+    backgroundColor: '#19325E',
+    height: 60,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  titleHeader: {
+    color: '#C5D4EB',
+    fontWeight: 'bold',
+    fontSize: 20,
   },
 });

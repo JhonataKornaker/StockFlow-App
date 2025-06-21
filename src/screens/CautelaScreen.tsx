@@ -9,7 +9,7 @@ export default function CautelaScreen() {
   const data = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
   return (
-    <Screen style={styles.screen}>
+    <Screen>
       <View style={styles.viewColumn}>
         <Input placeholder="Item" icon={Search} iconPosition="right" />
         <Input placeholder="Quantidade" keyboardType="numeric" />
@@ -43,11 +43,10 @@ export default function CautelaScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: {},
   viewColumn: {
-    flexDirection: 'column', // flex-col
-    marginTop: 44, // mt-[44px]
-    gap: 16, // gap-4
+    flexDirection: 'column',
+    marginTop: 44,
+    gap: 16,
   },
   viewRow: {
     flexDirection: 'row',
@@ -57,17 +56,17 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   text: {
-    fontSize: 18, // text-xs
-    color: '#19325E', // text-primary, substitua com a cor real que você está usando
-    fontWeight: 'bold', // font-bold
+    fontSize: 18,
+    color: '#19325E',
+    fontWeight: 'bold',
   },
   flex1: {
-    flex: 1, // flex-1
+    flex: 1,
   },
   whiteBg: {
     backgroundColor: 'white',
-    borderRadius: 8, // rounded-lgs, substitua com o valor real se necessário
-    width: '100%', // w-full
+    borderRadius: 8,
+    width: '100%',
     height: '80%',
   },
   button: {
