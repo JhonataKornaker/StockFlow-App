@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 interface ScreenProps extends ViewProps {
   children: React.ReactNode;
-  style?: object; // Mudamos de className para style
+  style?: object;
 }
 
 export const Screen: React.FC<ScreenProps> = ({
@@ -22,7 +22,7 @@ export const Screen: React.FC<ScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#C5D4EB', // Defina aqui a cor de fundo padrão, ou utilize alguma constante ou variável
+    backgroundColor: '#C5D4EB',
     padding: 8,
   },
 });
