@@ -30,7 +30,7 @@ export default function ScreenCadastro(props: ScreenCadastroProps) {
         style={{
           flexDirection: 'column',
           gap: 14,
-          marginTop: 44,
+          marginTop: 16,
         }}
       >
         {placeholders.map((placeholder, index) => (
