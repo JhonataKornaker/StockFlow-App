@@ -6,9 +6,14 @@ import { RadioButton } from 'react-native-paper';
 type RadioButtonProps = {
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 };
 
-export default function RadionComponent({ value, onChange }: RadioButtonProps) {
+export default function RadionComponent({
+  value,
+  onChange,
+  disabled,
+}: RadioButtonProps) {
   return (
     <View>
       <RadioButton.Group key={value} onValueChange={onChange} value={value}>
@@ -18,12 +23,12 @@ export default function RadionComponent({ value, onChange }: RadioButtonProps) {
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <RadioButton value="nao" color="#162B4D" />
+            <RadioButton value="nao" color="#162B4D" disabled={disabled} />
             <Text>Não</Text>
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <RadioButton value="sim" color="#162B4D" />
+            <RadioButton value="sim" color="#162B4D" disabled={disabled} />
             <Text>Sim</Text>
           </View>
         </View>
