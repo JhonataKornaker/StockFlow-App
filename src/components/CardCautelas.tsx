@@ -1,4 +1,3 @@
-import { Cautela } from '@/types/Cautelas';
 import { CheckCircle } from 'lucide-react-native';
 import {
   SafeAreaView,
@@ -8,6 +7,36 @@ import {
   StyleSheet,
 } from 'react-native';
 
+interface Ferramenta {
+  descricao: string;
+  quantidade: number;
+  modelo: string;
+  marca: string;
+}
+
+interface Patrimonio {
+  descricao: string;
+  numeroSerie: string;
+  modelo: string;
+  marca: string;
+}
+
+interface Colaborador {
+  nome: string;
+  funcao: string;
+  empresa: string;
+}
+
+interface Cautela {
+  id: number;
+  tipo: string;
+  data: string; // data formatada, ex: "07/07/2025"
+  entregue: boolean;
+  colaborador: Colaborador;
+  ferramentas: Ferramenta[];
+  patrimonios: Patrimonio[];
+}
+
 interface Props {
   cautelas: Cautela;
 }
@@ -16,18 +45,24 @@ export default function CardCautelas({ cautelas }: Props) {
   return (
     <SafeAreaView style={styles.cardContainer}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>{cautelas.funcaoColaborador}</Text>
-        <Text style={styles.headerText}>{cautelas.nomeColaborador}</Text>
-        <Text style={styles.headerText}>{cautelas.empresaColaborador}</Text>
+        <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#19325E' }}>
+          {cautelas.colaborador.funcao}
+        </Text>
+        <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#19325E' }}>
+          {cautelas.colaborador.nome}
+        </Text>
+        <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#19325E' }}>
+          {cautelas.colaborador.empresa}
+        </Text>
       </View>
 
       {/* Ferramentas */}
       {cautelas.ferramentas.map((item, index) => (
-        <View key={item.id}>
+        <View key={index}>
           <View style={styles.itemContainer}>
             <Text>{item.quantidade} UND</Text>
             <Text style={styles.itemDescription}>{item.descricao}</Text>
-            <Text>{cautelas.dataCautela}</Text>
+            <Text>{cautelas.data}</Text>
             <TouchableOpacity>
               <CheckCircle size={24} />
             </TouchableOpacity>
@@ -42,11 +77,11 @@ export default function CardCautelas({ cautelas }: Props) {
 
       {/* Patrimônios */}
       {cautelas.patrimonios.map((item, index) => (
-        <View key={item.id}>
+        <View key={index}>
           <View style={styles.itemContainer}>
             <Text>{item.numeroSerie}</Text>
             <Text style={styles.itemDescription}>{item.descricao}</Text>
-            <Text>{cautelas.dataCautela}</Text>
+            <Text>{cautelas.data}</Text>
             <TouchableOpacity>
               <CheckCircle size={24} />
             </TouchableOpacity>
@@ -70,11 +105,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 12,
-  },
-  headerText: {
-    fontSize: 10,
-    color: '#007bff',
-    fontWeight: 'bold',
   },
   itemContainer: {
     flexDirection: 'row',
