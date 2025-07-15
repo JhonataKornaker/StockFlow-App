@@ -1,12 +1,38 @@
 import { Image, Text, TextInput, View, StyleSheet } from 'react-native';
 import { Screen } from '../components/ScreenProps';
 import { Lock, Mail } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
+import { login } from '@/service/authService';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { MainStackParamList } from '@/types/MainStackNavigator';
+import { useNavigation } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
+
+//type LoginScreenProps = StackNavigationProp<MainStackParamList, 'Login'>;
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const navigation = useNavigation<any>();
+
+  async function checkLogin(email: string, senha: string) {
+    try {
+      if (!email || !senha) {
+        Toast.show({
+          type: 'error',
+          text1: 'Campos obrigatórios',
+          text2: 'Por favor, preencha todos os campos.',
+        });
+        console.warn('Por favor, preencha todos os campos.');
+        return;
+      }
+      await login(email, senha);
+      navigation.navigate('Home', { screen: 'Inicio' });
+    } catch (error) {
+      console.error('Erro ao fazer login:', error);
+    }
+  }
 
   return (
     <Screen style={styles.screen}>
@@ -35,7 +61,11 @@ export default function LoginScreen() {
           onChangeText={setSenha}
         />
       </View>
-      <Button style={styles.button} title="Entrar" />
+      <Button
+        onPress={() => checkLogin(email, senha)}
+        style={styles.button}
+        title="Entrar"
+      />
       <View style={styles.footer}>
         <Text style={styles.footerText}>Esqueceu sua senha?</Text>
         <Text style={styles.footerText}>
