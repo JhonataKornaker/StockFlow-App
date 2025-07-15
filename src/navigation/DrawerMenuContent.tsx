@@ -43,7 +43,7 @@ export default function DrawerMenuContent({ navigation }) {
         style={styles.menuItem}
         onPress={() =>
           navigation.navigate('Home', {
-            screen: 'CadastroColaborador',
+            screen: 'Colaboradores',
           })
         }
       >

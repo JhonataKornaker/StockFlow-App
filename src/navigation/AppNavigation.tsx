@@ -11,6 +11,10 @@ import DrawerMenuContent from '@/navigation/DrawerMenuContent';
 import { theme } from '@/styles/theme';
 import Ferramentas from '@/screens/Ferramentas';
 import Patrimonios from '@/screens/Patrimonios';
+import Colaboradores from '@/screens/Colaboradores';
+import DetalhesColaborador from '@/screens/DetalhesColaborador';
+import LoginScreen from '@/screens/LoginScreen';
+import React from 'react';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -26,10 +30,15 @@ function StackRoutes() {
         headerTitleStyle: {
           color: theme.colors.secondary,
           fontWeight: 'bold',
-          fontSize: 20,
+          fontSize: 22,
         },
       }}
     >
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="Inicio"
         component={InicioScreen}
@@ -51,7 +60,7 @@ function StackRoutes() {
         options={{ title: 'Cadastro de Colaborador' }}
       />
       <Stack.Screen
-        name="CadastroPatrimonios"
+        name="CadastroPatrimonio"
         component={CadastroPatrimonio}
         options={{ title: 'Cadastro de Patrimônio' }}
       />
@@ -65,27 +74,54 @@ function StackRoutes() {
         component={Patrimonios}
         options={{ title: 'Patrimônios' }}
       />
+      <Stack.Screen
+        name="Colaboradores"
+        component={Colaboradores}
+        options={{ title: 'Colaboradores' }}
+      />
+      <Stack.Screen
+        name="DetalhesColaborador"
+        component={DetalhesColaborador}
+        options={{ title: 'Detalhes do Colaborador' }}
+      />
     </Stack.Navigator>
   );
 }
 
 export default function AppNavigation() {
+  const [isLogged, setIsLogged] = React.useState(false);
   return (
     <NavigationContainer>
-      <Drawer.Navigator
-        screenOptions={{
-          headerShown: false,
-          drawerStyle: {
-            width: 240,
-            backgroundColor: theme.colors.primary,
-          },
-        }}
-        drawerContent={({ navigation }) => (
-          <DrawerMenuContent navigation={navigation} />
-        )}
-      >
-        <Drawer.Screen name="Home" component={StackRoutes} />
-      </Drawer.Navigator>
+      <AppDrawer />
+      {/*isLogged ? <AppDrawer /> : <AuthRoutes />*/}
     </NavigationContainer>
+  );
+}
+
+function AppDrawer() {
+  return (
+    <Drawer.Navigator
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: {
+          width: 240,
+          backgroundColor: theme.colors.primary,
+        },
+      }}
+      drawerContent={({ navigation }) => (
+        <DrawerMenuContent navigation={navigation} />
+      )}
+    >
+      <Drawer.Screen name="Home" component={StackRoutes} />
+    </Drawer.Navigator>
+  );
+}
+
+const AuthStack = createStackNavigator();
+function AuthRoutes() {
+  return (
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+    </AuthStack.Navigator>
   );
 }
