@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { SectionList, Text, View } from 'react-native';
+import { SectionList, Text, TouchableOpacity, View } from 'react-native';
 import { Ferramenta, Patrimonio } from '@/types/ListaDeItens';
 import { Input } from './Input';
 import { Screen } from './ScreenProps';
@@ -7,9 +7,9 @@ import { Archive, Calendar, PenTool, Search } from 'lucide-react-native';
 import { Button } from './Button';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '@/navigation/types';
 import { theme } from '@/styles/theme';
 import { red100 } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
+import { MainStackParamList } from '@/types/MainStackNavigator';
 
 type Props =
   | { patrimonios: Patrimonio[]; ferramentas?: undefined }
@@ -46,7 +46,7 @@ function agruparPorLetra(itens: ItemComDescricao[]) {
     }));
 }
 
-type NavigationProps = StackNavigationProp<RootStackParamList>;
+type NavigationProps = StackNavigationProp<MainStackParamList>;
 
 export default function ScreenListar(props: Props) {
   const [busca, setBusca] = useState('');
@@ -88,11 +88,12 @@ export default function ScreenListar(props: Props) {
     [itensFiltrados],
   );
 
-  const rota =
-    tipo === 'Ferramenta' ? 'CadastroFerramentas' : 'CadastroPatrimonios';
-
   const handleCadastrar = () => {
-    navigation.navigate(rota);
+    if (tipo === 'Ferramenta') {
+      navigation.navigate('CadastroFerramentas');
+    } else {
+      navigation.navigate('CadastroPatrimonio');
+    }
   };
 
   const botaoCadastrar = (
@@ -134,7 +135,31 @@ export default function ScreenListar(props: Props) {
         sections={sections}
         keyExtractor={item => item.key}
         renderItem={({ item }) => (
-          <View>
+          <TouchableOpacity
+            onPress={() => {
+              if (tipo === 'Ferramenta') {
+                navigation.navigate('CadastroFerramentas', {
+                  ferramenta: {
+                    descricao: item.descricao,
+                    marca: item.marca,
+                    modelo: item.modelo,
+                    quantidade: item.quantidade ?? 0,
+                  },
+                });
+              } else {
+                navigation.navigate('CadastroPatrimonio', {
+                  patrimonio: {
+                    numeroSerie: item.key,
+                    descricao: item.descricao,
+                    marca: item.marca,
+                    modelo: item.modelo,
+                    locado: item.locado ?? false,
+                    dataLocacao: item.dataLocacao,
+                  },
+                });
+              }
+            }}
+          >
             <Text
               style={{
                 paddingLeft: 8,
@@ -203,7 +228,7 @@ export default function ScreenListar(props: Props) {
                 <Text>{item.modelo}</Text>
               </View>
             )}
-          </View>
+          </TouchableOpacity>
         )}
         renderSectionHeader={({ section }) => (
           <View
