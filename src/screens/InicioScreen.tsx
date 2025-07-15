@@ -15,16 +15,19 @@ import {
 import { DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '@/types/MainStackNavigator';
+import { useEffect, useState } from 'react';
+import { buscarCautelas } from '@/service/cautelas';
+import { CautelaDTO } from '@/dtos/cautelaDto';
 
 export default function InicioScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
-  const listaDeCautelas = [
+  /*const listaDeCautelas = [
     {
       descricao: 'Entrega de Equipamentos de Segurança',
       quantidade: 5,
-      funcaoColaborador: 'Eletricista',
+      funcaoColaborador: 'Eletricista', 
       nomeColaborador: 'Carlos Henrique',
       empresaColaborador: 'Construtora Beta Ltda',
       dataCautela: '10/05/2025',
@@ -83,7 +86,24 @@ export default function InicioScreen() {
       ],
       patrimonios: [],
     },
-  ];
+  ];*/
+
+  const [listaDeCautelas, setListaDeCautelas] = useState<CautelaDTO[]>([]);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    async function carregarCautelas() {
+      try {
+        const dados = await buscarCautelas();
+        setListaDeCautelas(dados);
+      } catch (error) {
+        console.error('Erro ao buscar cautelas:', error);
+      } finally {
+        setCarregando(false);
+      }
+    }
+    carregarCautelas();
+  }, []);
 
   return (
     <View
@@ -110,7 +130,11 @@ export default function InicioScreen() {
 
       {/* Conteúdo da tela */}
       <Screen style={styles.screen}>
-        {listaDeCautelas.length === 0 ? (
+        {carregando ? (
+          <Text style={{ color: 'white', textAlign: 'center', marginTop: 20 }}>
+            Carregando cautelas...
+          </Text>
+        ) : listaDeCautelas.length === 0 ? (
           <View style={styles.noCautelaContainer}>
             <Text style={styles.title}>Cautelas Abertas</Text>
             <Text style={styles.noCautelaText}>
@@ -180,6 +204,6 @@ const styles = StyleSheet.create({
   titleHeader: {
     color: '#C5D4EB',
     fontWeight: 'bold',
-    fontSize: 20,
+    fontSize: 22,
   },
 });
