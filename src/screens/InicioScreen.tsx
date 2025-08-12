@@ -16,7 +16,7 @@ import { DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { useEffect, useState } from 'react';
-import { buscarCautelas } from '@/service/cautelas';
+import { buscarCautelas } from '@/service/cautelaService';
 import { CautelaDTO } from '@/dtos/cautelaDto';
 
 export default function InicioScreen() {

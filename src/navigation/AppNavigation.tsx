@@ -3,16 +3,16 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import InicioScreen from '@/screens/InicioScreen';
-import CadastroFerramentas from '@/screens/CadastroFerramentas';
-import CadastroColaborador from '@/screens/CadastroColaborador';
-import CadastroPatrimonio from '@/screens/CadastroPatrimonio';
+import CadastroFerramentas from '@/screens/CadastroFerramentasScreen';
+import CadastroColaborador from '@/screens/CadastroColaboradorScreen';
+import CadastroPatrimonio from '@/screens/CadastroPatrimonioScreen';
 import CautelaScreen from '@/screens/CautelaScreen';
 import DrawerMenuContent from '@/navigation/DrawerMenuContent';
 import { theme } from '@/styles/theme';
-import Ferramentas from '@/screens/Ferramentas';
-import Patrimonios from '@/screens/Patrimonios';
-import Colaboradores from '@/screens/Colaboradores';
-import DetalhesColaborador from '@/screens/DetalhesColaborador';
+import Ferramentas from '@/screens/FerramentasScreen';
+import Patrimonios from '@/screens/PatrimoniosScreen';
+import Colaboradores from '@/screens/ColaboradoresScreen';
+import DetalhesColaborador from '@/screens/DetalhesColaboradorScreen';
 import LoginScreen from '@/screens/LoginScreen';
 import React from 'react';
 
