@@ -1,10 +1,9 @@
-import React, { useDebugValue } from 'react';
+import React, { useDebugValue, useState } from 'react';
 import { Screen } from './ScreenProps';
 import { View } from 'react-native';
 import { Input } from './Input';
 import { LucideIcon } from 'lucide-react-native';
 import { Button } from './Button';
-import { theme } from '@/styles/theme';
 
 interface ScreenCadastroProps<T> {
   placeholders?: string[];
@@ -15,6 +14,10 @@ interface ScreenCadastroProps<T> {
   style?: React.CSSProperties;
   defaultValues?: Partial<T>;
   fieldKeys?: (keyof T)[];
+  values: Partial<T>;
+  onChange: (field: keyof T, value: string) => void;
+  onSalvar?: () => void;
+  salvarVisivel?: boolean;
 }
 
 export default function ScreenCadastro<T>(props: ScreenCadastroProps<T>) {
@@ -51,6 +54,10 @@ export default function ScreenCadastro<T>(props: ScreenCadastroProps<T>) {
               icon={icons[index] || undefined}
               iconColors={iconColors[index] || undefined}
               defaultValue={defaultValue}
+              value={String(value)}
+              onChangeText={text => {
+                if (key) props.onChange(key, text);
+              }}
             />
           );
         })}
@@ -59,6 +66,7 @@ export default function ScreenCadastro<T>(props: ScreenCadastroProps<T>) {
       <View>{children}</View>
 
       <Button
+        onPress={props.onSalvar}
         style={{ marginTop: 'auto', marginBottom: 12, alignSelf: 'center' }}
         title="Salvar"
       />
