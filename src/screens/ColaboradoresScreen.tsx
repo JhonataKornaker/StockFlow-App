@@ -1,33 +1,19 @@
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/ScreenProps';
+import { ColaboradorDto } from '@/dtos/colaboradorDto';
+import { buscarColaboradores } from '@/service/colaboradorService';
 import { theme } from '@/styles/theme';
 import { Colaborador } from '@/types/Colaborador';
 import { MainStackParamList } from '@/types/MainStackNavigator';
-import { useNavigation } from '@react-navigation/native';
+import { agruparPorLetra } from '@/util/agrupadores';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import axios from 'axios';
 import { Contact, PersonStanding, Search } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SectionList, Text, TouchableOpacity, View } from 'react-native';
-
-function agruparPorLetra(colaboradores: Colaborador[]) {
-  const agrupado: Record<string, Colaborador[]> = {};
-
-  for (const colaborador of colaboradores) {
-    const letra = colaborador.nome[0]?.toUpperCase() ?? '';
-    if (!agrupado[letra]) {
-      agrupado[letra] = [];
-    }
-    agrupado[letra].push(colaborador);
-  }
-
-  return Object.keys(agrupado)
-    .sort()
-    .map(letra => ({
-      title: letra,
-      data: agrupado[letra].sort((a, b) => a.nome.localeCompare(b.nome)),
-    }));
-}
+import { ActivityIndicator } from 'react-native-paper';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Colaboradores'>;
 
@@ -35,7 +21,7 @@ export default function Colaboradores() {
   const [busca, setBusca] = useState('');
   const navigation = useNavigation<NavigationProps>();
 
-  const colaboradores: Colaborador[] = [
+  /*const colaboradores: Colaborador[] = [
     {
       nome: 'Thiago Silva',
       funcao: 'Encarregado',
@@ -56,14 +42,55 @@ export default function Colaboradores() {
       funcao: 'Assistente',
       empresa: 'V.V Verona',
     },
-  ];
+  ];*/
+
+  const [listaColaboradores, setListaColaboradores] = useState<
+    ColaboradorDto[]
+  >([]);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    async function carregarColaboradores() {
+      try {
+        const dados = await buscarColaboradores();
+        console.log('📦 Colaboradores recebidos:', dados);
+        setListaColaboradores(dados);
+      } catch (error) {
+        console.error('Erro ao buscar colaboradores: ', error);
+        if (axios.isAxiosError(error)) {
+          console.log('Detalhes do erro:', error.response?.data);
+        } else {
+          console.log('Erro desconhecido:', error);
+        }
+      } finally {
+        setCarregando(false);
+      }
+    }
+    carregarColaboradores();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      async function carregarColaboradores() {
+        try {
+          const dados = await buscarColaboradores();
+          setListaColaboradores(dados);
+        } catch (error) {
+          console.error('Erro ao buscar colaboradores: ', error);
+        } finally {
+          setCarregando(false);
+        }
+      }
+      carregarColaboradores();
+    }, []),
+  );
 
   const itensFiltrados = useMemo(() => {
     const texto = busca.toLowerCase();
-    return colaboradores.filter(item =>
+    return listaColaboradores.filter(item =>
       item.nome.toLowerCase().includes(texto),
     );
-  }, [busca, colaboradores]);
+  }, [busca, listaColaboradores]);
 
   const sections = useMemo(
     () => agruparPorLetra(itensFiltrados),
@@ -82,7 +109,17 @@ export default function Colaboradores() {
     />
   );
 
-  if (colaboradores.length === 0) {
+  if (carregando) {
+    return (
+      <Screen
+        style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}
+      >
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </Screen>
+    );
+  }
+
+  if (listaColaboradores.length === 0) {
     return (
       <Screen>
         <Input
