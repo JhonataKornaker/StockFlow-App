@@ -21,3 +21,11 @@ export type CautelaDTO = {
     marca: string;
   }[];
 };
+
+export type CriarCautelaDto = {
+  tipo: string;
+  entregue: true;
+  colaboradorId: number;
+  ferramentas?: number[];
+  patrimonios?: number[];
+};
