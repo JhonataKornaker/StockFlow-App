@@ -8,6 +8,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
+import { useAuth } from '@/context/AuthContext';
 
 //type LoginScreenProps = StackNavigationProp<MainStackParamList, 'Login'>;
 
@@ -15,8 +16,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const navigation = useNavigation<any>();
+  const { signIn } = useAuth();
 
   async function checkLogin(email: string, senha: string) {
+    console.log('➡️ Iniciando login...');
     try {
       if (!email || !senha) {
         Toast.show({
@@ -27,8 +30,11 @@ export default function LoginScreen() {
         console.warn('Por favor, preencha todos os campos.');
         return;
       }
-      await login(email, senha);
-      navigation.navigate('Home', { screen: 'Inicio' });
+      const token = await login(email, senha); // chama a API
+      console.log('✅ Token recebido:', token);
+      await signIn(token);
+      console.log('Login Sucesso');
+      //navigation.navigate('Home', { screen: 'Inicio' });
     } catch (error) {
       console.error('Erro ao fazer login:', error);
     }

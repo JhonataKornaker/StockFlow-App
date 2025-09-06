@@ -8,8 +8,12 @@ import {
   LogOut,
   Shield,
 } from 'lucide-react-native';
+import { CommonActions } from '@react-navigation/native';
+import { useAuth } from '@/context/AuthContext';
 
 export default function DrawerMenuContent({ navigation }) {
+  const { signOut } = useAuth();
+
   return (
     <View style={styles.drawer}>
       {/* Header com nome do usuário */}
@@ -74,7 +78,13 @@ export default function DrawerMenuContent({ navigation }) {
       {/* Botão de sair */}
       <TouchableOpacity style={[styles.menuItem, { marginTop: 20 }]}>
         <LogOut color="#C5D4EB" size={20} />
-        <Text style={styles.link}>Sair</Text>
+        <Text
+          style={styles.link}
+          //Resetar a stack de telas e mandar para tela login
+          onPress={signOut}
+        >
+          Sair
+        </Text>
       </TouchableOpacity>
     </View>
   );
