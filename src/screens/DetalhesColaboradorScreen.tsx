@@ -1,7 +1,10 @@
 import { Screen } from '@/components/ScreenProps';
+import { HistoricoCautelaColaborador } from '@/dtos/historicoDto';
+import { buscarHistoricoCautelaColaborador } from '@/service/historico.service';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { User, UserCircle, UserCircle2 } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 
 type DetalhesColaboradorProps = RouteProp<
@@ -12,9 +15,24 @@ type DetalhesColaboradorProps = RouteProp<
 export default function DetalhesColaborador() {
   const route = useRoute<DetalhesColaboradorProps>();
   const { colaborador } = route.params;
+  const [historico, setHistorico] = useState<HistoricoCautelaColaborador[]>([]);
+
+  useEffect(() => {
+    const carregarHistorico = async () => {
+      try {
+        const dados = await buscarHistoricoCautelaColaborador(colaborador.id);
+        setHistorico(dados);
+      } catch (error) {
+        console.error('Erro ao buscar histórico:', error);
+      }
+    };
+
+    carregarHistorico();
+  }, []);
 
   return (
     <Screen>
+      {/* Header do Colaborador */}
       <View
         style={{
           flexDirection: 'row',
@@ -25,7 +43,6 @@ export default function DetalhesColaborador() {
         }}
       >
         <UserCircle2 size={60} strokeWidth={1} color="#19325E" />
-
         <View>
           <Text
             style={{
@@ -39,7 +56,7 @@ export default function DetalhesColaborador() {
           <Text
             style={{
               fontSize: 14,
-              fontWeight: 500,
+              fontWeight: '500',
               color: '#19325E',
             }}
           >
@@ -48,7 +65,7 @@ export default function DetalhesColaborador() {
           <Text
             style={{
               fontSize: 14,
-              fontWeight: 500,
+              fontWeight: '500',
               color: '#19325E',
             }}
           >
@@ -57,47 +74,84 @@ export default function DetalhesColaborador() {
         </View>
       </View>
 
-      <View
-        style={{
-          marginLeft: 7,
-          marginTop: 40,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 20,
-            fontWeight: 'bold',
-            color: '#19325E',
-          }}
-        >
-          Cautelas Abertas
-        </Text>
-        <View>
-          <Text>
-            Arrumar alogica para reenderizar lista de cautelas abertas.
+      {/* Conteúdo de Cautelas */}
+      {historico.length === 0 ? (
+        <View style={{ marginLeft: 7, marginTop: 40, paddingRight: 7 }}>
+          <Text
+            style={{
+              fontSize: 16,
+              color: '#666',
+              textAlign: 'center',
+            }}
+          >
+            Nenhuma ferramenta ou patrimônio foi retirado ainda.
           </Text>
         </View>
-      </View>
+      ) : (
+        <>
+          {/* Cautelas Abertas */}
+          {historico.filter(item => item.cautelaFechada === false).length >
+            0 && (
+            <View
+              style={{
+                marginLeft: 7,
+                marginTop: 40,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: '#19325E',
+                }}
+              >
+                Cautelas Abertas
+              </Text>
+              <View style={{ marginTop: 8 }}>
+                {historico
+                  .filter(item => item.cautelaFechada === false)
+                  .map((item, index) => (
+                    <Text key={index} style={{ marginVertical: 4 }}>
+                      {item.descricao} - {item.quantidade ?? item.numeroSerie} -{' '}
+                      {item.data}
+                    </Text>
+                  ))}
+              </View>
+            </View>
+          )}
 
-      <View
-        style={{
-          marginLeft: 7,
-          marginTop: 40,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: 20,
-            fontWeight: 'bold',
-            color: '#19325E',
-          }}
-        >
-          Historico De Cautelas
-        </Text>
-        <View>
-          <Text>Arrumar alogica para reenderizar historico de cautelas.</Text>
-        </View>
-      </View>
+          {/* Histórico de Cautelas */}
+          {historico.filter(item => item.cautelaFechada === true).length >
+            0 && (
+            <View
+              style={{
+                marginLeft: 7,
+                marginTop: 40,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: '#19325E',
+                }}
+              >
+                Histórico de Cautelas
+              </Text>
+              <View style={{ marginTop: 8 }}>
+                {historico
+                  .filter(item => item.cautelaFechada === true)
+                  .map((item, index) => (
+                    <Text key={index} style={{ marginVertical: 4 }}>
+                      {item.descricao} - {item.quantidade ?? item.numeroSerie} -{' '}
+                      {item.data}
+                    </Text>
+                  ))}
+              </View>
+            </View>
+          )}
+        </>
+      )}
     </Screen>
   );
 }

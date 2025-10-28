@@ -1,8 +1,15 @@
 import { Button } from '@/components/Button';
-import { Input } from '@/components/Input';
+import CardCriarCautelas from '@/components/CardCriarCautelas';
 import { Screen } from '@/components/ScreenProps';
-import { listarColaboradores, listarItens } from '@/service/cautelaService';
-import { Search } from 'lucide-react-native';
+import { SkeletonCautelaForm } from '@/components/Skeleton/SkeletonCautelaForm';
+import {
+  criarCautelas,
+  listarColaboradores,
+  listarItens,
+} from '@/service/cautelaService';
+import { MainStackParamList } from '@/types/MainStackNavigator';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useState } from 'react';
 import {
   Text,
@@ -11,6 +18,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { TextInput } from 'react-native-paper';
@@ -21,8 +29,28 @@ interface Item {
   tipo: string;
 }
 
+interface Cautela {
+  id: string;
+  nome: string;
+  descricao: string;
+  quantidade: string;
+  data: string;
+  itemId: string;
+  colaboradorId: number;
+}
+
+type NavigationProps = StackNavigationProp<MainStackParamList, 'Cautela'>;
+
+// ===== CONSTANTE DE TEMPO MÍNIMO =====
+const MINIMUM_LOADING_TIME = 800; // 800ms
+
 export default function CautelaScreen() {
+  // ===== NOVO ESTADO DE LOADING =====
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
   const [itens, setItens] = useState<any[]>([]);
+  const navigation = useNavigation<NavigationProps>();
   const [colaboradores, setColaboradores] = useState<any[]>([]);
   const [itemSelecionado, setItemSelecionado] = useState('');
   const [textoDig, setTextoDig] = useState('');
@@ -41,6 +69,7 @@ export default function CautelaScreen() {
 
   const today = new Date();
   const data = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+  const [cautelasList, setCautelasList] = useState<Cautela[]>([]);
 
   useEffect(() => {
     if (textoColaborador.length > 0) {
@@ -59,25 +88,45 @@ export default function CautelaScreen() {
     setShowColaboradorList(false);
   };
 
+  // ===== CARREGAMENTO INICIAL COM DELAY MÍNIMO =====
   useEffect(() => {
     async function carregar() {
-      const listaItens = await listarItens();
-      const listaColaboradores = await listarColaboradores();
+      setIsLoadingData(true);
+      const startTime = Date.now();
 
-      const mappedItens = listaItens.map(item => ({
-        id: item.id,
-        label: `${item.descricao} - ${item.marca} ${item.modelo}`,
-        tipo: item.tipo,
-      }));
+      try {
+        // ===== CHAMADAS À API =====
+        const listaItens = await listarItens();
+        const listaColaboradores = await listarColaboradores();
 
-      const mappedColaboradores = listaColaboradores.map(col => ({
-        id: col.id,
-        label: `${col.nome}`,
-      }));
+        const mappedItens = listaItens.map(item => ({
+          id: item.id,
+          label: `${item.descricao} - ${item.marca} ${item.modelo}`,
+          tipo: item.tipo,
+        }));
 
-      setItens(mappedItens);
-      setColaboradores(mappedColaboradores);
-      console.log('Colaboradores: ', colaboradores);
+        const mappedColaboradores = listaColaboradores.map(col => ({
+          id: col.id,
+          label: `${col.nome}`,
+        }));
+
+        // ===== DELAY MÍNIMO =====
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = MINIMUM_LOADING_TIME - elapsedTime;
+
+        if (remainingTime > 0) {
+          await new Promise(resolve => setTimeout(resolve, remainingTime));
+        }
+
+        setItens(mappedItens);
+        setColaboradores(mappedColaboradores);
+        console.log('Colaboradores: ', mappedColaboradores);
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        alert('Erro ao carregar dados. Tente novamente.');
+      } finally {
+        setIsLoadingData(false);
+      }
     }
     carregar();
   }, []);
@@ -93,20 +142,58 @@ export default function CautelaScreen() {
     }
   }, [textoDig, itens]);
 
-  function handleSalvarCautela() {
-    if (!itemSelecionado || !colaboradorSelecionadoId) {
-      alert('Selecione item e colaborador!');
+  // ===== SALVAR COM DELAY MÍNIMO =====
+  async function handleSalvarCautela() {
+    if (cautelasList.length === 0) {
+      alert('Crie uma cautela antes de salvar!');
       return;
     }
 
-    const dadosParaSalvar = {
-      itemId: itemSelecionado,
-      colaboradorId: colaboradorSelecionadoId,
-      quantidade,
-      data,
-    };
+    setIsSaving(true);
+    const startTime = Date.now();
 
-    console.log('Salvar Dados: ', dadosParaSalvar);
+    try {
+      const cautelasParaSalvar = cautelasList.map(cautela => {
+        const itemData = itens.find(
+          item => item.id.toString() === cautela.itemId,
+        );
+
+        return {
+          tipo: itemData?.tipo || 'ferramenta',
+          entregue: false,
+          colaboradorId: cautela.colaboradorId,
+          ferramentas:
+            itemData?.tipo === 'ferramenta' ? [parseInt(cautela.itemId)] : [],
+          patrimonios:
+            itemData?.tipo === 'patrimonio' ? [parseInt(cautela.itemId)] : [],
+        };
+      });
+
+      console.log(
+        'Salvar Lista de Cautelas: ',
+        JSON.stringify(cautelasParaSalvar, null, 2),
+      );
+
+      // ===== CHAMADA À API =====
+      await criarCautelas(cautelasParaSalvar);
+
+      // ===== DELAY MÍNIMO =====
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = MINIMUM_LOADING_TIME - elapsedTime;
+
+      if (remainingTime > 0) {
+        await new Promise(resolve => setTimeout(resolve, remainingTime));
+      }
+
+      alert(`${cautelasList.length} cautela(s) salva(s) com sucesso!`);
+      setCautelasList([]);
+      navigation.navigate('Inicio');
+    } catch (error) {
+      console.error('Erro ao salvar cautelas:', error);
+      alert('Erro ao salvar cautelas. Tente novamente.');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   const handleSelect = (item: { id: number; label: string; tipo: string }) => {
@@ -122,6 +209,44 @@ export default function CautelaScreen() {
       setQuantidadeHabilitada(true);
     }
   };
+
+  function handleCriarCautela() {
+    if (!itemSelecionado || !colaboradorSelecionadoId || !quantidade.trim()) {
+      alert('Preencha todos os campos antes de criar a cautela!');
+      return;
+    }
+
+    const novaCautela: Cautela = {
+      id: Date.now().toString(),
+      nome: textoColaborador,
+      descricao: textoDig,
+      quantidade: quantidade,
+      data: data,
+      itemId: itemSelecionado,
+      colaboradorId: colaboradorSelecionadoId,
+    };
+
+    setCautelasList(prev => [...prev, novaCautela]);
+
+    setTextoDig('');
+    setTextoColaborador('');
+    setQuantidade('');
+    setItemSelecionado('');
+    setColaboradorSelecionadoId(null);
+  }
+
+  function handleRemoverCautela(id: string) {
+    setCautelasList(prev => prev.filter(cautela => cautela.id !== id));
+  }
+
+  // ===== RENDERIZAÇÃO COM SKELETON =====
+  if (isLoadingData) {
+    return (
+      <Screen>
+        <SkeletonCautelaForm />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -167,7 +292,6 @@ export default function CautelaScreen() {
               />
             )}
 
-            {/* Campo de Quantidade */}
             <TextInput
               placeholder="Quantidade"
               mode="outlined"
@@ -196,7 +320,7 @@ export default function CautelaScreen() {
                     styles.list,
                     {
                       position: 'absolute',
-                      top: 50, // ou use input height
+                      top: 50,
                       left: 0,
                       right: 0,
                       zIndex: 1000,
@@ -222,7 +346,7 @@ export default function CautelaScreen() {
           </View>
 
           <View style={styles.flex1}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleCriarCautela}>
               <Text
                 style={{
                   color: '#19325E',
@@ -235,14 +359,28 @@ export default function CautelaScreen() {
                 Criar Cautela
               </Text>
             </TouchableOpacity>
-            <View style={styles.whiteBg}></View>
+            <View style={styles.whiteBg}>
+              <CardCriarCautelas
+                cautelas={cautelasList}
+                onRemoveCautela={handleRemoverCautela}
+              />
+            </View>
           </View>
 
+          {/* ===== BOTÃO COM LOADING ===== */}
           <Button
             style={styles.button}
-            title="Salvar"
+            title={isSaving ? 'Salvando...' : 'Salvar'}
             onPress={handleSalvarCautela}
+            disabled={isSaving}
           />
+          {isSaving && (
+            <ActivityIndicator
+              size="small"
+              color="#19325E"
+              style={{ marginBottom: 12 }}
+            />
+          )}
         </View>
       </TouchableWithoutFeedback>
     </Screen>

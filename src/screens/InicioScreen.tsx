@@ -1,7 +1,7 @@
 import CardCautelas from '@/components/CardCautelas';
 import { Screen } from '@/components/ScreenProps';
 import { theme } from '@/styles/theme';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { CopyPlus, Menu } from 'lucide-react-native';
 import {
   FlatList,
@@ -15,95 +15,80 @@ import {
 import { DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '@/types/MainStackNavigator';
-import { useEffect, useState } from 'react';
-import { buscarCautelas } from '@/service/cautelaService';
+import { useCallback, useEffect, useState } from 'react';
+import { buscarCautelas, finalizarCautelas } from '@/service/cautelaService';
 import { CautelaDTO } from '@/dtos/cautelaDto';
+import { ActivityIndicator } from 'react-native-paper';
+import { ResumoMovimentacaoEstoque } from '@/dtos/movimentacaoDto';
+import { buscarResumoMovimentacao } from '@/service/movimentacao.service';
 
 export default function InicioScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
-  /*const listaDeCautelas = [
-    {
-      descricao: 'Entrega de Equipamentos de Segurança',
-      quantidade: 5,
-      funcaoColaborador: 'Eletricista', 
-      nomeColaborador: 'Carlos Henrique',
-      empresaColaborador: 'Construtora Beta Ltda',
-      dataCautela: '10/05/2025',
-      ferramentas: [
-        { id: 1, descricao: 'Multímetro Digital', quantidade: 2 },
-        { id: 2, descricao: 'Alicate de Pressão', quantidade: 4 },
-        { id: 3, descricao: 'Chave de Fenda Isolada', quantidade: 5 },
-      ],
-      patrimonios: [
-        {
-          id: 1,
-          descricao: 'Esmerilhadeira Angular 4"',
-          numeroSerie: 'ESM0025',
-        },
-        { id: 2, descricao: 'Furadeira Impacto', numeroSerie: 'FUR0025' },
-      ],
-    },
-    {
-      descricao: 'Entrega de EPI',
-      quantidade: 3,
-      funcaoColaborador: 'Soldador',
-      nomeColaborador: 'Joana Almeida',
-      empresaColaborador: 'Metalúrgica Alfa',
-      dataCautela: '12/05/2025',
-      ferramentas: [
-        { id: 4, descricao: 'Máscara de Solda', quantidade: 1 },
-        { id: 5, descricao: 'Luvas de Couro', quantidade: 2 },
-      ],
-      patrimonios: [
-        { id: 3, descricao: 'Máquina de Solda MIG', numeroSerie: 'MSOLD030' },
-      ],
-    },
-    {
-      descricao: 'Distribuição de Ferramentas de Carpintaria',
-      quantidade: 2,
-      funcaoColaborador: 'Carpinteiro',
-      nomeColaborador: 'José Pereira',
-      empresaColaborador: 'Engenharia Delta',
-      dataCautela: '14/05/2025',
-      ferramentas: [
-        { id: 6, descricao: 'Serrote Profissional', quantidade: 2 },
-        { id: 7, descricao: 'Martelo', quantidade: 2 },
-      ],
-      patrimonios: [],
-    },
-    {
-      descricao: 'Distribuição de Ferramentas de Carpintaria',
-      quantidade: 4,
-      funcaoColaborador: 'Almoxarife',
-      nomeColaborador: 'Rolieber',
-      empresaColaborador: 'Engenharia Delta',
-      dataCautela: '14/05/2025',
-      ferramentas: [
-        { id: 6, descricao: 'Serrote Profissional', quantidade: 2 },
-        { id: 7, descricao: 'Martelo', quantidade: 2 },
-      ],
-      patrimonios: [],
-    },
-  ];*/
-
   const [listaDeCautelas, setListaDeCautelas] = useState<CautelaDTO[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [recarregando, setRecarregando] = useState(false);
+  const [resumo, setResumo] = useState<ResumoMovimentacaoEstoque | null>(null);
 
-  useEffect(() => {
-    async function carregarCautelas() {
-      try {
-        const dados = await buscarCautelas();
-        setListaDeCautelas(dados);
-      } catch (error) {
-        console.error('Erro ao buscar cautelas:', error);
-      } finally {
-        setCarregando(false);
+  async function carregarCautelas(isReload = false) {
+    try {
+      if (isReload) {
+        setRecarregando(true);
+      } else {
+        setCarregando(true);
       }
+      setCarregando(true);
+      const dados = await buscarCautelas();
+      if (dados.length > 0) {
+        setListaDeCautelas(dados.filter(cautela => !cautela.entregue));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar cautelas:', error);
+    } finally {
+      setCarregando(false);
     }
-    carregarCautelas();
-  }, []);
+  }
+
+  const carregarResumo = async () => {
+    try {
+      setCarregando(true);
+      const data = await buscarResumoMovimentacao();
+      setResumo(data);
+    } catch (error) {
+      console.error('Erro ao buscar resumo:', error);
+    } finally {
+      setRecarregando(false);
+    }
+  };
+
+  const formatarData = (dataString: string) => {
+    const data = new Date(dataString);
+    return data.toLocaleDateString('pt-BR');
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarCautelas();
+      carregarResumo();
+    }, []),
+  );
+
+  async function finalizarCautelaHandler(id: number) {
+    try {
+      console.log('Apertou');
+      await finalizarCautelas(id);
+      await carregarCautelas(true);
+    } catch (error) {
+      console.error('Erro ao buscar cautelas:', error);
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  if (carregando) {
+    return <ActivityIndicator size="large" color="#19325E" />;
+  }
 
   return (
     <View
@@ -128,35 +113,91 @@ export default function InicioScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Conteúdo da tela */}
       <Screen style={styles.screen}>
-        {carregando ? (
-          <Text style={{ color: 'white', textAlign: 'center', marginTop: 20 }}>
-            Carregando cautelas...
-          </Text>
-        ) : listaDeCautelas.length === 0 ? (
-          <View style={styles.noCautelaContainer}>
-            <Text style={styles.title}>Cautelas Abertas</Text>
+        {/* 🔹 CARD: Resumo Rápido */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Resumo Rápido</Text>
+          <View style={styles.resumoInfo}>
+            <Text style={styles.resumoItem}>Entradas: 5</Text>
+            <Text style={styles.resumoItem}>Saídas: 0</Text>
+            <Text style={styles.resumoItem}>Cautelas Abertas: 4</Text>
+          </View>
+        </View>
+
+        {/* 🔹 CARD: Cautelas Abertas */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Cautelas Abertas</Text>
+          {carregando ? (
+            <Text style={styles.loadingText}>Carregando cautelas...</Text>
+          ) : listaDeCautelas.length === 0 ? (
             <Text style={styles.noCautelaText}>
               Nenhuma cautela aberta no momento.
             </Text>
-          </View>
-        ) : (
-          <FlatList
-            data={listaDeCautelas}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.cardContainer}>
-                <CardCautelas cautelas={item} />
-              </View>
-            )}
-            ListHeaderComponent={() => (
-              <Text style={styles.title}>Cautelas Abertas</Text>
-            )}
-            contentContainerStyle={styles.flatListContent}
-          />
-        )}
-        <Text style={styles.movimentacaoText}>Movimentação do Estoque</Text>
+          ) : (
+            <>
+              {listaDeCautelas.slice(0, 3).map((item, index) => (
+                <View key={index} style={styles.cardContainer}>
+                  <CardCautelas
+                    cautelas={item}
+                    onFinalizar={finalizarCautelaHandler}
+                  />
+                </View>
+              ))}
+              {listaDeCautelas.length > 3 && (
+                <TouchableOpacity
+                  onPress={() => console.log('Ver mais cautelas')}
+                  style={styles.verMaisButton}
+                >
+                  <Text style={styles.verMaisText}>Ver mais</Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+        </View>
+
+        {/* 🔹 CARD: Movimentação do Estoque */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Movimentação do Estoque</Text>
+          {/* Última Entrada */}
+          {resumo?.ultimaEntrada ? (
+            <View style={styles.movimentacaoItem}>
+              <Text style={styles.resumoItem}>
+                Última entrada: {formatarData(resumo.ultimaEntrada.data)}
+              </Text>
+              <Text style={styles.detalhes}>
+                Fornecedor: {resumo.ultimaEntrada.fornecedor}
+              </Text>
+              <Text style={styles.insumo}>{resumo.ultimaEntrada.insumo}</Text>
+            </View>
+          ) : (
+            <Text style={styles.resumoItem}>Nenhuma entrada registrada</Text>
+          )}
+
+          {/* Última Saída */}
+          {resumo?.ultimaSaida ? (
+            <View style={styles.movimentacaoItem}>
+              <Text style={styles.resumoItem}>
+                Última saída: {formatarData(resumo.ultimaSaida.data)}
+              </Text>
+              <Text style={styles.detalhes}>
+                Colaborador: {resumo.ultimaSaida.colaborador}
+              </Text>
+              <Text style={styles.insumo}>{resumo.ultimaSaida.insumo}</Text>
+            </View>
+          ) : (
+            <Text style={styles.resumoItem}>Nenhuma saída registrada</Text>
+          )}
+
+          {/* “Ver mais” aparece apenas se houver muitas movimentações */}
+          {true && (
+            <TouchableOpacity
+              onPress={() => console.log('Ver mais movimentações')}
+              style={styles.verMaisButton}
+            >
+              <Text style={styles.verMaisText}>Ver mais</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </Screen>
     </View>
   );
@@ -166,32 +207,53 @@ const styles = StyleSheet.create({
   screen: {
     padding: 8,
   },
-  noCautelaContainer: {
-    height: 200,
-  },
-  title: {
-    fontSize: 25,
-    color: theme.colors.primary,
-    marginBottom: 6,
-    fontWeight: 'bold',
-  },
-  noCautelaText: {
-    fontSize: 16,
-    color: '#9ca3af',
-    textAlign: 'center',
-  },
-  cardContainer: {
+  card: {
+    backgroundColor: '#ffffff55',
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 16,
   },
-  flatListContent: {
-    paddingBottom: 24,
-  },
-  movimentacaoText: {
-    fontSize: 25,
-    color: theme.colors.primary,
+  cardTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    marginTop: 6,
-    marginBottom: 6,
+    color: theme.colors.primary,
+    marginBottom: 8,
+  },
+  resumoInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  resumoItem: {
+    color: '#19325E',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  cardContainer: {
+    marginBottom: 10,
+  },
+  loadingText: {
+    color: 'white',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  noCautelaText: {
+    color: '#9ca3af',
+    textAlign: 'center',
+    fontSize: 14,
+    marginVertical: 6,
+  },
+  verMaisButton: {
+    alignSelf: 'flex-end',
+    marginTop: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    backgroundColor: '#ffffff11',
+  },
+  verMaisText: {
+    color: '#1a3255ff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   header: {
     backgroundColor: '#19325E',
@@ -205,5 +267,22 @@ const styles = StyleSheet.create({
     color: '#C5D4EB',
     fontWeight: 'bold',
     fontSize: 22,
+  },
+  movimentacaoItem: {
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  detalhes: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 4,
+  },
+  insumo: {
+    fontSize: 12,
+    color: '#888',
+    fontStyle: 'italic',
+    marginTop: 2,
   },
 });

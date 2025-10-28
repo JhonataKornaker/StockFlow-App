@@ -39,19 +39,20 @@ interface Cautela {
 
 interface Props {
   cautelas: Cautela;
+  onFinalizar: (id: number) => void;
 }
 
-export default function CardCautelas({ cautelas }: Props) {
+export default function CardCautelas({ cautelas, onFinalizar }: Props) {
   return (
     <SafeAreaView style={styles.cardContainer}>
       <View style={styles.headerContainer}>
-        <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#19325E' }}>
+        <Text style={{ fontWeight: '500', fontSize: 16, color: '#19325E' }}>
           {cautelas.colaborador.funcao}
         </Text>
-        <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#19325E' }}>
+        <Text style={{ fontWeight: '500', fontSize: 16, color: '#19325E' }}>
           {cautelas.colaborador.nome}
         </Text>
-        <Text style={{ fontWeight: 'bold', fontSize: 12, color: '#19325E' }}>
+        <Text style={{ fontWeight: '500', fontSize: 16, color: '#19325E' }}>
           {cautelas.colaborador.empresa}
         </Text>
       </View>
@@ -64,7 +65,7 @@ export default function CardCautelas({ cautelas }: Props) {
             <Text style={styles.itemDescription}>{item.descricao}</Text>
             <Text>{cautelas.data}</Text>
             <TouchableOpacity>
-              <CheckCircle size={24} />
+              <CheckCircle size={24} onPress={() => onFinalizar(cautelas.id)} />
             </TouchableOpacity>
           </View>
           {index < cautelas.ferramentas.length - 1 && (
@@ -82,7 +83,7 @@ export default function CardCautelas({ cautelas }: Props) {
             <Text>{item.numeroSerie}</Text>
             <Text style={styles.itemDescription}>{item.descricao}</Text>
             <Text>{cautelas.data}</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => onFinalizar(cautelas.id)}>
               <CheckCircle size={24} />
             </TouchableOpacity>
           </View>
@@ -98,7 +99,7 @@ export default function CardCautelas({ cautelas }: Props) {
 const styles = StyleSheet.create({
   cardContainer: {
     padding: 16,
-    backgroundColor: 'white',
+    backgroundColor: '#ffffff44',
     borderRadius: 10,
   },
   headerContainer: {

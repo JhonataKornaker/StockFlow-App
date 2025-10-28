@@ -6,8 +6,8 @@ export async function buscarCautelas(): Promise<CautelaDTO[]> {
   return response.data;
 }
 
-export async function criarCautelas(cautela: CriarCautelaDto) {
-  const response = await api.post('/cautela', cautela);
+export async function criarCautelas(cautelas: CriarCautelaDto[]) {
+  const response = await api.post('/cautela', cautelas);
   return response.data;
 }
 
@@ -24,4 +24,10 @@ export async function listarColaboradores() {
   const { data } = await api.get('/colaborador');
   console.log('Colaboradores Service: ', data);
   return data;
+}
+
+export async function finalizarCautelas(id: number) {
+  const response = await api.patch(`/cautela/${id}`);
+  console.log('Finalizar Cautela: ', response.data);
+  return response.data;
 }

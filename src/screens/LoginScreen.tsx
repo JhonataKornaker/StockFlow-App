@@ -1,6 +1,13 @@
-import { Image, Text, TextInput, View, StyleSheet } from 'react-native';
+import {
+  Image,
+  Text,
+  TextInput,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import { Screen } from '../components/ScreenProps';
-import { Lock, Mail } from 'lucide-react-native';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
 import { login } from '@/service/authService';
@@ -15,6 +22,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const navigation = useNavigation<any>();
   const { signIn } = useAuth();
 
@@ -54,18 +62,33 @@ export default function LoginScreen() {
           placeholderTextColor="rgba(0, 0, 0, 0.25)"
           value={email}
           onChangeText={setEmail}
+          keyboardType="email-address" // mostra teclado com @
+          autoCapitalize="none" // impede maiúscula automática
+          autoCorrect={false}
         />
       </View>
       <View style={[styles.inputContainer, styles.inputMarginTop]}>
         <Lock size={20} style={styles.icon} color="#080873" />
+
         <TextInput
-          style={styles.input}
+          style={[styles.input, { flex: 1 }]}
           placeholder="Senha"
           placeholderTextColor="rgba(0, 0, 0, 0.25)"
-          secureTextEntry={true}
+          secureTextEntry={!mostrarSenha} // alterna visibilidade
           value={senha}
           onChangeText={setSenha}
         />
+
+        <TouchableOpacity
+          style={{ marginRight: 5 }}
+          onPress={() => setMostrarSenha(!mostrarSenha)}
+        >
+          {mostrarSenha ? (
+            <EyeOff size={20} color="#080873" />
+          ) : (
+            <Eye size={20} color="#080873" />
+          )}
+        </TouchableOpacity>
       </View>
       <Button
         onPress={() => checkLogin(email, senha)}
@@ -93,10 +116,10 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 293,
-    height: 35,
-    borderRadius: 30,
-    backgroundColor: '#DCDCDC',
+    width: 300,
+    height: 46,
+    borderRadius: 5,
+    backgroundColor: '#f0e1e1ff',
   },
   icon: {
     marginLeft: 15,
@@ -111,10 +134,10 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 60,
-    backgroundColor: '#DCDCDC',
-    width: 170,
-    height: 30,
-    borderRadius: 30,
+    backgroundColor: '#f0e1e1ff',
+    width: 120,
+    height: 40,
+    borderRadius: 5,
   },
   footer: {
     marginTop: 60,

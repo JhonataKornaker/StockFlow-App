@@ -24,7 +24,7 @@ export type CautelaDTO = {
 
 export type CriarCautelaDto = {
   tipo: string;
-  entregue: true;
+  entregue: boolean;
   colaboradorId: number;
   ferramentas?: number[];
   patrimonios?: number[];
