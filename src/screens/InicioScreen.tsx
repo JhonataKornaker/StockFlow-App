@@ -145,7 +145,7 @@ export default function InicioScreen() {
         </View>
 
         {/* 🔸 CARD: Cautelas Abertas */}
-        <View style={styles.cardCautelaMovimentacao}>
+        <View style={styles.cardCautela}>
           <Text style={styles.cardTitle}>Cautelas Abertas</Text>
           {carregando ? (
             <Text style={styles.loadingText}>Carregando cautelas...</Text>
@@ -177,7 +177,7 @@ export default function InicioScreen() {
         </View>
 
         {/* 🔸 CARD: Movimentação do Estoque */}
-        <View style={styles.cardCautelaMovimentacao}>
+        <View style={styles.cardMovimentacao}>
           <Text style={styles.cardTitle}>Movimentação do Estoque</Text>
 
           {carregando ? (
@@ -218,12 +218,19 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
   },
-  cardCautelaMovimentacao: {
+  cardCautela: {
     backgroundColor: '#ffffff55',
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
-    height: 250,
+    height: 300,
+  },
+  cardMovimentacao: {
+    backgroundColor: '#ffffff55',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    height: 200,
   },
   cardTitle: {
     fontSize: 22,
