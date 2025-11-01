@@ -71,7 +71,9 @@ export default function DrawerMenuContent({ navigation }) {
 
       <TouchableOpacity
         style={styles.menuItem}
-        onPress={() => navigation.navigate('Home', { screen: 'Cautela' })}
+        onPress={() =>
+          navigation.navigate('Home', { screen: 'CautelasAbertas' })
+        }
       >
         <ClipboardList color="#C5D4EB" size={20} />
         <Text style={styles.link}>Cautelas</Text>

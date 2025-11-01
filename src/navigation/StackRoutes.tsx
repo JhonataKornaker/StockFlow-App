@@ -3,7 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { theme } from '@/styles/theme';
 
 import InicioScreen from '@/screens/InicioScreen';
-import CautelaScreen from '@/screens/CautelaScreen';
+import CautelaScreen from '@/screens/CriarCautelaScreen';
 import CadastroFerramentas from '@/screens/CadastroFerramentasScreen';
 import CadastroColaborador from '@/screens/CadastroColaboradorScreen';
 import CadastroPatrimonio from '@/screens/CadastroPatrimonioScreen';
@@ -14,6 +14,8 @@ import DetalhesColaborador from '@/screens/DetalhesColaboradorScreen';
 import Estoques from '@/screens/EstoqueScreen';
 import CadastroInsumo from '@/screens/CadastroEstoqueScreen';
 import SaidaInsumo from '@/screens/SaidaInsumoScreen';
+import CautelasAbertasScreen from '@/screens/CautelasAbertaScreen';
+import MovimentacoesScreen from '@/screens/MovimentacaoInsumosScreen';
 
 const Stack = createStackNavigator();
 
@@ -91,6 +93,16 @@ export default function StackRoutes() {
         name="SaidaInsumo"
         component={SaidaInsumo}
         options={{ title: 'Saida de Isumos' }}
+      />
+      <Stack.Screen
+        name="CautelasAbertas"
+        component={CautelasAbertasScreen}
+        options={{ title: 'Cautelas Abertas' }}
+      />
+      <Stack.Screen
+        name="MovimentacaoInsumo"
+        component={MovimentacoesScreen}
+        options={{ title: 'Movimentacao Insumos' }}
       />
     </Stack.Navigator>
   );

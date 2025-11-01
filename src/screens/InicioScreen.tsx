@@ -166,7 +166,7 @@ export default function InicioScreen() {
 
               {listaDeCautelas.length > 3 && (
                 <TouchableOpacity
-                  onPress={() => console.log('Ver mais cautelas')}
+                  onPress={() => navigation.navigate('CautelasAbertas')}
                   style={styles.verMaisButton}
                 >
                   <Text style={styles.verMaisText}>Ver mais</Text>
@@ -192,7 +192,7 @@ export default function InicioScreen() {
 
           {true && (
             <TouchableOpacity
-              onPress={() => navigation.navigate('Estoques')}
+              onPress={() => navigation.navigate('MovimentacaoInsumo')}
               style={styles.verMaisButton}
             >
               <Text style={styles.verMaisText}>Ver mais</Text>

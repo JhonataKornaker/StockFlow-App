@@ -265,148 +265,224 @@ export default function CautelaScreen() {
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          keyboardShouldPersistTaps="handled"
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setItensSugeridos([]);
+            setColaboradoresSugeridos([]);
+          }}
+          style={{ flex: 1 }}
         >
-          <View style={styles.container}>
-            {/* Buscar Item */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Item *</Text>
-              <Input
-                placeholder="Digite para buscar item..."
-                icon={Package}
-                value={buscaItem}
-                onChangeText={buscarItensSugeridos}
-              />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.container}>
+              {/* Buscar Item */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Item *</Text>
 
-              {/* Sugestões de Itens */}
-              {itensSugeridos.length > 0 && (
-                <View style={styles.suggestionsContainer}>
-                  <ScrollView style={styles.suggestionsList}>
-                    {itensSugeridos.map(item => (
-                      <TouchableOpacity
-                        key={item.id}
-                        onPress={() => selecionarItem(item)}
-                        style={styles.suggestionItem}
-                      >
-                        <Text style={styles.suggestionText}>{item.label}</Text>
-                        <Text style={styles.suggestionType}>
-                          {item.tipo === 'patrimonio'
+                {/* Se não tiver item selecionado, mostra busca */}
+                {!itemAtual ? (
+                  <>
+                    <Input
+                      placeholder="Digite para buscar item..."
+                      icon={Package}
+                      value={buscaItem}
+                      onChangeText={buscarItensSugeridos}
+                    />
+
+                    {/* Botão Ver Todos */}
+                    <TouchableOpacity
+                      onPress={() => setItensSugeridos(itens.slice(0, 10))}
+                      style={styles.verTodosButton}
+                    >
+                      <Text style={styles.verTodosText}>
+                        📋 Ver todos os itens
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Sugestões de Itens */}
+                    {itensSugeridos.length > 0 && (
+                      <View style={styles.suggestionsContainer}>
+                        <ScrollView
+                          style={styles.suggestionsList}
+                          nestedScrollEnabled={true}
+                        >
+                          {itensSugeridos.map((item, index) => (
+                            <TouchableOpacity
+                              key={`item-${item.id}-${index}`}
+                              onPress={() => selecionarItem(item)}
+                              style={styles.suggestionItem}
+                            >
+                              <Text style={styles.suggestionText}>
+                                {item.label}
+                              </Text>
+                              <Text style={styles.suggestionType}>
+                                {item.tipo === 'patrimonio'
+                                  ? 'Patrimônio'
+                                  : 'Ferramenta'}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  /* Item Selecionado com opção de trocar */
+                  <View style={styles.selectedCard}>
+                    <View style={styles.selectedHeader}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.selectedTitle}>
+                          {itemAtual.label}
+                        </Text>
+                        <Text style={styles.selectedType}>
+                          Tipo:{' '}
+                          {itemAtual.tipo === 'patrimonio'
                             ? 'Patrimônio'
                             : 'Ferramenta'}
                         </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-
-              {/* Item Selecionado */}
-              {itemAtual && (
-                <View style={styles.selectedCard}>
-                  <Text style={styles.selectedTitle}>{itemAtual.label}</Text>
-                  <Text style={styles.selectedType}>
-                    Tipo:{' '}
-                    {itemAtual.tipo === 'patrimonio'
-                      ? 'Patrimônio'
-                      : 'Ferramenta'}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            {/* Quantidade */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Quantidade *</Text>
-              <Input
-                placeholder="Quantidade"
-                icon={Hash}
-                value={quantidade}
-                onChangeText={setQuantidade}
-                keyboardType="numeric"
-                editable={quantidadeHabilitada}
-              />
-            </View>
-
-            {/* Buscar Colaborador */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Colaborador *</Text>
-              <Input
-                placeholder="Digite para buscar colaborador..."
-                icon={User}
-                value={buscaColaborador}
-                onChangeText={buscarColaboradoresSugeridos}
-              />
-
-              {/* Sugestões de Colaboradores */}
-              {colaboradoresSugeridos.length > 0 && (
-                <View style={styles.suggestionsContainer}>
-                  <ScrollView style={styles.suggestionsList}>
-                    {colaboradoresSugeridos.map(colaborador => (
+                      </View>
                       <TouchableOpacity
-                        key={colaborador.id}
-                        onPress={() => selecionarColaborador(colaborador)}
-                        style={styles.suggestionItem}
+                        onPress={() => {
+                          setItemSelecionado('');
+                          setBuscaItem('');
+                          setQuantidade('');
+                          setQuantidadeHabilitada(false);
+                        }}
+                        style={styles.trocarButton}
                       >
-                        <Text style={styles.suggestionText}>
-                          {colaborador.label}
-                        </Text>
+                        <Text style={styles.trocarButtonText}>Trocar</Text>
                       </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
+                    </View>
+                  </View>
+                )}
+              </View>
 
-              {/* Colaborador Selecionado */}
-              {colaboradorAtual && (
-                <View style={styles.selectedCard}>
-                  <Text style={styles.selectedTitle}>
-                    {colaboradorAtual.label}
-                  </Text>
-                </View>
-              )}
-            </View>
+              {/* Quantidade */}
+              <View style={styles.inputContainer}>
+                <Input
+                  placeholder="Quantidade"
+                  icon={Hash}
+                  value={quantidade}
+                  onChangeText={setQuantidade}
+                  keyboardType="numeric"
+                  editable={quantidadeHabilitada}
+                />
+              </View>
 
-            {/* Data */}
-            <View style={styles.dataContainer}>
-              <Text style={styles.dataLabel}>Data da Retirada: </Text>
-              <Text style={styles.dataValue}>{data}</Text>
-            </View>
+              {/* Buscar Colaborador */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Colaborador *</Text>
 
-            {/* Botão Criar Cautela */}
-            <TouchableOpacity
-              onPress={handleCriarCautela}
-              style={styles.criarButton}
-            >
-              <Text style={styles.criarButtonText}>+ Criar Cautela</Text>
-            </TouchableOpacity>
+                {/* Se não tiver colaborador selecionado, mostra busca */}
+                {!colaboradorAtual ? (
+                  <>
+                    <Input
+                      placeholder="Digite para buscar colaborador..."
+                      icon={User}
+                      value={buscaColaborador}
+                      onChangeText={buscarColaboradoresSugeridos}
+                    />
 
-            {/* Lista de Cautelas */}
-            <View style={styles.cautelasContainer}>
-              <CardCriarCautelas
-                cautelas={cautelasList}
-                onRemoveCautela={handleRemoverCautela}
+                    {/* Botão Ver Todos */}
+                    <TouchableOpacity
+                      onPress={() =>
+                        setColaboradoresSugeridos(colaboradores.slice(0, 10))
+                      }
+                      style={styles.verTodosButton}
+                    >
+                      <Text style={styles.verTodosText}>
+                        👥 Ver todos os colaboradores
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Sugestões de Colaboradores */}
+                    {colaboradoresSugeridos.length > 0 && (
+                      <View style={styles.suggestionsContainer}>
+                        <ScrollView
+                          style={styles.suggestionsList}
+                          nestedScrollEnabled={true}
+                        >
+                          {colaboradoresSugeridos.map((colaborador, index) => (
+                            <TouchableOpacity
+                              key={`colaborador-${colaborador.id}-${index}`}
+                              onPress={() => selecionarColaborador(colaborador)}
+                              style={styles.suggestionItem}
+                            >
+                              <Text style={styles.suggestionText}>
+                                {colaborador.label}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  /* Colaborador Selecionado com opção de trocar */
+                  <View style={styles.selectedCard}>
+                    <View style={styles.selectedHeader}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.selectedTitle}>
+                          {colaboradorAtual.label}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setColaboradorSelecionadoId(null);
+                          setBuscaColaborador('');
+                        }}
+                        style={styles.trocarButton}
+                      >
+                        <Text style={styles.trocarButtonText}>Trocar</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              </View>
+
+              {/* Data */}
+              <View style={styles.dataContainer}>
+                <Text style={styles.dataLabel}>Data da Retirada: </Text>
+                <Text style={styles.dataValue}>{data}</Text>
+              </View>
+
+              {/* Botão Criar Cautela */}
+              <TouchableOpacity
+                onPress={handleCriarCautela}
+                style={styles.criarButton}
+              >
+                <Text style={styles.criarButtonText}>+ Criar Cautela</Text>
+              </TouchableOpacity>
+
+              {/* Lista de Cautelas */}
+              <View style={styles.cautelasContainer}>
+                <CardCriarCautelas
+                  cautelas={cautelasList}
+                  onRemoveCautela={handleRemoverCautela}
+                />
+              </View>
+
+              {/* Botão Salvar */}
+              <Button
+                style={styles.button}
+                title={isSaving ? 'Salvando...' : 'Salvar'}
+                onPress={handleSalvarCautela}
+                disabled={isSaving}
               />
+              {isSaving && (
+                <ActivityIndicator
+                  size="small"
+                  color="#19325E"
+                  style={{ marginTop: 8 }}
+                />
+              )}
             </View>
-
-            {/* Botão Salvar */}
-            <Button
-              style={styles.button}
-              title={isSaving ? 'Salvando...' : 'Salvar'}
-              onPress={handleSalvarCautela}
-              disabled={isSaving}
-            />
-            {isSaving && (
-              <ActivityIndicator
-                size="small"
-                color="#19325E"
-                style={{ marginTop: 8 }}
-              />
-            )}
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </TouchableOpacity>
       </KeyboardAvoidingView>
     </Screen>
   );
@@ -434,6 +510,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e5e7eb',
     maxHeight: 200,
+    zIndex: 1000,
+    elevation: 5, // Para Android
+    shadowColor: '#000', // Para iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   suggestionsList: {
     maxHeight: 200,
@@ -461,6 +543,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#bfdbfe',
   },
+  selectedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   selectedTitle: {
     fontWeight: 'bold',
     color: '#19325E',
@@ -470,6 +557,31 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 4,
     fontSize: 12,
+  },
+  trocarButton: {
+    backgroundColor: '#19325E',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  trocarButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  verTodosButton: {
+    backgroundColor: '#f3f4f6',
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  verTodosText: {
+    color: '#19325E',
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   dataContainer: {
     flexDirection: 'row',
