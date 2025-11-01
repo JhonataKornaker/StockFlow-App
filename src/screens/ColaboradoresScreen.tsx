@@ -12,7 +12,13 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
 import { Contact, PersonStanding, Search } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { SectionList, Text, TouchableOpacity, View } from 'react-native';
+import {
+  SectionList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Colaboradores'>;
@@ -20,29 +26,6 @@ type NavigationProps = StackNavigationProp<MainStackParamList, 'Colaboradores'>;
 export default function Colaboradores() {
   const [busca, setBusca] = useState('');
   const navigation = useNavigation<NavigationProps>();
-
-  /*const colaboradores: Colaborador[] = [
-    {
-      nome: 'Thiago Silva',
-      funcao: 'Encarregado',
-      empresa: 'V.V Verona',
-    },
-    {
-      nome: 'Ana Paula',
-      funcao: 'Gerente',
-      empresa: 'V.V Verona',
-    },
-    {
-      nome: 'Carlos Souza',
-      funcao: 'Operador',
-      empresa: 'V.V Verona',
-    },
-    {
-      nome: 'Amanda Costa',
-      funcao: 'Assistente',
-      empresa: 'V.V Verona',
-    },
-  ];*/
 
   const [listaColaboradores, setListaColaboradores] = useState<
     ColaboradorDto[]
@@ -122,17 +105,19 @@ export default function Colaboradores() {
   if (listaColaboradores.length === 0) {
     return (
       <Screen>
-        <Input
-          style={{ marginTop: 36 }}
-          placeholder="Digite para pesquisar..."
-          icon={Search}
-          value={busca}
-          onChangeText={setBusca}
-        />
-        <Text style={{ textAlign: 'center', marginTop: 20 }}>
-          Nenhum item encontrado.
-        </Text>
-        {botaoCadastrar}
+        <View style={styles.emptyContainer}>
+          <Contact size={64} color="#9ca3af" />
+          <Text style={styles.emptyTitle}>Nenhum colaborador cadastrado</Text>
+          <Text style={styles.emptySubtitle}>
+            Comece cadastrando o primeiro colaborador para gerenciar cautelas e
+            retiradas.
+          </Text>
+          <Button
+            title="Cadastrar Colaborador"
+            onPress={handleCadastrar}
+            style={{ marginTop: 20 }}
+          />
+        </View>
       </Screen>
     );
   }
@@ -205,3 +190,26 @@ export default function Colaboradores() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+});

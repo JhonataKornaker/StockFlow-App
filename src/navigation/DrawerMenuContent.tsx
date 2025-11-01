@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import {
   Home,
@@ -10,18 +10,54 @@ import {
   Package,
   PackageOpen,
 } from 'lucide-react-native';
-import { CommonActions } from '@react-navigation/native';
 import { useAuth } from '@/context/AuthContext';
+import { Usuario } from '@/dtos/usuarioDto';
+import { useFocusEffect } from '@react-navigation/native';
+import { buscarUsuarioLogado } from '@/service/usuario.service';
+import { extractFirstAndLastName } from '@/util/extrairNomeSobrenome';
 
 export default function DrawerMenuContent({ navigation }) {
   const { signOut } = useAuth();
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [carregando, setCarregando] = useState(true);
+  const [recarregando, setRecarregando] = useState(false);
+
+  async function buscarUsuario(isReload = false) {
+    try {
+      if (isReload) {
+        setRecarregando(true);
+      } else {
+        setCarregando(true);
+      }
+      const dados = await buscarUsuarioLogado();
+      const nomeSobrenome = extractFirstAndLastName(dados.nome);
+
+      const usuarioFormatado = {
+        ...dados,
+        nome: nomeSobrenome,
+      };
+
+      setUsuario(usuarioFormatado);
+    } catch (error) {
+      console.error('Erro ao buscar usuario:', error);
+    } finally {
+      setCarregando(false);
+      setRecarregando(false);
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      buscarUsuario();
+    }, []),
+  );
 
   return (
     <View style={styles.drawer}>
       {/* Header com nome do usuário */}
       <View style={styles.userBox}>
-        <Text style={styles.userName}>Olá, Jhonata!</Text>
-        <Text style={styles.userRole}>Almoxarifado</Text>
+        <Text style={styles.userName}>{usuario?.nome}</Text>
+        <Text style={styles.userRole}>{usuario?.funcao}</Text>
       </View>
 
       {/* Menu de navegação */}

@@ -2,15 +2,21 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/ScreenProps';
 import { PatrimonioDto } from '@/dtos/patrimonioDto';
-import { listarPatrimonio } from '@/service/patrimonioService';
+import { listarPatrimonio } from '@/service/patrimonio.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Calendar, Contact, Search } from 'lucide-react-native';
+import { Calendar, Contact, Package, Search } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
-import { SectionList, Text, TouchableOpacity, View } from 'react-native';
+import {
+  SectionList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Patrimonios'>;
@@ -76,17 +82,19 @@ export default function Patrimonios() {
   if (listarPatrimonios.length === 0) {
     return (
       <Screen>
-        <Input
-          style={{ marginTop: 36 }}
-          placeholder="Digite para pesquisar..."
-          icon={Search}
-          value={busca}
-          onChangeText={setBusca}
-        />
-        <Text style={{ textAlign: 'center', marginTop: 20 }}>
-          Nenhum item encontrado.
-        </Text>
-        {botaoCadastrar}
+        <View style={styles.emptyContainer}>
+          <Package size={64} color="#9ca3af" />
+          <Text style={styles.emptyTitle}>Nenhum patrimônio cadastrado</Text>
+          <Text style={styles.emptySubtitle}>
+            Cadastre seus equipamentos e patrimônios para controlar empréstimos
+            e locações.
+          </Text>
+          <Button
+            title="Cadastrar Patrimônio"
+            onPress={handleCadastrar}
+            style={{ marginTop: 20 }}
+          />
+        </View>
       </Screen>
     );
   }
@@ -182,3 +190,26 @@ export default function Patrimonios() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+});

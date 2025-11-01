@@ -145,7 +145,7 @@ export default function InicioScreen() {
         </View>
 
         {/* 🔸 CARD: Cautelas Abertas */}
-        <View style={styles.card}>
+        <View style={styles.cardCautelaMovimentacao}>
           <Text style={styles.cardTitle}>Cautelas Abertas</Text>
           {carregando ? (
             <Text style={styles.loadingText}>Carregando cautelas...</Text>
@@ -177,26 +177,30 @@ export default function InicioScreen() {
         </View>
 
         {/* 🔸 CARD: Movimentação do Estoque */}
-        <View style={styles.card}>
+        <View style={styles.cardCautelaMovimentacao}>
           <Text style={styles.cardTitle}>Movimentação do Estoque</Text>
 
           {carregando ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#19325E" />
-            </View>
-          ) : movimentacao ? (
-            <CardMovimentacao movimentacao={movimentacao} />
+            <Text style={styles.loadingText}>Carregando movimentações...</Text>
+          ) : !movimentacao ||
+            (!movimentacao.ultimaEntrada && !movimentacao.ultimaSaida) ? (
+            <Text style={styles.noCautelaText}>
+              Nenhuma movimentação registrada no momento.
+            </Text>
           ) : (
-            <Text style={styles.errorText}>Erro ao carregar movimentações</Text>
-          )}
+            <>
+              <CardMovimentacao movimentacao={movimentacao} />
 
-          {true && (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('MovimentacaoInsumo')}
-              style={styles.verMaisButton}
-            >
-              <Text style={styles.verMaisText}>Ver mais</Text>
-            </TouchableOpacity>
+              {((resumo?.totalEntradas ?? 0) > 1 ||
+                (resumo?.totalSaidas ?? 0) > 1) && (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('MovimentacaoInsumo')}
+                  style={styles.verMaisButton}
+                >
+                  <Text style={styles.verMaisText}>Ver mais</Text>
+                </TouchableOpacity>
+              )}
+            </>
           )}
         </View>
       </Screen>
@@ -213,6 +217,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
+  },
+  cardCautelaMovimentacao: {
+    backgroundColor: '#ffffff55',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    height: 250,
   },
   cardTitle: {
     fontSize: 22,

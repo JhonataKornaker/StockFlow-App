@@ -1,22 +1,22 @@
 import api from '@/api';
-import { CriarFerramentaDto, FerramentasDto } from '@/dtos/ferramentasDto';
+import { CriarPatrimonioDto, PatrimonioDto } from '@/dtos/patrimonioDto';
 import { StorageService, STORAGE_KEYS } from './storage.service';
 import { NetworkService } from './network.service';
 import { SyncService } from './sync.service';
 
-export async function createFerramentas(ferramenta: CriarFerramentaDto) {
+export async function createPatrimonio(patrimonio: CriarPatrimonioDto) {
   const isOnline = await NetworkService.isOnline();
 
   if (isOnline) {
-    const response = await api.post('/ferramenta', ferramenta);
-    await StorageService.remove(STORAGE_KEYS.FERRAMENTAS);
+    const response = await api.post('/patrimonio', patrimonio);
+    await StorageService.remove(STORAGE_KEYS.PATRIMONIOS);
     return response.data;
   } else {
-    console.log('📴 Modo offline - salvando ferramenta para sincronizar');
+    console.log('📴 Modo offline - salvando patrimônio para sincronizar');
     await SyncService.addPendingAction({
       type: 'CREATE',
-      endpoint: '/ferramenta',
-      data: ferramenta,
+      endpoint: '/patrimonio',
+      data: patrimonio,
     });
     return {
       success: true,
@@ -26,30 +26,30 @@ export async function createFerramentas(ferramenta: CriarFerramentaDto) {
   }
 }
 
-export async function listarFerramentas(): Promise<FerramentasDto[]> {
+export async function listarPatrimonio(): Promise<PatrimonioDto[]> {
   try {
     const isOnline = await NetworkService.isOnline();
 
     if (isOnline) {
-      const response = await api.get('/ferramenta');
+      const response = await api.get('/patrimonio');
       await StorageService.saveWithTimestamp(
-        STORAGE_KEYS.FERRAMENTAS,
+        STORAGE_KEYS.PATRIMONIOS,
         response.data,
       );
       return response.data;
     } else {
-      console.log('📴 Modo offline - buscando ferramentas do cache');
+      console.log('📴 Modo offline - buscando patrimônios do cache');
       const cached = await StorageService.get<{
-        data: FerramentasDto[];
+        data: PatrimonioDto[];
         timestamp: string;
-      }>(STORAGE_KEYS.FERRAMENTAS);
+      }>(STORAGE_KEYS.PATRIMONIOS);
       return cached?.data || [];
     }
   } catch (error) {
     const cached = await StorageService.get<{
-      data: FerramentasDto[];
+      data: PatrimonioDto[];
       timestamp: string;
-    }>(STORAGE_KEYS.FERRAMENTAS);
+    }>(STORAGE_KEYS.PATRIMONIOS);
     return cached?.data || [];
   }
 }

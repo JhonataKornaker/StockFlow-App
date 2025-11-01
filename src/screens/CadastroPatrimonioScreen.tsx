@@ -3,7 +3,7 @@ import { Input } from '@/components/Input';
 import RadionComponent from '@/components/RadionComponent';
 import { Screen } from '@/components/ScreenProps';
 import { CriarPatrimonioDto, PatrimonioDto } from '@/dtos/patrimonioDto';
-import { createPatrimonio } from '@/service/patrimonioService';
+import { createPatrimonio } from '@/service/patrimonio.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';

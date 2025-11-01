@@ -10,7 +10,13 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AlertTriangle, Package, Search } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
-import { SectionList, Text, TouchableOpacity, View } from 'react-native';
+import {
+  SectionList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Estoques'>;
@@ -82,17 +88,19 @@ export default function Estoques() {
   if (estoques.length === 0) {
     return (
       <Screen>
-        <Input
-          style={{ marginTop: 36 }}
-          placeholder="Digite para pesquisar..."
-          icon={Search}
-          value={busca}
-          onChangeText={setBusca}
-        />
-        <Text style={{ textAlign: 'center', marginTop: 20 }}>
-          Nenhum item encontrado.
-        </Text>
-        {botaoCadastrar}
+        <View style={styles.emptyContainer}>
+          <Package size={64} color="#9ca3af" />
+          <Text style={styles.emptyTitle}>Nenhum insumo cadastrado</Text>
+          <Text style={styles.emptySubtitle}>
+            Cadastre insumos para controlar entrada e saída de materiais de
+            consumo.
+          </Text>
+          <Button
+            title="Cadastrar Insumo"
+            onPress={handleCadastrar}
+            style={{ marginTop: 20 }}
+          />
+        </View>
       </Screen>
     );
   }
@@ -215,3 +223,26 @@ export default function Estoques() {
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#374151',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+});

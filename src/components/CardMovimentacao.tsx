@@ -161,7 +161,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: '#9ca3af',
     textAlign: 'center',
     paddingVertical: 24,
   },
