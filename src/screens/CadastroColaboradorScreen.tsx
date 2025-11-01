@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { CircleAlert } from 'lucide-react-native';
 import { CriarColaboradorDto } from '@/dtos/colaboradorDto';
-import { create } from '@/service/colaboradorService';
+import { create } from '@/service/colaborador.service';
 import Toast from 'react-native-toast-message';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';

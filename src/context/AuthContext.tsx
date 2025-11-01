@@ -5,7 +5,7 @@ import React, {
   ReactNode,
   useContext,
 } from 'react';
-import { saveToken, removeToken, hasToken } from '@/service/authService';
+import { saveToken, removeToken, hasToken } from '@/service/auth.service';
 
 type AuthContextData = {
   isLogged: boolean;

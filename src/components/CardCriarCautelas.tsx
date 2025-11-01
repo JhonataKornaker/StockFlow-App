@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   // NOVOS ESTILOS:
   cautelaItem: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f8f9fa99',
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,

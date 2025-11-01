@@ -2,7 +2,7 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/ScreenProps';
 import { ColaboradorDto } from '@/dtos/colaboradorDto';
-import { buscarColaboradores } from '@/service/colaboradorService';
+import { buscarColaboradores } from '@/service/colaborador.service';
 import { theme } from '@/styles/theme';
 import { Colaborador } from '@/types/Colaborador';
 import { MainStackParamList } from '@/types/MainStackNavigator';

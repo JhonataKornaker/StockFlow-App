@@ -3,7 +3,7 @@ import { Input } from '@/components/Input';
 import ScreenListar from '@/components/ScreenListar';
 import { Screen } from '@/components/ScreenProps';
 import { FerramentasDto } from '@/dtos/ferramentasDto';
-import { listarFerramentas } from '@/service/ferramentaService';
+import { listarFerramentas } from '@/service/ferramenta.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';

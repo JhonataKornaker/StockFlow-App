@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button';
+import { Input } from '@/components/Input';
 import CardCriarCautelas from '@/components/CardCriarCautelas';
 import { Screen } from '@/components/ScreenProps';
 import { SkeletonCautelaForm } from '@/components/Skeleton/SkeletonCautelaForm';
@@ -6,22 +7,22 @@ import {
   criarCautelas,
   listarColaboradores,
   listarItens,
-} from '@/service/cautelaService';
+} from '@/service/cautela.service';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { Package, User, Hash } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   Text,
   View,
   StyleSheet,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  Keyboard,
   ActivityIndicator,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
-import { TextInput } from 'react-native-paper';
 
 interface Item {
   id: number;
@@ -41,11 +42,9 @@ interface Cautela {
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Cautela'>;
 
-// ===== CONSTANTE DE TEMPO MÍNIMO =====
-const MINIMUM_LOADING_TIME = 800; // 800ms
+const MINIMUM_LOADING_TIME = 800;
 
 export default function CautelaScreen() {
-  // ===== NOVO ESTADO DE LOADING =====
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -53,49 +52,31 @@ export default function CautelaScreen() {
   const navigation = useNavigation<NavigationProps>();
   const [colaboradores, setColaboradores] = useState<any[]>([]);
   const [itemSelecionado, setItemSelecionado] = useState('');
-  const [textoDig, setTextoDig] = useState('');
-  const [filtered, setFiltered] = useState<Item[]>([]);
   const [quantidade, setQuantidade] = useState('');
   const [quantidadeHabilitada, setQuantidadeHabilitada] = useState(false);
-  const [showList, setShowList] = useState(false);
-  const [filteredColaboradores, setFilteredColaboradores] = useState<
-    { id: number; label: string }[]
-  >([]);
   const [colaboradorSelecionadoId, setColaboradorSelecionadoId] = useState<
     number | null
   >(null);
-  const [textoColaborador, setTextoColaborador] = useState('');
-  const [showColaboradorList, setShowColaboradorList] = useState(false);
+
+  // Estados para busca e sugestões
+  const [buscaItem, setBuscaItem] = useState('');
+  const [itensSugeridos, setItensSugeridos] = useState<Item[]>([]);
+  const [buscaColaborador, setBuscaColaborador] = useState('');
+  const [colaboradoresSugeridos, setColaboradoresSugeridos] = useState<any[]>(
+    [],
+  );
 
   const today = new Date();
   const data = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
   const [cautelasList, setCautelasList] = useState<Cautela[]>([]);
 
-  useEffect(() => {
-    if (textoColaborador.length > 0) {
-      const newData = colaboradores.filter(item =>
-        item.label.toLowerCase().includes(textoColaborador.toLowerCase()),
-      );
-      setFilteredColaboradores(newData);
-    } else {
-      setFilteredColaboradores(colaboradores);
-    }
-  }, [textoColaborador, colaboradores]);
-
-  const handleSelectColaborador = (item: { id: number; label: string }) => {
-    setTextoColaborador(item.label);
-    setColaboradorSelecionadoId(item.id);
-    setShowColaboradorList(false);
-  };
-
-  // ===== CARREGAMENTO INICIAL COM DELAY MÍNIMO =====
+  // Carregamento inicial
   useEffect(() => {
     async function carregar() {
       setIsLoadingData(true);
       const startTime = Date.now();
 
       try {
-        // ===== CHAMADAS À API =====
         const listaItens = await listarItens();
         const listaColaboradores = await listarColaboradores();
 
@@ -110,7 +91,6 @@ export default function CautelaScreen() {
           label: `${col.nome}`,
         }));
 
-        // ===== DELAY MÍNIMO =====
         const elapsedTime = Date.now() - startTime;
         const remainingTime = MINIMUM_LOADING_TIME - elapsedTime;
 
@@ -120,7 +100,6 @@ export default function CautelaScreen() {
 
         setItens(mappedItens);
         setColaboradores(mappedColaboradores);
-        console.log('Colaboradores: ', mappedColaboradores);
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
         alert('Erro ao carregar dados. Tente novamente.');
@@ -131,18 +110,67 @@ export default function CautelaScreen() {
     carregar();
   }, []);
 
-  useEffect(() => {
-    if (textoDig.length > 0) {
-      const newData = itens.filter(item =>
-        item.label.toLowerCase().includes(textoDig.toLowerCase()),
-      );
-      setFiltered(newData);
-    } else {
-      setFiltered(itens);
-    }
-  }, [textoDig, itens]);
+  // Buscar itens sugeridos
+  const buscarItensSugeridos = (texto: string) => {
+    setBuscaItem(texto);
 
-  // ===== SALVAR COM DELAY MÍNIMO =====
+    if (!texto.trim()) {
+      setItensSugeridos([]);
+      return;
+    }
+
+    const sugestoes = itens.filter(item =>
+      item.label.toLowerCase().includes(texto.toLowerCase()),
+    );
+    setItensSugeridos(sugestoes.slice(0, 5));
+  };
+
+  // Selecionar item
+  const selecionarItem = (item: Item) => {
+    setBuscaItem('');
+    setItemSelecionado(item.id.toString());
+    setItensSugeridos([]);
+
+    if (item.tipo === 'patrimonio') {
+      setQuantidade('1');
+      setQuantidadeHabilitada(false);
+    } else {
+      setQuantidade('');
+      setQuantidadeHabilitada(true);
+    }
+  };
+
+  // Buscar colaboradores sugeridos
+  const buscarColaboradoresSugeridos = (texto: string) => {
+    setBuscaColaborador(texto);
+
+    if (!texto.trim()) {
+      setColaboradoresSugeridos([]);
+      return;
+    }
+
+    const sugestoes = colaboradores.filter(col =>
+      col.label.toLowerCase().includes(texto.toLowerCase()),
+    );
+    setColaboradoresSugeridos(sugestoes.slice(0, 5));
+  };
+
+  // Selecionar colaborador
+  const selecionarColaborador = (colaborador: any) => {
+    setBuscaColaborador('');
+    setColaboradorSelecionadoId(colaborador.id);
+    setColaboradoresSugeridos([]);
+  };
+
+  // Item selecionado
+  const itemAtual = itens.find(item => item.id.toString() === itemSelecionado);
+
+  // Colaborador selecionado
+  const colaboradorAtual = colaboradores.find(
+    col => col.id === colaboradorSelecionadoId,
+  );
+
+  // Salvar cautelas
   async function handleSalvarCautela() {
     if (cautelasList.length === 0) {
       alert('Crie uma cautela antes de salvar!');
@@ -169,15 +197,8 @@ export default function CautelaScreen() {
         };
       });
 
-      console.log(
-        'Salvar Lista de Cautelas: ',
-        JSON.stringify(cautelasParaSalvar, null, 2),
-      );
-
-      // ===== CHAMADA À API =====
       await criarCautelas(cautelasParaSalvar);
 
-      // ===== DELAY MÍNIMO =====
       const elapsedTime = Date.now() - startTime;
       const remainingTime = MINIMUM_LOADING_TIME - elapsedTime;
 
@@ -196,20 +217,7 @@ export default function CautelaScreen() {
     }
   }
 
-  const handleSelect = (item: { id: number; label: string; tipo: string }) => {
-    setTextoDig(item.label);
-    setItemSelecionado(item.id.toString());
-    setShowList(false);
-
-    if (item.tipo === 'patrimonio') {
-      setQuantidade('1');
-      setQuantidadeHabilitada(false);
-    } else {
-      setQuantidade('');
-      setQuantidadeHabilitada(true);
-    }
-  };
-
+  // Criar cautela
   function handleCriarCautela() {
     if (!itemSelecionado || !colaboradorSelecionadoId || !quantidade.trim()) {
       alert('Preencha todos os campos antes de criar a cautela!');
@@ -218,8 +226,8 @@ export default function CautelaScreen() {
 
     const novaCautela: Cautela = {
       id: Date.now().toString(),
-      nome: textoColaborador,
-      descricao: textoDig,
+      nome: colaboradorAtual?.label || '',
+      descricao: itemAtual?.label || '',
       quantidade: quantidade,
       data: data,
       itemId: itemSelecionado,
@@ -228,18 +236,20 @@ export default function CautelaScreen() {
 
     setCautelasList(prev => [...prev, novaCautela]);
 
-    setTextoDig('');
-    setTextoColaborador('');
+    // Limpar campos
+    setBuscaItem('');
+    setBuscaColaborador('');
     setQuantidade('');
     setItemSelecionado('');
     setColaboradorSelecionadoId(null);
+    setItensSugeridos([]);
+    setColaboradoresSugeridos([]);
   }
 
   function handleRemoverCautela(id: string) {
     setCautelasList(prev => prev.filter(cautela => cautela.id !== id));
   }
 
-  // ===== RENDERIZAÇÃO COM SKELETON =====
   if (isLoadingData) {
     return (
       <Screen>
@@ -250,188 +260,250 @@ export default function CautelaScreen() {
 
   return (
     <Screen>
-      <TouchableWithoutFeedback
-        onPress={() => {
-          setShowList(false);
-          setShowColaboradorList(false);
-          Keyboard.dismiss();
-        }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       >
-        <View style={{ flex: 1 }}>
-          <View style={styles.viewColumn}>
-            <TextInput
-              style={styles.input}
-              value={textoDig}
-              onChangeText={text => {
-                setTextoDig(text);
-                setShowList(true);
-              }}
-              placeholder="Digite o item..."
-              onFocus={() => setShowList(true)}
-            />
-
-            {showList && (
-              <FlatList
-                style={[
-                  styles.list,
-                  {
-                    position: 'absolute',
-                    top: 50,
-                    left: 0,
-                    right: 0,
-                    zIndex: 1000,
-                  },
-                ]}
-                data={filtered}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => handleSelect(item)}>
-                    <Text style={styles.listItem}>{item.label}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-            )}
-
-            <TextInput
-              placeholder="Quantidade"
-              mode="outlined"
-              style={styles.input}
-              keyboardType="numeric"
-              value={quantidade}
-              onChangeText={setQuantidade}
-              editable={quantidadeHabilitada}
-            />
-
-            <View style={{ position: 'relative', marginBottom: 20 }}>
-              <TextInput
-                placeholder="Colaborador"
-                style={styles.input}
-                value={textoColaborador}
-                onChangeText={text => {
-                  setTextoColaborador(text);
-                  setShowColaboradorList(true);
-                }}
-                onFocus={() => setShowColaboradorList(true)}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.container}>
+            {/* Buscar Item */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Item *</Text>
+              <Input
+                placeholder="Digite para buscar item..."
+                icon={Package}
+                value={buscaItem}
+                onChangeText={buscarItensSugeridos}
               />
 
-              {showColaboradorList && (
-                <FlatList
-                  style={[
-                    styles.list,
-                    {
-                      position: 'absolute',
-                      top: 50,
-                      left: 0,
-                      right: 0,
-                      zIndex: 1000,
-                    },
-                  ]}
-                  data={filteredColaboradores}
-                  keyExtractor={item => item.id.toString()}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      onPress={() => handleSelectColaborador(item)}
-                    >
-                      <Text style={styles.listItem}>{item.label}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
+              {/* Sugestões de Itens */}
+              {itensSugeridos.length > 0 && (
+                <View style={styles.suggestionsContainer}>
+                  <ScrollView style={styles.suggestionsList}>
+                    {itensSugeridos.map(item => (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => selecionarItem(item)}
+                        style={styles.suggestionItem}
+                      >
+                        <Text style={styles.suggestionText}>{item.label}</Text>
+                        <Text style={styles.suggestionType}>
+                          {item.tipo === 'patrimonio'
+                            ? 'Patrimônio'
+                            : 'Ferramenta'}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Item Selecionado */}
+              {itemAtual && (
+                <View style={styles.selectedCard}>
+                  <Text style={styles.selectedTitle}>{itemAtual.label}</Text>
+                  <Text style={styles.selectedType}>
+                    Tipo:{' '}
+                    {itemAtual.tipo === 'patrimonio'
+                      ? 'Patrimônio'
+                      : 'Ferramenta'}
+                  </Text>
+                </View>
               )}
             </View>
-          </View>
 
-          <View style={styles.viewRow}>
-            <Text style={styles.text}>Data da Retirada: </Text>
-            <Text style={{ color: '#19325EB2', fontSize: 15 }}>{data}</Text>
-          </View>
+            {/* Quantidade */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Quantidade *</Text>
+              <Input
+                placeholder="Quantidade"
+                icon={Hash}
+                value={quantidade}
+                onChangeText={setQuantidade}
+                keyboardType="numeric"
+                editable={quantidadeHabilitada}
+              />
+            </View>
 
-          <View style={styles.flex1}>
-            <TouchableOpacity onPress={handleCriarCautela}>
-              <Text
-                style={{
-                  color: '#19325E',
-                  fontSize: 15,
-                  fontWeight: 'bold',
-                  alignSelf: 'flex-end',
-                  marginBottom: 14,
-                }}
-              >
-                Criar Cautela
-              </Text>
+            {/* Buscar Colaborador */}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Colaborador *</Text>
+              <Input
+                placeholder="Digite para buscar colaborador..."
+                icon={User}
+                value={buscaColaborador}
+                onChangeText={buscarColaboradoresSugeridos}
+              />
+
+              {/* Sugestões de Colaboradores */}
+              {colaboradoresSugeridos.length > 0 && (
+                <View style={styles.suggestionsContainer}>
+                  <ScrollView style={styles.suggestionsList}>
+                    {colaboradoresSugeridos.map(colaborador => (
+                      <TouchableOpacity
+                        key={colaborador.id}
+                        onPress={() => selecionarColaborador(colaborador)}
+                        style={styles.suggestionItem}
+                      >
+                        <Text style={styles.suggestionText}>
+                          {colaborador.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
+              {/* Colaborador Selecionado */}
+              {colaboradorAtual && (
+                <View style={styles.selectedCard}>
+                  <Text style={styles.selectedTitle}>
+                    {colaboradorAtual.label}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Data */}
+            <View style={styles.dataContainer}>
+              <Text style={styles.dataLabel}>Data da Retirada: </Text>
+              <Text style={styles.dataValue}>{data}</Text>
+            </View>
+
+            {/* Botão Criar Cautela */}
+            <TouchableOpacity
+              onPress={handleCriarCautela}
+              style={styles.criarButton}
+            >
+              <Text style={styles.criarButtonText}>+ Criar Cautela</Text>
             </TouchableOpacity>
-            <View style={styles.whiteBg}>
+
+            {/* Lista de Cautelas */}
+            <View style={styles.cautelasContainer}>
               <CardCriarCautelas
                 cautelas={cautelasList}
                 onRemoveCautela={handleRemoverCautela}
               />
             </View>
-          </View>
 
-          {/* ===== BOTÃO COM LOADING ===== */}
-          <Button
-            style={styles.button}
-            title={isSaving ? 'Salvando...' : 'Salvar'}
-            onPress={handleSalvarCautela}
-            disabled={isSaving}
-          />
-          {isSaving && (
-            <ActivityIndicator
-              size="small"
-              color="#19325E"
-              style={{ marginBottom: 12 }}
+            {/* Botão Salvar */}
+            <Button
+              style={styles.button}
+              title={isSaving ? 'Salvando...' : 'Salvar'}
+              onPress={handleSalvarCautela}
+              disabled={isSaving}
             />
-          )}
-        </View>
-      </TouchableWithoutFeedback>
+            {isSaving && (
+              <ActivityIndicator
+                size="small"
+                color="#19325E"
+                style={{ marginTop: 8 }}
+              />
+            )}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  viewColumn: {
-    flexDirection: 'column',
-    marginTop: 44,
+  container: {
+    flex: 1,
+    marginTop: 20,
     gap: 16,
   },
-  viewRow: {
+  inputContainer: {
+    position: 'relative',
+  },
+  label: {
+    marginBottom: 4,
+    color: '#666',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  suggestionsContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    maxHeight: 200,
+  },
+  suggestionsList: {
+    maxHeight: 200,
+  },
+  suggestionItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  suggestionText: {
+    fontWeight: '600',
+    color: '#19325E',
+    fontSize: 14,
+  },
+  suggestionType: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  selectedCard: {
+    backgroundColor: '#f0f9ff',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+  },
+  selectedTitle: {
+    fontWeight: 'bold',
+    color: '#19325E',
+    fontSize: 14,
+  },
+  selectedType: {
+    color: '#666',
+    marginTop: 4,
+    fontSize: 12,
+  },
+  dataContainer: {
     flexDirection: 'row',
-    marginTop: 30,
-    marginBottom: 28,
     alignItems: 'center',
-    gap: 16,
+    marginTop: 8,
   },
-  text: {
-    fontSize: 18,
+  dataLabel: {
+    fontSize: 16,
     color: '#19325E',
     fontWeight: 'bold',
   },
-  flex1: {
-    flex: 1,
+  dataValue: {
+    color: '#19325EB2',
+    fontSize: 15,
   },
-  whiteBg: {
-    backgroundColor: 'white',
+  criarButton: {
+    alignSelf: 'flex-end',
+    padding: 12,
+    marginVertical: 8,
+  },
+  criarButtonText: {
+    color: '#19325E',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cautelasContainer: {
+    backgroundColor: '#ffffff55',
     borderRadius: 8,
-    width: '100%',
-    height: '80%',
+    minHeight: 200,
+    padding: 8,
   },
   button: {
+    marginTop: 16,
     marginBottom: 12,
     alignSelf: 'center',
-  },
-  input: {
-    backgroundColor: '#fff',
-    fontSize: 16,
-  },
-  list: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderTopWidth: 0,
-    maxHeight: 150,
-    backgroundColor: '#fff',
-  },
-  listItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
 });

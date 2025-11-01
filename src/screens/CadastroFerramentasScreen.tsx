@@ -3,7 +3,7 @@ import { Input } from '@/components/Input';
 import ScreenCadastro from '@/components/ScreenCadastro';
 import { Screen } from '@/components/ScreenProps';
 import { CriarFerramentaDto } from '@/dtos/ferramentasDto';
-import { createFerramentas } from '@/service/ferramentaService';
+import { createFerramentas } from '@/service/ferramenta.service';
 import { Ferramenta } from '@/types/ListaDeItens';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';

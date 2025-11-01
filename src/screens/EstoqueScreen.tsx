@@ -1,64 +1,70 @@
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/ScreenProps';
-import { PatrimonioDto } from '@/dtos/patrimonioDto';
-import { listarPatrimonio } from '@/service/patrimonioService';
+import { EstoqueDto } from '@/dtos/estoqueDto';
+import { listarEstoques } from '@/service/controleEstoque.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Calendar, Contact, Search } from 'lucide-react-native';
+import { AlertTriangle, Package, Search } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import { SectionList, Text, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 
-type NavigationProps = StackNavigationProp<MainStackParamList, 'Patrimonios'>;
+type NavigationProps = StackNavigationProp<MainStackParamList, 'Estoques'>;
 
-export default function Patrimonios() {
+export default function Estoques() {
   const [busca, setBusca] = useState('');
   const navigation = useNavigation<NavigationProps>();
-  const [listarPatrimonios, setListarPatrimonios] = useState<PatrimonioDto[]>(
-    [],
-  );
+  const [estoques, setEstoques] = useState<EstoqueDto[]>([]);
   const [carregando, setCarregando] = useState(true);
 
   useFocusEffect(
     useCallback(() => {
-      async function carregarPatrimonios() {
+      async function carregarEstoques() {
         try {
-          const dados = await listarPatrimonio();
-          setListarPatrimonios(dados);
+          const dados = await listarEstoques();
+          setEstoques(dados);
         } catch (error) {
-          console.error(error);
+          console.error('Erro ao carregar estoques:', error);
         } finally {
           setCarregando(false);
         }
       }
-      carregarPatrimonios();
+      carregarEstoques();
     }, []),
   );
 
   const itensFiltrados = useMemo(() => {
     const texto = busca.toLowerCase();
-    return listarPatrimonios.filter(item =>
-      item.descricao.toLowerCase().includes(texto),
+    return estoques.filter(item =>
+      item.insumo.descricao.toLowerCase().includes(texto),
     );
-  }, [busca, listarPatrimonios]);
+  }, [busca, estoques]);
 
-  const sections = useMemo(
-    () => agruparPorLetra(itensFiltrados),
-    [itensFiltrados],
-  );
+  // Adaptar para agrupar por letra usando a descrição do insumo
+  const sections = useMemo(() => {
+    const itensParaAgrupar = itensFiltrados.map(e => ({
+      ...e.insumo,
+      estoqueId: e.id,
+      quantidadeAtual: e.quantidadeAtual,
+      quantidadeMinima: e.quantidadeMinima,
+      localizacao: e.localizacao,
+      estoqueBaixo: e.estoqueBaixo,
+    }));
+    return agruparPorLetra(itensParaAgrupar);
+  }, [itensFiltrados]);
 
   const handleCadastrar = () => {
-    navigation.navigate('CadastroPatrimonio');
+    navigation.navigate('CadastroInsumo');
   };
 
   const botaoCadastrar = (
     <Button
       style={{ marginTop: 'auto', alignSelf: 'center', marginBottom: 16 }}
-      title={`Cadastrar Novo Patrimonio`}
+      title="Cadastrar Novo Insumo"
       onPress={handleCadastrar}
     />
   );
@@ -73,7 +79,7 @@ export default function Patrimonios() {
     );
   }
 
-  if (listarPatrimonios.length === 0) {
+  if (estoques.length === 0) {
     return (
       <Screen>
         <Input
@@ -102,44 +108,53 @@ export default function Patrimonios() {
       />
       <SectionList
         sections={sections}
-        keyExtractor={(item, index) => item.descricao + index}
+        keyExtractor={(item, index) => `${item.estoqueId}-${index}`}
         renderItem={({ item }) => (
           <TouchableOpacity
-          // Ex: navegação para detalhes se necessário
-          // onPress={() => navigation.navigate('DetalhesPatrimonio', { patrimonio: item })}
+          // onPress={() => navigation.navigate('DetalhesEstoque', { estoqueId: item.estoqueId })}
           >
-            <Text
+            <View
               style={{
+                flexDirection: 'row',
+                alignItems: 'center',
                 paddingLeft: 8,
                 paddingVertical: 4,
-                fontSize: 16,
-                color: theme.colors.primary,
-                fontWeight: 'bold',
               }}
             >
-              {item.descricao}
-              {item.locado && item.dataLocacao && (
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: item.estoqueBaixo ? '#ef4444' : theme.colors.primary,
+                  fontWeight: 'bold',
+                  flex: 1,
+                }}
+              >
+                {item.descricao}
+              </Text>
+
+              {/* Alerta de Estoque Baixo */}
+              {item.estoqueBaixo && (
                 <View
                   style={{
                     flexDirection: 'row',
-                    paddingLeft: 8,
+                    alignItems: 'center',
+                    marginLeft: 8,
                   }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Calendar size={16} color="red" />
-                    <Text
-                      style={{
-                        marginLeft: 4,
-                        fontSize: 14,
-                        color: 'red',
-                      }}
-                    >
-                      {new Date(item.dataLocacao).toLocaleDateString('pt-BR')}
-                    </Text>
-                  </View>
+                  <AlertTriangle size={18} color="#ef4444" />
+                  <Text
+                    style={{
+                      marginLeft: 4,
+                      fontSize: 12,
+                      color: '#ef4444',
+                      fontWeight: '600',
+                    }}
+                  >
+                    Baixo
+                  </Text>
                 </View>
               )}
-            </Text>
+            </View>
 
             <View
               style={{
@@ -147,13 +162,31 @@ export default function Patrimonios() {
                 flexDirection: 'row',
                 alignItems: 'center',
                 flexWrap: 'wrap',
+                paddingLeft: 8,
               }}
             >
-              <Text>Numero Serie: {item.numeroSerie}</Text>
-              <Text style={{ marginHorizontal: 6 }}>|</Text>
-              <Text>Marca: {item.marca}</Text>
-              <Text style={{ marginHorizontal: 6 }}>|</Text>
-              <Text>Modelo: {item.modelo}</Text>
+              <Text>
+                Quantidade: {item.quantidadeAtual} / Mínimo:{' '}
+                {item.quantidadeMinima}
+              </Text>
+              {item.codigo && (
+                <>
+                  <Text style={{ marginHorizontal: 6 }}>|</Text>
+                  <Text>Código: {item.codigo}</Text>
+                </>
+              )}
+              {item.marca && (
+                <>
+                  <Text style={{ marginHorizontal: 6 }}>|</Text>
+                  <Text>Marca: {item.marca}</Text>
+                </>
+              )}
+              {item.localizacao && (
+                <>
+                  <Text style={{ marginHorizontal: 6 }}>|</Text>
+                  <Text>Local: {item.localizacao}</Text>
+                </>
+              )}
             </View>
           </TouchableOpacity>
         )}
@@ -174,7 +207,7 @@ export default function Patrimonios() {
             >
               {title}
             </Text>
-            <Contact size={18} style={{ marginLeft: 8 }} color="#19325E" />
+            <Package size={18} style={{ marginLeft: 8 }} color="#19325E" />
           </View>
         )}
       />

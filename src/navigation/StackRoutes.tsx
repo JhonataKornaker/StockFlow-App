@@ -11,6 +11,9 @@ import Ferramentas from '@/screens/FerramentasScreen';
 import Patrimonios from '@/screens/PatrimoniosScreen';
 import Colaboradores from '@/screens/ColaboradoresScreen';
 import DetalhesColaborador from '@/screens/DetalhesColaboradorScreen';
+import Estoques from '@/screens/EstoqueScreen';
+import CadastroInsumo from '@/screens/CadastroEstoqueScreen';
+import SaidaInsumo from '@/screens/SaidaInsumoScreen';
 
 const Stack = createStackNavigator();
 
@@ -73,6 +76,21 @@ export default function StackRoutes() {
         name="DetalhesColaborador"
         component={DetalhesColaborador}
         options={{ title: 'Detalhes do Colaborador' }}
+      />
+      <Stack.Screen
+        name="Estoques"
+        component={Estoques}
+        options={{ title: 'Estoque' }}
+      />
+      <Stack.Screen
+        name="CadastroInsumo"
+        component={CadastroInsumo}
+        options={{ title: 'Cadastro de Isumos' }}
+      />
+      <Stack.Screen
+        name="SaidaInsumo"
+        component={SaidaInsumo}
+        options={{ title: 'Saida de Isumos' }}
       />
     </Stack.Navigator>
   );

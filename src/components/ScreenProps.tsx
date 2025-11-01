@@ -1,20 +1,30 @@
 import React from 'react';
-import { ViewProps, StyleSheet } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet, ViewProps } from 'react-native';
 
 interface ScreenProps extends ViewProps {
   children: React.ReactNode;
   style?: object;
+  scrollable?: boolean; // opcional: pra controlar se deve scrollar ou não
 }
 
 export const Screen: React.FC<ScreenProps> = ({
   children,
   style,
+  scrollable = false,
   ...props
 }) => {
   return (
-    <SafeAreaProvider style={[styles.container, style]} {...props}>
-      {children}
+    <SafeAreaProvider>
+      <SafeAreaView style={[styles.container, style]} {...props}>
+        {scrollable ? (
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            {children}
+          </ScrollView>
+        ) : (
+          children
+        )}
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 };

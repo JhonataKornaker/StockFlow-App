@@ -98,7 +98,7 @@ export default function CardCautelas({ cautelas, onFinalizar }: Props) {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    padding: 16,
+    padding: 8,
     backgroundColor: '#ffffff44',
     borderRadius: 10,
   },

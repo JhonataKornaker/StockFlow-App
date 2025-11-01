@@ -8,6 +8,9 @@ export type MainStackParamList = {
   Colaboradores: undefined;
   Ferramentas: undefined;
   Patrimonios: undefined;
+  Estoques: undefined;
+  CadastroInsumo: undefined;
+  SaidaInsumo: undefined;
   CadastroFerramentas?: { ferramenta?: Ferramenta };
   CadastroColaborador: undefined;
   CadastroPatrimonio?: { patrimonio?: Patrimonio };

@@ -7,6 +7,8 @@ import {
   ClipboardList,
   LogOut,
   Shield,
+  Package,
+  PackageOpen,
 } from 'lucide-react-native';
 import { CommonActions } from '@react-navigation/native';
 import { useAuth } from '@/context/AuthContext';
@@ -73,6 +75,22 @@ export default function DrawerMenuContent({ navigation }) {
       >
         <ClipboardList color="#C5D4EB" size={20} />
         <Text style={styles.link}>Cautelas</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => navigation.navigate('Home', { screen: 'Estoques' })}
+      >
+        <Package color="#C5D4EB" size={20} />
+        <Text style={styles.link}>Estoque</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => navigation.navigate('Home', { screen: 'SaidaInsumo' })}
+      >
+        <PackageOpen color="#C5D4EB" size={20} />
+        <Text style={styles.link}>Saida De Insumo</Text>
       </TouchableOpacity>
 
       {/* Botão de sair */}

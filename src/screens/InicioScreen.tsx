@@ -16,11 +16,14 @@ import { DrawerActions } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { useCallback, useEffect, useState } from 'react';
-import { buscarCautelas, finalizarCautelas } from '@/service/cautelaService';
+import { buscarCautelas, finalizarCautelas } from '@/service/cautela.service';
 import { CautelaDTO } from '@/dtos/cautelaDto';
 import { ActivityIndicator } from 'react-native-paper';
 import { ResumoMovimentacaoEstoque } from '@/dtos/movimentacaoDto';
 import { buscarResumoMovimentacao } from '@/service/movimentacao.service';
+import CardMovimentacao from '@/components/CardMovimentacao';
+import { buscarResumoNumerico } from '@/service/controleEstoque.service';
+import { ResumoNumerico } from '@/dtos/estoqueDto';
 
 export default function InicioScreen() {
   const navigation =
@@ -29,7 +32,9 @@ export default function InicioScreen() {
   const [listaDeCautelas, setListaDeCautelas] = useState<CautelaDTO[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [recarregando, setRecarregando] = useState(false);
-  const [resumo, setResumo] = useState<ResumoMovimentacaoEstoque | null>(null);
+  const [resumo, setResumo] = useState<ResumoNumerico | null>(null);
+  const [movimentacao, setMovimentacao] =
+    useState<ResumoMovimentacaoEstoque | null>(null);
 
   async function carregarCautelas(isReload = false) {
     try {
@@ -50,10 +55,22 @@ export default function InicioScreen() {
     }
   }
 
-  const carregarResumo = async () => {
+  const carregarMovimentacao = async () => {
     try {
       setCarregando(true);
       const data = await buscarResumoMovimentacao();
+      setMovimentacao(data);
+    } catch (error) {
+      console.error('Erro ao buscar resumo:', error);
+    } finally {
+      setRecarregando(false);
+    }
+  };
+
+  const carregarResumo = async () => {
+    try {
+      setCarregando(true);
+      const data = await buscarResumoNumerico();
       setResumo(data);
     } catch (error) {
       console.error('Erro ao buscar resumo:', error);
@@ -62,14 +79,10 @@ export default function InicioScreen() {
     }
   };
 
-  const formatarData = (dataString: string) => {
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR');
-  };
-
   useFocusEffect(
     useCallback(() => {
       carregarCautelas();
+      carregarMovimentacao();
       carregarResumo();
     }, []),
   );
@@ -98,7 +111,7 @@ export default function InicioScreen() {
         backgroundColor: '#162B4D',
       }}
     >
-      {/* Header customizado */}
+      {/* 🔹 HEADER FIXO */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
@@ -113,18 +126,25 @@ export default function InicioScreen() {
         </TouchableOpacity>
       </View>
 
-      <Screen style={styles.screen}>
-        {/* 🔹 CARD: Resumo Rápido */}
+      {/* 🔹 CONTEÚDO SCROLLÁVEL */}
+      <Screen scrollable>
+        {/* 🔸 CARD: Resumo Rápido */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Resumo Rápido</Text>
           <View style={styles.resumoInfo}>
-            <Text style={styles.resumoItem}>Entradas: 5</Text>
-            <Text style={styles.resumoItem}>Saídas: 0</Text>
-            <Text style={styles.resumoItem}>Cautelas Abertas: 4</Text>
+            <Text style={styles.resumoItem}>
+              {`Entradas: ${resumo?.totalEntradas}`}
+            </Text>
+            <Text style={styles.resumoItem}>
+              {`Saídas: ${resumo?.totalSaidas}`}
+            </Text>
+            <Text style={styles.resumoItem}>
+              {`Cautelas Abertas: ${resumo?.cautelasAbertas}`}
+            </Text>
           </View>
         </View>
 
-        {/* 🔹 CARD: Cautelas Abertas */}
+        {/* 🔸 CARD: Cautelas Abertas */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Cautelas Abertas</Text>
           {carregando ? (
@@ -143,6 +163,7 @@ export default function InicioScreen() {
                   />
                 </View>
               ))}
+
               {listaDeCautelas.length > 3 && (
                 <TouchableOpacity
                   onPress={() => console.log('Ver mais cautelas')}
@@ -155,43 +176,23 @@ export default function InicioScreen() {
           )}
         </View>
 
-        {/* 🔹 CARD: Movimentação do Estoque */}
+        {/* 🔸 CARD: Movimentação do Estoque */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Movimentação do Estoque</Text>
-          {/* Última Entrada */}
-          {resumo?.ultimaEntrada ? (
-            <View style={styles.movimentacaoItem}>
-              <Text style={styles.resumoItem}>
-                Última entrada: {formatarData(resumo.ultimaEntrada.data)}
-              </Text>
-              <Text style={styles.detalhes}>
-                Fornecedor: {resumo.ultimaEntrada.fornecedor}
-              </Text>
-              <Text style={styles.insumo}>{resumo.ultimaEntrada.insumo}</Text>
+
+          {carregando ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#19325E" />
             </View>
+          ) : movimentacao ? (
+            <CardMovimentacao movimentacao={movimentacao} />
           ) : (
-            <Text style={styles.resumoItem}>Nenhuma entrada registrada</Text>
+            <Text style={styles.errorText}>Erro ao carregar movimentações</Text>
           )}
 
-          {/* Última Saída */}
-          {resumo?.ultimaSaida ? (
-            <View style={styles.movimentacaoItem}>
-              <Text style={styles.resumoItem}>
-                Última saída: {formatarData(resumo.ultimaSaida.data)}
-              </Text>
-              <Text style={styles.detalhes}>
-                Colaborador: {resumo.ultimaSaida.colaborador}
-              </Text>
-              <Text style={styles.insumo}>{resumo.ultimaSaida.insumo}</Text>
-            </View>
-          ) : (
-            <Text style={styles.resumoItem}>Nenhuma saída registrada</Text>
-          )}
-
-          {/* “Ver mais” aparece apenas se houver muitas movimentações */}
           {true && (
             <TouchableOpacity
-              onPress={() => console.log('Ver mais movimentações')}
+              onPress={() => navigation.navigate('Estoques')}
               style={styles.verMaisButton}
             >
               <Text style={styles.verMaisText}>Ver mais</Text>
@@ -284,5 +285,16 @@ const styles = StyleSheet.create({
     color: '#888',
     fontStyle: 'italic',
     marginTop: 2,
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#ef4444',
+    textAlign: 'center',
+    padding: 20,
   },
 });

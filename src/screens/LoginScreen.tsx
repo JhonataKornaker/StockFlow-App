@@ -10,7 +10,7 @@ import { Screen } from '../components/ScreenProps';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
-import { login } from '@/service/authService';
+import { login } from '@/service/auth.service';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { useNavigation } from '@react-navigation/native';
