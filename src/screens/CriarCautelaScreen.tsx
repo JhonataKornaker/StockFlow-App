@@ -85,9 +85,12 @@ export default function CautelaScreen() {
         // ✅ CORREÇÃO: Criar uniqueId combinando tipo + id
         const mappedItens = listaItens.map(item => ({
           id: item.id,
-          uniqueId: `${item.tipo}-${item.id}`, // Ex: "ferramenta-1" ou "patrimonio-1"
-          label: `${item.descricao} - ${item.marca} ${item.modelo}`,
+          uniqueId: `${item.tipo}-${item.id}`,
+          label:
+            `${item.descricao} - ${item.marca} ${item.modelo}` +
+            (item.tipo === 'ferramenta' ? ` • Disp: ${item.disponivel}` : ''),
           tipo: item.tipo,
+          disponivel: item.disponivel, // 👈 use no RN
         }));
 
         const mappedColaboradores = listaColaboradores.map(col => ({
@@ -114,7 +117,7 @@ export default function CautelaScreen() {
     carregar();
   }, []);
 
-  // Buscar itens sugeridos
+  // Buscar itens sugeridos aqui
   const buscarItensSugeridos = (texto: string) => {
     setBuscaItem(texto);
 
@@ -130,18 +133,23 @@ export default function CautelaScreen() {
   };
 
   // Selecionar item
-  const selecionarItem = (item: Item) => {
-    setBuscaItem('');
-    setItemSelecionado(item); // ✅ Agora guarda o item completo com uniqueId
-    setItensSugeridos([]);
-
-    if (item.tipo === 'patrimonio') {
+  const selecionarItem = (item: Item & { disponivel?: number }) => {
+    if (item.tipo === 'ferramenta') {
+      if ((item as any).disponivel === 0) {
+        alert('Sem saldo disponível desta ferramenta.');
+        return;
+      }
+      setQuantidadeHabilitada(true);
+      setQuantidade(''); // usuário digita
+    } else {
+      // patrimônio
       setQuantidade('1');
       setQuantidadeHabilitada(false);
-    } else {
-      setQuantidade('');
-      setQuantidadeHabilitada(true);
     }
+
+    setBuscaItem('');
+    setItemSelecionado(item);
+    setItensSugeridos([]);
   };
 
   // Buscar colaboradores sugeridos
@@ -218,9 +226,25 @@ export default function CautelaScreen() {
 
   // Criar cautela
   function handleCriarCautela() {
-    if (!itemSelecionado || !colaboradorSelecionadoId || !quantidade.trim()) {
-      alert('Preencha todos os campos antes de criar a cautela!');
+    if (!itemSelecionado || !colaboradorSelecionadoId) {
+      alert('Preencha todos os campos!');
       return;
+    }
+
+    if (itemSelecionado.tipo === 'ferramenta') {
+      const disponivel = (itemSelecionado as any).disponivel ?? 0;
+      const qtd = Number(quantidade);
+      if (!qtd || qtd <= 0) {
+        alert('Informe uma quantidade válida.');
+        return;
+      }
+      if (qtd > disponivel) {
+        alert(`Quantidade solicitada maior que disponível (${disponivel}).`);
+        return;
+      }
+    } else {
+      // patrimônio
+      if (quantidade !== '1') setQuantidade('1');
     }
 
     // ✅ CORREÇÃO: Salvar tipo e id real do item

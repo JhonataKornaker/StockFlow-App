@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
-    height: 200,
+    minHeight: 200,
   },
   cardTitle: {
     fontSize: 22,
@@ -298,4 +298,4 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: 2,
   },
-});
+}); // ← ESTA LINHA ESTÁ FALTANDO! ADICIONE AQUI!
