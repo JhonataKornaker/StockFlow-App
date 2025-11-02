@@ -174,7 +174,12 @@ export default function CadastroInsumo() {
                 }}
               >
                 {unidadesDisponiveis.map(unidade => (
-                  <Picker.Item key={unidade} label={unidade} value={unidade} />
+                  <Picker.Item
+                    key={unidade}
+                    label={unidade}
+                    value={unidade}
+                    color="#000000"
+                  />
                 ))}
               </Picker>
             </View>

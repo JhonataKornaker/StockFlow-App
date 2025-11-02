@@ -26,6 +26,7 @@ import {
 
 interface Item {
   id: number;
+  uniqueId: string; // ← NOVO: ID único combinando tipo + id
   label: string;
   tipo: string;
 }
@@ -36,7 +37,8 @@ interface Cautela {
   descricao: string;
   quantidade: string;
   data: string;
-  itemId: string;
+  itemId: number; // ← ID real da ferramenta/patrimônio
+  tipo: string; // ← Tipo do item
   colaboradorId: number;
 }
 
@@ -48,10 +50,10 @@ export default function CautelaScreen() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [itens, setItens] = useState<any[]>([]);
+  const [itens, setItens] = useState<Item[]>([]);
   const navigation = useNavigation<NavigationProps>();
   const [colaboradores, setColaboradores] = useState<any[]>([]);
-  const [itemSelecionado, setItemSelecionado] = useState('');
+  const [itemSelecionado, setItemSelecionado] = useState<Item | null>(null);
   const [quantidade, setQuantidade] = useState('');
   const [quantidadeHabilitada, setQuantidadeHabilitada] = useState(false);
   const [colaboradorSelecionadoId, setColaboradorSelecionadoId] = useState<
@@ -80,8 +82,10 @@ export default function CautelaScreen() {
         const listaItens = await listarItens();
         const listaColaboradores = await listarColaboradores();
 
+        // ✅ CORREÇÃO: Criar uniqueId combinando tipo + id
         const mappedItens = listaItens.map(item => ({
           id: item.id,
+          uniqueId: `${item.tipo}-${item.id}`, // Ex: "ferramenta-1" ou "patrimonio-1"
           label: `${item.descricao} - ${item.marca} ${item.modelo}`,
           tipo: item.tipo,
         }));
@@ -128,7 +132,7 @@ export default function CautelaScreen() {
   // Selecionar item
   const selecionarItem = (item: Item) => {
     setBuscaItem('');
-    setItemSelecionado(item.id.toString());
+    setItemSelecionado(item); // ✅ Agora guarda o item completo com uniqueId
     setItensSugeridos([]);
 
     if (item.tipo === 'patrimonio') {
@@ -163,7 +167,7 @@ export default function CautelaScreen() {
   };
 
   // Item selecionado
-  const itemAtual = itens.find(item => item.id.toString() === itemSelecionado);
+  const itemAtual = itemSelecionado;
 
   // Colaborador selecionado
   const colaboradorAtual = colaboradores.find(
@@ -181,21 +185,16 @@ export default function CautelaScreen() {
     const startTime = Date.now();
 
     try {
-      const cautelasParaSalvar = cautelasList.map(cautela => {
-        const itemData = itens.find(
-          item => item.id.toString() === cautela.itemId,
-        );
+      // ✅ CORREÇÃO: Usar o tipo correto de cada cautela
+      const cautelasParaSalvar = cautelasList.map(cautela => ({
+        tipo: cautela.tipo, // ← Usa o tipo salvo na cautela
+        entregue: false,
+        colaboradorId: cautela.colaboradorId,
+        ferramentas: cautela.tipo === 'ferramenta' ? [cautela.itemId] : [],
+        patrimonios: cautela.tipo === 'patrimonio' ? [cautela.itemId] : [],
+      }));
 
-        return {
-          tipo: itemData?.tipo || 'ferramenta',
-          entregue: false,
-          colaboradorId: cautela.colaboradorId,
-          ferramentas:
-            itemData?.tipo === 'ferramenta' ? [parseInt(cautela.itemId)] : [],
-          patrimonios:
-            itemData?.tipo === 'patrimonio' ? [parseInt(cautela.itemId)] : [],
-        };
-      });
+      console.log('📤 Enviando cautelas:', cautelasParaSalvar);
 
       await criarCautelas(cautelasParaSalvar);
 
@@ -224,15 +223,19 @@ export default function CautelaScreen() {
       return;
     }
 
+    // ✅ CORREÇÃO: Salvar tipo e id real do item
     const novaCautela: Cautela = {
       id: Date.now().toString(),
       nome: colaboradorAtual?.label || '',
       descricao: itemAtual?.label || '',
       quantidade: quantidade,
       data: data,
-      itemId: itemSelecionado,
+      itemId: itemSelecionado.id, // ← ID real (número)
+      tipo: itemSelecionado.tipo, // ← Tipo correto
       colaboradorId: colaboradorSelecionadoId,
     };
+
+    console.log('➕ Criando cautela:', novaCautela);
 
     setCautelasList(prev => [...prev, novaCautela]);
 
@@ -240,7 +243,7 @@ export default function CautelaScreen() {
     setBuscaItem('');
     setBuscaColaborador('');
     setQuantidade('');
-    setItemSelecionado('');
+    setItemSelecionado(null);
     setColaboradorSelecionadoId(null);
     setItensSugeridos([]);
     setColaboradoresSugeridos([]);
@@ -312,7 +315,7 @@ export default function CautelaScreen() {
                         >
                           {itensSugeridos.map((item, index) => (
                             <TouchableOpacity
-                              key={`item-${item.id}-${index}`}
+                              key={`item-${item.uniqueId}-${index}`}
                               onPress={() => selecionarItem(item)}
                               style={styles.suggestionItem}
                             >
@@ -321,8 +324,8 @@ export default function CautelaScreen() {
                               </Text>
                               <Text style={styles.suggestionType}>
                                 {item.tipo === 'patrimonio'
-                                  ? 'Patrimônio'
-                                  : 'Ferramenta'}
+                                  ? '🏢 Patrimônio'
+                                  : '🔧 Ferramenta'}
                               </Text>
                             </TouchableOpacity>
                           ))}
@@ -339,15 +342,15 @@ export default function CautelaScreen() {
                           {itemAtual.label}
                         </Text>
                         <Text style={styles.selectedType}>
-                          Tipo:{' '}
                           {itemAtual.tipo === 'patrimonio'
-                            ? 'Patrimônio'
-                            : 'Ferramenta'}
+                            ? '🏢 Patrimônio'
+                            : '🔧 Ferramenta'}{' '}
+                          • ID: {itemAtual.id}
                         </Text>
                       </View>
                       <TouchableOpacity
                         onPress={() => {
-                          setItemSelecionado('');
+                          setItemSelecionado(null);
                           setBuscaItem('');
                           setQuantidade('');
                           setQuantidadeHabilitada(false);
@@ -511,8 +514,8 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
     maxHeight: 200,
     zIndex: 1000,
-    elevation: 5, // Para Android
-    shadowColor: '#000', // Para iOS
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,

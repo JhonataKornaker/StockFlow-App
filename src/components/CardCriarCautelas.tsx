@@ -13,7 +13,8 @@ interface Cautela {
   descricao: string;
   quantidade: string;
   data: string;
-  itemId: string;
+  itemId: number; // ← Mudei de string para number
+  tipo: string; // ← NOVO: tipo do item (ferramenta ou patrimonio)
   colaboradorId: number;
 }
 
@@ -46,8 +47,30 @@ export default function CardCriarCautelas({
                 </TouchableOpacity>
               </View>
               <View
-                style={{ flexDirection: 'row', marginTop: 8, flexWrap: 'wrap' }}
+                style={{
+                  flexDirection: 'row',
+                  marginTop: 8,
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                }}
               >
+                {/* Badge do tipo */}
+                <View
+                  style={[
+                    styles.tipoBadge,
+                    {
+                      backgroundColor:
+                        cautela.tipo === 'patrimonio' ? '#3b82f6' : '#10b981',
+                    },
+                  ]}
+                >
+                  <Text style={styles.tipoText}>
+                    {cautela.tipo === 'patrimonio'
+                      ? '🏢 Patrimônio'
+                      : '🔧 Ferramenta'}
+                  </Text>
+                </View>
+                <Text style={{ paddingHorizontal: 4 }}>|</Text>
                 <Text style={styles.colorSubText}>{cautela.descricao}</Text>
                 <Text style={{ paddingHorizontal: 4 }}>|</Text>
                 <Text style={styles.colorSubText}>
@@ -62,6 +85,8 @@ export default function CardCriarCautelas({
       </ScrollView>
     );
   }
+
+  return null; // ← Retorna null quando não há cautelas
 }
 
 const styles = StyleSheet.create({
@@ -70,7 +95,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '400',
   },
-  // NOVOS ESTILOS:
   cautelaItem: {
     backgroundColor: '#f8f9fa99',
     borderRadius: 8,
@@ -96,5 +120,15 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  tipoBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  tipoText: {
+    color: 'white',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

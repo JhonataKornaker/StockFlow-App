@@ -43,7 +43,6 @@ export default function InicioScreen() {
       } else {
         setCarregando(true);
       }
-      setCarregando(true);
       const dados = await buscarCautelas();
       if (dados.length > 0) {
         setListaDeCautelas(dados.filter(cautela => !cautela.entregue));
@@ -52,30 +51,25 @@ export default function InicioScreen() {
       console.error('Erro ao buscar cautelas:', error);
     } finally {
       setCarregando(false);
+      setRecarregando(false);
     }
   }
 
   const carregarMovimentacao = async () => {
     try {
-      setCarregando(true);
       const data = await buscarResumoMovimentacao();
       setMovimentacao(data);
     } catch (error) {
       console.error('Erro ao buscar resumo:', error);
-    } finally {
-      setRecarregando(false);
     }
   };
 
   const carregarResumo = async () => {
     try {
-      setCarregando(true);
       const data = await buscarResumoNumerico();
       setResumo(data);
     } catch (error) {
       console.error('Erro ao buscar resumo:', error);
-    } finally {
-      setRecarregando(false);
     }
   };
 
@@ -94,13 +88,17 @@ export default function InicioScreen() {
       await carregarCautelas(true);
     } catch (error) {
       console.error('Erro ao buscar cautelas:', error);
-    } finally {
-      setCarregando(false);
     }
   }
 
   if (carregando) {
-    return <ActivityIndicator size="large" color="#19325E" />;
+    return (
+      <Screen
+        style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}
+      >
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </Screen>
+    );
   }
 
   return (
@@ -133,13 +131,13 @@ export default function InicioScreen() {
           <Text style={styles.cardTitle}>Resumo Rápido</Text>
           <View style={styles.resumoInfo}>
             <Text style={styles.resumoItem}>
-              {`Entradas: ${resumo?.totalEntradas}`}
+              {`Entradas: ${resumo?.totalEntradas || 0}`}
             </Text>
             <Text style={styles.resumoItem}>
-              {`Saídas: ${resumo?.totalSaidas}`}
+              {`Saídas: ${resumo?.totalSaidas || 0}`}
             </Text>
             <Text style={styles.resumoItem}>
-              {`Cautelas Abertas: ${resumo?.cautelasAbertas}`}
+              {`Cautelas Abertas: ${resumo?.cautelasAbertas || 0}`}
             </Text>
           </View>
         </View>
@@ -147,15 +145,13 @@ export default function InicioScreen() {
         {/* 🔸 CARD: Cautelas Abertas */}
         <View style={styles.cardCautela}>
           <Text style={styles.cardTitle}>Cautelas Abertas</Text>
-          {carregando ? (
-            <Text style={styles.loadingText}>Carregando cautelas...</Text>
-          ) : listaDeCautelas.length === 0 ? (
+          {listaDeCautelas.length === 0 ? (
             <Text style={styles.noCautelaText}>
               Nenhuma cautela aberta no momento.
             </Text>
           ) : (
             <>
-              {listaDeCautelas.slice(0, 3).map((item, index) => (
+              {listaDeCautelas.slice(0, 2).map((item, index) => (
                 <View key={index} style={styles.cardContainer}>
                   <CardCautelas
                     cautelas={item}
@@ -180,10 +176,8 @@ export default function InicioScreen() {
         <View style={styles.cardMovimentacao}>
           <Text style={styles.cardTitle}>Movimentação do Estoque</Text>
 
-          {carregando ? (
-            <Text style={styles.loadingText}>Carregando movimentações...</Text>
-          ) : !movimentacao ||
-            (!movimentacao.ultimaEntrada && !movimentacao.ultimaSaida) ? (
+          {!movimentacao ||
+          (!movimentacao.ultimaEntrada && !movimentacao.ultimaSaida) ? (
             <Text style={styles.noCautelaText}>
               Nenhuma movimentação registrada no momento.
             </Text>
@@ -223,7 +217,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
-    height: 300,
+    minHeight: 200,
   },
   cardMovimentacao: {
     backgroundColor: '#ffffff55',
@@ -303,16 +297,5 @@ const styles = StyleSheet.create({
     color: '#888',
     fontStyle: 'italic',
     marginTop: 2,
-  },
-  loadingContainer: {
-    padding: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#ef4444',
-    textAlign: 'center',
-    padding: 20,
   },
 });

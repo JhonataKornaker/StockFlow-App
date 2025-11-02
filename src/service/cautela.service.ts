@@ -41,7 +41,7 @@ export async function buscarCautelas() {
 
     if (isOnline) {
       // Buscar da API
-      const response = await api.get('cautelas');
+      const response = await api.get('cautela');
       // Salvar no cache
       await StorageService.saveWithTimestamp(
         STORAGE_KEYS.CAUTELAS,
@@ -71,7 +71,7 @@ export async function criarCautelas(data: any) {
 
   if (isOnline) {
     // Online: envia direto
-    const response = await api.post('cautelas', data);
+    const response = await api.post('cautela', data);
     return response.data;
   } else {
     // Offline: salva para sincronizar depois

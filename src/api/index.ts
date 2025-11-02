@@ -28,23 +28,37 @@ api.interceptors.request.use(async config => {
 api.interceptors.response.use(
   response => response,
   async error => {
-    if (error.response?.status === 401) {
-      await AsyncStorage.multiRemove(['token', 'user']);
+    const originalRequest = error.config;
 
-      Alert.alert(
-        'Sessão Expirada',
-        'Sua sessão expirou. Por favor, faça login novamente.',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              if (onTokenExpired) {
-                onTokenExpired();
-              }
+    // Lista de endpoints que não devem disparar o logout automático
+    const excludedEndpoints = ['/login', '/auth/login', '/autenticacao'];
+
+    const isExcludedEndpoint = excludedEndpoints.some(endpoint =>
+      originalRequest.url.includes(endpoint),
+    );
+
+    if (error.response?.status === 401 && !isExcludedEndpoint) {
+      // Verificar se já mostramos o alerta para evitar múltiplos alerts
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+
+        await AsyncStorage.multiRemove(['token', 'user']);
+
+        Alert.alert(
+          'Sessão Expirada',
+          'Sua sessão expirou. Por favor, faça login novamente.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                if (onTokenExpired) {
+                  onTokenExpired();
+                }
+              },
             },
-          },
-        ],
-      );
+          ],
+        );
+      }
     }
     return Promise.reject(error);
   },

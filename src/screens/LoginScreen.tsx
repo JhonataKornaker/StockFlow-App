@@ -10,6 +10,7 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator, // Adicionado para o spinner
 } from 'react-native';
 import { Screen } from '../components/ScreenProps';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
@@ -24,6 +25,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [loading, setLoading] = useState(false); // Estado para controlar o loading
   const navigation = useNavigation<any>();
   const { signIn } = useAuth();
 
@@ -37,10 +39,32 @@ export default function LoginScreen() {
         });
         return;
       }
+      setLoading(true); // Inicia o loading
       const token = await login(email, senha);
       await signIn(token);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao fazer login:', error);
+      // Melhor tratamento de erros baseado no tipo
+      if (
+        error.message &&
+        (error.message.includes('401') ||
+          error.message.includes('credenciais') ||
+          error.message.includes('invalid'))
+      ) {
+        Toast.show({
+          type: 'error',
+          text1: 'Credenciais inválidas',
+          text2: 'Verifique seu e-mail e senha.',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Erro',
+          text2: 'Servidor indisponível. Tente novamente.',
+        });
+      }
+    } finally {
+      setLoading(false); // Finaliza o loading sempre
     }
   }
 
@@ -74,6 +98,7 @@ export default function LoginScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                editable={!loading} // Desabilita inputs durante loading
               />
             </View>
 
@@ -87,11 +112,13 @@ export default function LoginScreen() {
                 secureTextEntry={!mostrarSenha}
                 value={senha}
                 onChangeText={setSenha}
+                editable={!loading} // Desabilita inputs durante loading
               />
 
               <TouchableOpacity
                 style={{ marginRight: 5 }}
                 onPress={() => setMostrarSenha(!mostrarSenha)}
+                disabled={loading} // Desabilita toggle durante loading
               >
                 {mostrarSenha ? (
                   <EyeOff size={20} color="#080873" />
@@ -105,6 +132,7 @@ export default function LoginScreen() {
               onPress={() => checkLogin(email, senha)}
               style={styles.button}
               title="Entrar"
+              disabled={loading} // Desabilita botão durante loading
             />
 
             <View style={styles.footer}>
@@ -116,6 +144,13 @@ export default function LoginScreen() {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {/* Overlay de loading com spinner */}
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#080873" />
+        </View>
+      )}
     </Screen>
   );
 }
@@ -170,5 +205,15 @@ const styles = StyleSheet.create({
   footerText: {
     color: 'rgba(0, 0, 0, 0.25)',
     textAlign: 'center',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Cor opaca
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
