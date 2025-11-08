@@ -2,20 +2,25 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/ScreenProps';
 import { PatrimonioDto } from '@/dtos/patrimonioDto';
-import { listarPatrimonio } from '@/service/patrimonio.service';
+import {
+  deletarPatrimonio,
+  listarPatrimonio,
+} from '@/service/patrimonio.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Calendar, Contact, Package, Search } from 'lucide-react-native';
+import { Calendar, Contact, Search, Trash2 } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
   SectionList,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  StyleSheet,
+  Alert,
+  Modal,
 } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 
@@ -28,22 +33,40 @@ export default function Patrimonios() {
     [],
   );
   const [carregando, setCarregando] = useState(true);
+  const [itemParaExcluir, setItemParaExcluir] = useState<PatrimonioDto | null>(
+    null,
+  );
 
   useFocusEffect(
     useCallback(() => {
-      async function carregarPatrimonios() {
-        try {
-          const dados = await listarPatrimonio();
-          setListarPatrimonios(dados);
-        } catch (error) {
-          console.error(error);
-        } finally {
-          setCarregando(false);
-        }
-      }
       carregarPatrimonios();
     }, []),
   );
+
+  async function carregarPatrimonios() {
+    try {
+      const dados = await listarPatrimonio();
+      setListarPatrimonios(dados);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  const handleExcluir = async () => {
+    if (!itemParaExcluir) return;
+
+    try {
+      await deletarPatrimonio(itemParaExcluir.id);
+      Alert.alert('Sucesso', 'Patrimônio excluído com sucesso!');
+      setItemParaExcluir(null);
+      carregarPatrimonios();
+    } catch (error) {
+      console.error('Erro ao excluir:', error);
+      Alert.alert('Erro', 'Não foi possível excluir o patrimônio');
+    }
+  };
 
   const itensFiltrados = useMemo(() => {
     const texto = busca.toLowerCase();
@@ -61,10 +84,14 @@ export default function Patrimonios() {
     navigation.navigate('CadastroPatrimonio');
   };
 
+  const handleEditar = (item: PatrimonioDto) => {
+    navigation.navigate('EditarPatrimonio', { patrimonio: item });
+  };
+
   const botaoCadastrar = (
     <Button
       style={{ marginTop: 'auto', alignSelf: 'center', marginBottom: 16 }}
-      title={`Cadastrar Novo Patrimonio`}
+      title="Cadastrar Novo Patrimônio"
       onPress={handleCadastrar}
     />
   );
@@ -83,7 +110,7 @@ export default function Patrimonios() {
     return (
       <Screen>
         <View style={styles.emptyContainer}>
-          <Package size={64} color="#9ca3af" />
+          <Contact size={64} color="#9ca3af" />
           <Text style={styles.emptyTitle}>Nenhum patrimônio cadastrado</Text>
           <Text style={styles.emptySubtitle}>
             Cadastre seus equipamentos e patrimônios para controlar empréstimos
@@ -108,13 +135,15 @@ export default function Patrimonios() {
         value={busca}
         onChangeText={setBusca}
       />
+
       <SectionList
         sections={sections}
         keyExtractor={(item, index) => item.descricao + index}
         renderItem={({ item }) => (
           <TouchableOpacity
-          // Ex: navegação para detalhes se necessário
-          // onPress={() => navigation.navigate('DetalhesPatrimonio', { patrimonio: item })}
+            onLongPress={() => setItemParaExcluir(item)}
+            onPress={() => handleEditar(item)}
+            delayLongPress={300}
           >
             <Text
               style={{
@@ -127,21 +156,10 @@ export default function Patrimonios() {
             >
               {item.descricao}
               {item.locado && item.dataLocacao && (
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    paddingLeft: 8,
-                  }}
-                >
+                <View style={{ flexDirection: 'row', paddingLeft: 8 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Calendar size={16} color="red" />
-                    <Text
-                      style={{
-                        marginLeft: 4,
-                        fontSize: 14,
-                        color: 'red',
-                      }}
-                    >
+                    <Text style={{ marginLeft: 4, fontSize: 14, color: 'red' }}>
                       {new Date(item.dataLocacao).toLocaleDateString('pt-BR')}
                     </Text>
                   </View>
@@ -157,7 +175,7 @@ export default function Patrimonios() {
                 flexWrap: 'wrap',
               }}
             >
-              <Text>Numero Serie: {item.numeroSerie}</Text>
+              <Text>Número Série: {item.numeroSerie}</Text>
               <Text style={{ marginHorizontal: 6 }}>|</Text>
               <Text>Marca: {item.marca}</Text>
               <Text style={{ marginHorizontal: 6 }}>|</Text>
@@ -186,7 +204,54 @@ export default function Patrimonios() {
           </View>
         )}
       />
+
       {botaoCadastrar}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <Modal
+        visible={itemParaExcluir !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setItemParaExcluir(null)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setItemParaExcluir(null)}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.iconContainer}>
+              <Trash2 size={48} color="#ef4444" />
+            </View>
+
+            <Text style={styles.modalTitle}>Excluir Patrimônio</Text>
+
+            <Text style={styles.modalMessage}>
+              Tem certeza que deseja excluir?
+            </Text>
+
+            <Text style={styles.modalItemName}>
+              {itemParaExcluir?.descricao}
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setItemParaExcluir(null)}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.deleteButton]}
+                onPress={handleExcluir}
+              >
+                <Text style={styles.deleteButtonText}>Excluir</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </Screen>
   );
 }
@@ -211,5 +276,75 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#fee2e2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#19325E',
+    marginBottom: 8,
+  },
+  modalMessage: {
+    fontSize: 15,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalItemName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#19325E',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#f3f4f6',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  deleteButton: {
+    backgroundColor: '#ef4444',
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
 });

@@ -134,3 +134,74 @@ export async function registrarSaidaInsumo(data: SaidaInsumoDto) {
     };
   }
 }
+
+export async function atualizarEstoqueInsumo(
+  estoqueId: number,
+  data: {
+    quantidadeMinima?: number;
+    quantidadeMaxima?: number;
+    localizacao?: string;
+  },
+) {
+  const isOnline = await NetworkService.isOnline();
+
+  if (isOnline) {
+    const response = await api.put(
+      `controle-estoque/estoque/${estoqueId}`,
+      data,
+    );
+    await StorageService.remove(STORAGE_KEYS.ESTOQUES);
+    return response.data;
+  } else {
+    await SyncService.addPendingAction({
+      type: 'UPDATE',
+      endpoint: `controle-estoque/estoque/${estoqueId}`,
+      data,
+    });
+    return { success: true, offline: true };
+  }
+}
+
+export async function atualizarInsumo(
+  id: number,
+  data: {
+    descricao: string;
+    codigo?: string;
+    marca?: string;
+    unidade: string;
+    categoria?: string;
+    observacao?: string;
+  },
+) {
+  const isOnline = await NetworkService.isOnline();
+
+  if (isOnline) {
+    const response = await api.put(`controle-estoque/insumos/${id}`, data);
+    await StorageService.remove(STORAGE_KEYS.ESTOQUES);
+    return response.data;
+  } else {
+    await SyncService.addPendingAction({
+      type: 'UPDATE',
+      endpoint: `controle-estoque/insumos/${id}`,
+      data,
+    });
+    return { success: true, offline: true };
+  }
+}
+
+export async function deletarInsumo(id: number) {
+  const isOnline = await NetworkService.isOnline();
+
+  if (isOnline) {
+    const response = await api.delete(`controle-estoque/insumos/${id}`);
+    await StorageService.remove(STORAGE_KEYS.ESTOQUES);
+    return response.data;
+  } else {
+    await SyncService.addPendingAction({
+      type: 'DELETE',
+      endpoint: `controle-estoque/insumos/${id}`,
+      data: {},
+    });
+    return { success: true, offline: true };
+  }
+}

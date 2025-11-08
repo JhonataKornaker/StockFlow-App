@@ -3,6 +3,7 @@ import { ColaboradorDto, CriarColaboradorDto } from '@/dtos/colaboradorDto';
 import { StorageService, STORAGE_KEYS } from './storage.service';
 import { NetworkService } from './network.service';
 import { SyncService } from './sync.service';
+import { Alert } from 'react-native';
 
 export async function buscarColaboradores(): Promise<ColaboradorDto[]> {
   try {
@@ -58,4 +59,56 @@ export async function create(colaborador: CriarColaboradorDto) {
 
 export async function listarColaboradores() {
   return buscarColaboradores(); // Reutiliza a função acima
+}
+
+export async function atualizarColaborador(
+  id: number,
+  data: {
+    nome: string;
+    funcao: string;
+    empresa: string;
+  },
+) {
+  const isOnline = await NetworkService.isOnline();
+
+  if (isOnline) {
+    const response = await api.put(`/colaborador/${id}`, data);
+    await StorageService.remove(STORAGE_KEYS.COLABORADORES);
+    return response.data;
+  } else {
+    await SyncService.addPendingAction({
+      type: 'UPDATE',
+      endpoint: `/colaborador/${id}`,
+      data,
+    });
+    return { success: true, offline: true };
+  }
+}
+
+export async function deletarColaborador(id: number) {
+  const isOnline = await NetworkService.isOnline();
+
+  try {
+    if (isOnline) {
+      const response = await api.delete(`/colaborador/${id}`);
+      await StorageService.remove(STORAGE_KEYS.COLABORADORES);
+      return response.data;
+    } else {
+      await SyncService.addPendingAction({
+        type: 'DELETE',
+        endpoint: `/colaborador/${id}`,
+        data: {},
+      });
+      return { success: true, offline: true };
+    }
+  } catch (error: any) {
+    // Aqui você captura o erro vindo do backend (NestJS)
+    const message =
+      error.response?.data?.message || 'Erro ao deletar colaborador';
+
+    Alert.alert('Atenção', message);
+
+    // opcional: lançar novamente se quiser tratar em outro lugar
+    throw error;
+  }
 }

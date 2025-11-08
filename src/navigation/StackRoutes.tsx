@@ -16,6 +16,10 @@ import CadastroInsumo from '@/screens/CadastroEstoqueScreen';
 import SaidaInsumo from '@/screens/SaidaInsumoScreen';
 import CautelasAbertasScreen from '@/screens/CautelasAbertaScreen';
 import MovimentacoesScreen from '@/screens/MovimentacaoInsumosScreen';
+import EditarColaborador from '@/screens/EditarColaboradorScreen';
+import EditarFerramenta from '@/screens/EditarFerramentaScreen';
+import EditarPatrimonio from '@/screens/EditarPatrimonioScreen';
+import EditarInsumo from '@/screens/EditarInsumoScreen';
 
 const Stack = createStackNavigator();
 
@@ -103,6 +107,26 @@ export default function StackRoutes() {
         name="MovimentacaoInsumo"
         component={MovimentacoesScreen}
         options={{ title: 'Movimentacao Insumos' }}
+      />
+      <Stack.Screen
+        name="EditarColaborador"
+        component={EditarColaborador}
+        options={{ title: 'Editar Colaborador' }}
+      />
+      <Stack.Screen
+        name="EditarFerramenta"
+        component={EditarFerramenta}
+        options={{ title: 'Editar Ferramenta' }}
+      />
+      <Stack.Screen
+        name="EditarPatrimonio"
+        component={EditarPatrimonio}
+        options={{ title: 'Editar Patrimonio' }}
+      />
+      <Stack.Screen
+        name="EditarInsumo"
+        component={EditarInsumo}
+        options={{ title: 'Editar Insumo' }}
       />
     </Stack.Navigator>
   );

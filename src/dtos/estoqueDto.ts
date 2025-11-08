@@ -13,6 +13,7 @@ export interface EstoqueDto {
     marca?: string;
     unidade: string;
     categoria?: string;
+    observacao?: string;
   };
   quantidadeAtual: number;
   quantidadeMinima: number;

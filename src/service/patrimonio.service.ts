@@ -53,3 +53,45 @@ export async function listarPatrimonio(): Promise<PatrimonioDto[]> {
     return cached?.data || [];
   }
 }
+
+export async function atualizarPatrimonio(
+  id: number,
+  data: {
+    descricao: string;
+    numeroSerie: string;
+    marca: string;
+    modelo: string;
+  },
+) {
+  const isOnline = await NetworkService.isOnline();
+
+  if (isOnline) {
+    const response = await api.put(`/patrimonio/${id}`, data);
+    await StorageService.remove(STORAGE_KEYS.PATRIMONIOS);
+    return response.data;
+  } else {
+    await SyncService.addPendingAction({
+      type: 'UPDATE',
+      endpoint: `/patrimonio/${id}`,
+      data,
+    });
+    return { success: true, offline: true };
+  }
+}
+
+export async function deletarPatrimonio(id: number) {
+  const isOnline = await NetworkService.isOnline();
+
+  if (isOnline) {
+    const response = await api.delete(`/patrimonio/${id}`);
+    await StorageService.remove(STORAGE_KEYS.PATRIMONIOS);
+    return response.data;
+  } else {
+    await SyncService.addPendingAction({
+      type: 'DELETE',
+      endpoint: `/patrimonio/${id}`,
+      data: {},
+    });
+    return { success: true, offline: true };
+  }
+}

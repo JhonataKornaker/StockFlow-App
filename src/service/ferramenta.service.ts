@@ -53,3 +53,28 @@ export async function listarFerramentas(): Promise<FerramentasDto[]> {
     return cached?.data || [];
   }
 }
+
+export async function atualizarFerramenta(
+  id: number,
+  data: {
+    descricao: string;
+    quantidade: number;
+    marca: string;
+    modelo: string;
+  },
+) {
+  const isOnline = await NetworkService.isOnline();
+
+  if (isOnline) {
+    const response = await api.put(`/ferramenta/${id}`, data);
+    await StorageService.remove(STORAGE_KEYS.FERRAMENTAS);
+    return response.data;
+  } else {
+    await SyncService.addPendingAction({
+      type: 'UPDATE',
+      endpoint: `/ferramenta/${id}`,
+      data,
+    });
+    return { success: true, offline: true };
+  }
+}
