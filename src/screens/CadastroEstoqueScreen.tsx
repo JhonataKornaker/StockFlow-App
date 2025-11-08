@@ -16,6 +16,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<
   MainStackParamList,
@@ -75,12 +76,12 @@ export default function CadastroInsumo() {
 
     // Validações obrigatórias
     if (!descricao.trim()) {
-      Alert.alert('Atenção', 'A descrição do insumo é obrigatória');
+      showInfoToast('A descrição do insumo é obrigatória', 'Atenção');
       return;
     }
 
     if (!quantidadeEntrada || Number(quantidadeEntrada) <= 0) {
-      Alert.alert('Atenção', 'Informe a quantidade inicial de entrada');
+      showInfoToast('Informe a quantidade inicial de entrada', 'Atenção');
       return;
     }
 
@@ -108,14 +109,13 @@ export default function CadastroInsumo() {
 
       await cadastrarInsumoComEntrada(payload);
 
-      Alert.alert('Sucesso', 'Insumo cadastrado com sucesso!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      showSuccessToast('Insumo cadastrado com sucesso!');
+      navigation.goBack();
     } catch (error: any) {
       console.error('Erro ao cadastrar insumo:', error);
-      Alert.alert(
-        'Erro',
+      showErrorToast(
         error?.response?.data?.message || 'Erro ao cadastrar insumo',
+        'Erro ao cadastrar',
       );
     }
   };

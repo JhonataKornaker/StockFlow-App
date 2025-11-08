@@ -2,11 +2,10 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import CardCautelas from '@/components/CardCautelas';
 import { Screen } from '@/components/ScreenProps';
-import { buscarCautelas, finalizarCautelas } from '@/service/cautela.service';
 import { theme } from '@/styles/theme';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Search, AlertCircle } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -15,7 +14,11 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { MainStackParamList } from '@/types/MainStackNavigator';
+import { buscarCautelas, finalizarCautelas } from '@/service/cautela.service';
+import { showErrorToast, showSuccessToast } from '@/util/toast';
 
 interface Ferramenta {
   descricao: string;
@@ -47,17 +50,30 @@ interface Cautela {
   patrimonios: Patrimonio[];
 }
 
+type NavigationProps = StackNavigationProp<
+  MainStackParamList,
+  'CautelasAbertas'
+>;
+
 export default function CautelasAbertasScreen() {
   const [listaDeCautelas, setListaDeCautelas] = useState<Cautela[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [recarregando, setRecarregando] = useState(false);
   const [busca, setBusca] = useState('');
+  const navigation = useNavigation<NavigationProps>();
 
   useFocusEffect(
     useCallback(() => {
       carregarCautelas();
     }, []),
   );
+
+  // Atualizar parâmetros de navegação com a quantidade de cautelas
+  useEffect(() => {
+    if (!carregando && listaDeCautelas.length > 0) {
+      navigation.setParams({ quantidadeCautelas: listaDeCautelas.length });
+    }
+  }, [listaDeCautelas, carregando, navigation]);
 
   async function carregarCautelas(isReload = false) {
     try {
@@ -78,7 +94,10 @@ export default function CautelasAbertasScreen() {
       }
     } catch (error) {
       console.error('Erro ao buscar cautelas:', error);
-      Alert.alert('Erro', 'Não foi possível carregar as cautelas');
+      showErrorToast(
+        'Não foi possível carregar as cautelas',
+        'Erro ao carregar',
+      );
     } finally {
       setCarregando(false);
       setRecarregando(false);
@@ -99,11 +118,14 @@ export default function CautelasAbertasScreen() {
           onPress: async () => {
             try {
               await finalizarCautelas(id);
-              Alert.alert('Sucesso', 'Cautela finalizada com sucesso!');
+              showSuccessToast('Cautela finalizada com sucesso!');
               carregarCautelas();
             } catch (error) {
               console.error('Erro ao finalizar cautela:', error);
-              Alert.alert('Erro', 'Não foi possível finalizar a cautela');
+              showErrorToast(
+                'Não foi possível finalizar a cautela',
+                'Erro ao finalizar',
+              );
             }
           },
         },
@@ -150,13 +172,8 @@ export default function CautelasAbertasScreen() {
   // Renderizar loading inicial
   if (carregando) {
     return (
-      <Screen
-        style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={{ marginTop: 16, color: theme.colors.primary }}>
-          Carregando cautelas...
-        </Text>
+      <Screen>
+        <SkeletonGeneric variant="list" />
       </Screen>
     );
   }
@@ -184,14 +201,6 @@ export default function CautelasAbertasScreen() {
   return (
     <Screen>
       <View style={styles.container}>
-        {/* Header com contador */}
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>Cautelas em Aberto</Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{listaDeCautelas.length}</Text>
-          </View>
-        </View>
-
         {/* Campo de busca */}
         <Input
           style={styles.searchInput}
@@ -254,32 +263,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 16,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#19325E',
-  },
-  badge: {
-    backgroundColor: '#ef4444',
-    borderRadius: 20,
-    minWidth: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-  },
-  badgeText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
   },
   searchInput: {
     marginBottom: 12,

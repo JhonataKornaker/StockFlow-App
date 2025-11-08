@@ -10,7 +10,6 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
-  ActivityIndicator, // Adicionado para o spinner
 } from 'react-native';
 import { Screen } from '../components/ScreenProps';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
@@ -18,8 +17,9 @@ import { useState } from 'react';
 import { Button } from '@/components/Button';
 import { login } from '@/service/auth.service';
 import { useNavigation } from '@react-navigation/native';
-import Toast from 'react-native-toast-message';
+import { showErrorToast, showInfoToast } from '@/util/toast';
 import { useAuth } from '@/context/AuthContext';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -32,11 +32,7 @@ export default function LoginScreen() {
   async function checkLogin(email: string, senha: string) {
     try {
       if (!email || !senha) {
-        Toast.show({
-          type: 'error',
-          text1: 'Campos obrigatórios',
-          text2: 'Por favor, preencha todos os campos.',
-        });
+        showInfoToast('Por favor, preencha todos os campos.', 'Campos obrigatórios');
         return;
       }
       setLoading(true); // Inicia o loading
@@ -51,17 +47,9 @@ export default function LoginScreen() {
           error.message.includes('credenciais') ||
           error.message.includes('invalid'))
       ) {
-        Toast.show({
-          type: 'error',
-          text1: 'Credenciais inválidas',
-          text2: 'Verifique seu e-mail e senha.',
-        });
+        showErrorToast('Verifique seu e-mail e senha.', 'Credenciais inválidas');
       } else {
-        Toast.show({
-          type: 'error',
-          text1: 'Erro',
-          text2: 'Servidor indisponível. Tente novamente.',
-        });
+        showErrorToast('Servidor indisponível. Tente novamente.', 'Erro');
       }
     } finally {
       setLoading(false); // Finaliza o loading sempre
@@ -145,10 +133,10 @@ export default function LoginScreen() {
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
 
-      {/* Overlay de loading com spinner */}
+      {/* Overlay de loading com skeleton */}
       {loading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#080873" />
+          <SkeletonGeneric variant="auth" />
         </View>
       )}
     </Screen>

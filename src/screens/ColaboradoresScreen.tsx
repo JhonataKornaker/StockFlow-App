@@ -22,7 +22,8 @@ import {
   Alert,
   Modal,
 } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
+import { showErrorToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Colaboradores'>;
 
@@ -100,7 +101,7 @@ export default function Colaboradores() {
           onPress: async () => {
             try {
               await deletarColaborador(item.id);
-              Alert.alert('Sucesso', 'Colaborador excluído com sucesso!');
+              showSuccessToast('Colaborador excluído com sucesso!');
               carregarColaboradores();
             } catch (error: any) {
               console.error('Erro ao excluir:', error);
@@ -111,7 +112,7 @@ export default function Colaboradores() {
                 'Não foi possível excluir o colaborador.';
 
               // Exibe a mensagem do backend (ex: "Colaborador tem cautela em aberto")
-              Alert.alert('Erro', message);
+              showErrorToast(message, 'Erro ao excluir colaborador');
             }
           },
         },
@@ -129,10 +130,8 @@ export default function Colaboradores() {
 
   if (carregando) {
     return (
-      <Screen
-        style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <Screen>
+        <SkeletonGeneric variant="list" />
       </Screen>
     );
   }

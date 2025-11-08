@@ -15,8 +15,8 @@ export type MainStackParamList = {
   Estoques: undefined;
   CadastroInsumo: undefined;
   SaidaInsumo: undefined;
-  CautelasAbertas: undefined;
-  MovimentacaoInsumo: undefined;
+  CautelasAbertas: { quantidadeCautelas?: number };
+  MovimentacaoInsumo: { totalEntradas?: number; totalSaidas?: number };
   EditarColaborador: { colaborador: ColaboradorDto };
   CadastroFerramentas?: { ferramenta?: Ferramenta };
   EditarFerramenta: { ferramenta: FerramentasDto };

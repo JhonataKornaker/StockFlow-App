@@ -18,12 +18,17 @@ import { MainStackParamList } from '@/types/MainStackNavigator';
 import { useCallback, useEffect, useState } from 'react';
 import { buscarCautelas, finalizarCautelas } from '@/service/cautela.service';
 import { CautelaDTO } from '@/dtos/cautelaDto';
-import { ActivityIndicator } from 'react-native-paper';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
 import { ResumoMovimentacaoEstoque } from '@/dtos/movimentacaoDto';
 import { buscarResumoMovimentacao } from '@/service/movimentacao.service';
 import CardMovimentacao from '@/components/CardMovimentacao';
-import { buscarResumoNumerico } from '@/service/controleEstoque.service';
-import { ResumoNumerico } from '@/dtos/estoqueDto';
+import {
+  buscarResumoNumerico,
+  listarEstoques,
+} from '@/service/controleEstoque.service';
+import { ResumoNumerico, EstoqueDto } from '@/dtos/estoqueDto';
+import { listarPatrimonio } from '@/service/patrimonio.service';
+import { PatrimonioDto } from '@/dtos/patrimonioDto';
 
 export default function InicioScreen() {
   const navigation =
@@ -35,6 +40,10 @@ export default function InicioScreen() {
   const [resumo, setResumo] = useState<ResumoNumerico | null>(null);
   const [movimentacao, setMovimentacao] =
     useState<ResumoMovimentacaoEstoque | null>(null);
+  const [estoqueBaixo, setEstoqueBaixo] = useState<EstoqueDto[]>([]);
+  const [patrimoniosAlugados, setPatrimoniosAlugados] = useState<
+    PatrimonioDto[]
+  >([]);
 
   async function carregarCautelas(isReload = false) {
     try {
@@ -73,11 +82,40 @@ export default function InicioScreen() {
     }
   };
 
+  const carregarEstoqueBaixo = async () => {
+    try {
+      const estoques = await listarEstoques();
+      const baixos = estoques.filter(e => e.estoqueBaixo);
+      setEstoqueBaixo(baixos);
+    } catch (error) {
+      console.error('Erro ao buscar estoques:', error);
+    }
+  };
+
+  const carregarPatrimoniosAlugados = async () => {
+    try {
+      const patrimonios = await listarPatrimonio();
+      const alugadosOrdenados = patrimonios
+        .filter(p => p.locado && p.dataLocacao)
+        .sort(
+          (a, b) =>
+            new Date(a.dataLocacao as string).getTime() -
+            new Date(b.dataLocacao as string).getTime(),
+        )
+        .slice(0, 3);
+      setPatrimoniosAlugados(alugadosOrdenados);
+    } catch (error) {
+      console.error('Erro ao buscar patrimônios:', error);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       carregarCautelas();
       carregarMovimentacao();
       carregarResumo();
+      carregarEstoqueBaixo();
+      carregarPatrimoniosAlugados();
     }, []),
   );
 
@@ -93,10 +131,8 @@ export default function InicioScreen() {
 
   if (carregando) {
     return (
-      <Screen
-        style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <Screen>
+        <SkeletonGeneric variant="dashboard" />
       </Screen>
     );
   }
@@ -129,17 +165,84 @@ export default function InicioScreen() {
         {/* 🔸 CARD: Resumo Rápido */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Resumo Rápido</Text>
-          <View style={styles.resumoInfo}>
-            <Text style={styles.resumoItem}>
-              {`Entradas: ${resumo?.totalEntradas || 0}`}
-            </Text>
-            <Text style={styles.resumoItem}>
-              {`Saídas: ${resumo?.totalSaidas || 0}`}
-            </Text>
-            <Text style={styles.resumoItem}>
-              {`Cautelas Abertas: ${resumo?.cautelasAbertas || 0}`}
-            </Text>
+          {/* Linha 1: números rápidos (com card interno) */}
+          <View style={styles.subCard}>
+            <View style={styles.resumoInfo}>
+              <Text style={styles.resumoItem}>
+                {`Entradas: ${resumo?.totalEntradas || 0}`}
+              </Text>
+              <Text style={styles.resumoItem}>
+                {`Saídas: ${resumo?.totalSaidas || 0}`}
+              </Text>
+              <Text style={styles.resumoItem}>
+                {`Cautelas Abertas: ${resumo?.cautelasAbertas || 0}`}
+              </Text>
+            </View>
           </View>
+
+          {/* 🔸 Resumo: Estoque baixo */}
+          {estoqueBaixo.length > 0 && (
+            <View style={styles.subCard}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={styles.resumoItem}
+                  >{`Estoque baixo: ${estoqueBaixo.length}`}</Text>
+                  <Text style={{ color: '#666', fontSize: 12 }}>
+                    {`${estoqueBaixo[0].insumo.descricao} — Quantidade: ${estoqueBaixo[0].quantidadeAtual} / Mínimo: ${estoqueBaixo[0].quantidadeMinima}`}
+                  </Text>
+                </View>
+                {estoqueBaixo.length > 1 && (
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('Estoques')}
+                    style={styles.verMaisButton}
+                  >
+                    <Text style={styles.verMaisText}>Ver mais</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* 🔸 Resumo: Patrimônio alugado mais antigo */}
+          {patrimoniosAlugados.length > 0 && (
+            <View style={styles.subCard}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.resumoItem}>
+                    {`${patrimoniosAlugados[0].descricao}`}
+                  </Text>
+                  {patrimoniosAlugados[0].dataLocacao && (
+                    <Text style={{ color: 'red', fontSize: 12 }}>
+                      {new Date(
+                        patrimoniosAlugados[0].dataLocacao,
+                      ).toLocaleDateString('pt-BR')}
+                    </Text>
+                  )}
+                </View>
+                {patrimoniosAlugados.length > 1 && (
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('Patrimonios')}
+                    style={styles.verMaisButton}
+                  >
+                    <Text style={styles.verMaisText}>Ver mais</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
         </View>
 
         {/* 🔸 CARD: Cautelas Abertas */}
@@ -162,7 +265,11 @@ export default function InicioScreen() {
 
               {listaDeCautelas.length > 3 && (
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('CautelasAbertas')}
+                  onPress={() =>
+                    navigation.navigate('CautelasAbertas', {
+                      quantidadeCautelas: listaDeCautelas.length,
+                    })
+                  }
                   style={styles.verMaisButton}
                 >
                   <Text style={styles.verMaisText}>Ver mais</Text>
@@ -188,7 +295,12 @@ export default function InicioScreen() {
               {((resumo?.totalEntradas ?? 0) > 1 ||
                 (resumo?.totalSaidas ?? 0) > 1) && (
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('MovimentacaoInsumo')}
+                  onPress={() =>
+                    navigation.navigate('MovimentacaoInsumo', {
+                      totalEntradas: resumo?.totalEntradas ?? 0,
+                      totalSaidas: resumo?.totalSaidas ?? 0,
+                    })
+                  }
                   style={styles.verMaisButton}
                 >
                   <Text style={styles.verMaisText}>Ver mais</Text>
@@ -254,6 +366,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
     marginVertical: 6,
+  },
+  subCard: {
+    backgroundColor: '#ffffff22',
+    borderRadius: 10,
+    padding: 8,
+    marginTop: 8,
   },
   verMaisButton: {
     alignSelf: 'flex-end',

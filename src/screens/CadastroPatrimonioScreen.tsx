@@ -11,7 +11,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { CircleAlert } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Platform, Text, TouchableOpacity, View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 type NavigationProps = StackNavigationProp<
@@ -51,11 +51,7 @@ export default function CadastroPatrimonio() {
       formData;
 
     if (!descricao || !numeroSerie || !marca || !modelo) {
-      Toast.show({
-        type: 'error',
-        text1: 'Campos obrigatórios',
-        text2: 'Preencha todos os campos.',
-      });
+      showInfoToast('Preencha todos os campos.', 'Campos obrigatórios');
       return;
     }
 
@@ -82,14 +78,11 @@ export default function CadastroPatrimonio() {
         dataLocacao: formatDate(new Date()),
       });
 
+      showSuccessToast('Patrimônio cadastrado com sucesso!');
       navigation.goBack();
     } catch (error) {
       console.error('Erro ao salvar patrimônio:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Erro',
-        text2: 'Erro ao salvar patrimônio.',
-      });
+      showErrorToast('Erro ao salvar patrimônio.', 'Erro');
     }
   };
 

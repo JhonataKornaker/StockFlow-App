@@ -18,11 +18,11 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 interface Item {
   id: number;
@@ -109,7 +109,7 @@ export default function CautelaScreen() {
         setColaboradores(mappedColaboradores);
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
-        alert('Erro ao carregar dados. Tente novamente.');
+        showErrorToast('Erro ao carregar dados. Tente novamente.', 'Erro');
       } finally {
         setIsLoadingData(false);
       }
@@ -136,7 +136,7 @@ export default function CautelaScreen() {
   const selecionarItem = (item: Item & { disponivel?: number }) => {
     if (item.tipo === 'ferramenta') {
       if ((item as any).disponivel === 0) {
-        alert('Sem saldo disponível desta ferramenta.');
+        showInfoToast('Sem saldo disponível desta ferramenta.', 'Atenção');
         return;
       }
       setQuantidadeHabilitada(true);
@@ -185,7 +185,7 @@ export default function CautelaScreen() {
   // Salvar cautelas
   async function handleSalvarCautela() {
     if (cautelasList.length === 0) {
-      alert('Crie uma cautela antes de salvar!');
+      showInfoToast('Crie uma cautela antes de salvar!', 'Atenção');
       return;
     }
 
@@ -213,12 +213,12 @@ export default function CautelaScreen() {
         await new Promise(resolve => setTimeout(resolve, remainingTime));
       }
 
-      alert(`${cautelasList.length} cautela(s) salva(s) com sucesso!`);
+      showSuccessToast(`${cautelasList.length} cautela(s) salva(s) com sucesso!`);
       setCautelasList([]);
       navigation.navigate('Inicio');
     } catch (error) {
       console.error('Erro ao salvar cautelas:', error);
-      alert('Erro ao salvar cautelas. Tente novamente.');
+      showErrorToast('Erro ao salvar cautelas. Tente novamente.', 'Erro');
     } finally {
       setIsSaving(false);
     }
@@ -227,7 +227,7 @@ export default function CautelaScreen() {
   // Criar cautela
   function handleCriarCautela() {
     if (!itemSelecionado || !colaboradorSelecionadoId) {
-      alert('Preencha todos os campos!');
+      showInfoToast('Preencha todos os campos!', 'Campos obrigatórios');
       return;
     }
 
@@ -235,11 +235,11 @@ export default function CautelaScreen() {
       const disponivel = (itemSelecionado as any).disponivel ?? 0;
       const qtd = Number(quantidade);
       if (!qtd || qtd <= 0) {
-        alert('Informe uma quantidade válida.');
+        showInfoToast('Informe uma quantidade válida.', 'Atenção');
         return;
       }
       if (qtd > disponivel) {
-        alert(`Quantidade solicitada maior que disponível (${disponivel}).`);
+        showInfoToast(`Quantidade solicitada maior que disponível (${disponivel}).`, 'Atenção');
         return;
       }
     } else {
@@ -500,13 +500,7 @@ export default function CautelaScreen() {
                 onPress={handleSalvarCautela}
                 disabled={isSaving}
               />
-              {isSaving && (
-                <ActivityIndicator
-                  size="small"
-                  color="#19325E"
-                  style={{ marginTop: 8 }}
-                />
-              )}
+              {/* Removido spinner para manter padrão sem ícone de carregamento */}
             </View>
           </ScrollView>
         </TouchableOpacity>

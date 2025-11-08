@@ -19,6 +19,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'EditarInsumo'>;
 
@@ -62,7 +63,7 @@ export default function EditarInsumo() {
     const { descricao, unidade } = formData;
 
     if (!descricao.trim()) {
-      Alert.alert('Atenção', 'A descrição do insumo é obrigatória');
+      showInfoToast('A descrição do insumo é obrigatória', 'Atenção');
       return;
     }
 
@@ -91,14 +92,13 @@ export default function EditarInsumo() {
         });
       }
 
-      Alert.alert('Sucesso', 'Insumo atualizado com sucesso!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      showSuccessToast('Insumo atualizado com sucesso!');
+      navigation.goBack();
     } catch (error: any) {
       console.error('Erro ao atualizar insumo:', error);
-      Alert.alert(
-        'Erro',
+      showErrorToast(
         error?.response?.data?.message || 'Erro ao atualizar insumo',
+        'Erro ao atualizar',
       );
     }
   };

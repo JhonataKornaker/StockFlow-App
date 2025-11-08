@@ -9,11 +9,11 @@ import { CircleAlert, Package, Tag } from 'lucide-react-native';
 import { useState } from 'react';
 import {
   View,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<
   MainStackParamList,
@@ -42,12 +42,12 @@ export default function EditarFerramenta() {
     const { descricao, quantidade, marca, modelo } = formData;
 
     if (!descricao.trim()) {
-      Alert.alert('Atenção', 'A descrição é obrigatória');
+      showInfoToast('A descrição é obrigatória', 'Atenção');
       return;
     }
 
     if (!quantidade || Number(quantidade) < 0) {
-      Alert.alert('Atenção', 'Informe uma quantidade válida');
+      showInfoToast('Informe uma quantidade válida', 'Atenção');
       return;
     }
 
@@ -59,12 +59,12 @@ export default function EditarFerramenta() {
         modelo: modelo.trim(),
       });
 
-      Alert.alert('Sucesso', 'Ferramenta atualizada com sucesso!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      showSuccessToast('Ferramenta atualizada com sucesso!');
+      navigation.goBack();
     } catch (error) {
       console.error('Erro ao atualizar ferramenta:', error);
-      Alert.alert('Erro', 'Não foi possível atualizar a ferramenta');
+      const message = error instanceof Error ? error.message : 'Não foi possível atualizar a ferramenta';
+      showErrorToast(String(message), 'Erro ao atualizar');
     }
   };
 
@@ -111,13 +111,12 @@ export default function EditarFerramenta() {
               onChangeText={text => handleChange('modelo', text)}
             />
           </View>
-
-          <Button
-            onPress={handleSalvar}
-            title="Salvar Alterações"
-            style={{ marginTop: 'auto', marginBottom: 12, alignSelf: 'center' }}
-          />
         </ScrollView>
+        <Button
+          style={{ marginTop: 'auto', marginBottom: 12, alignSelf: 'center' }}
+          onPress={handleSalvar}
+          title="Salvar"
+        />
       </KeyboardAvoidingView>
     </Screen>
   );

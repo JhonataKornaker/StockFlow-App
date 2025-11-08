@@ -22,7 +22,8 @@ import {
   Alert,
   Modal,
 } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
+import { showErrorToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Patrimonios'>;
 
@@ -59,12 +60,12 @@ export default function Patrimonios() {
 
     try {
       await deletarPatrimonio(itemParaExcluir.id);
-      Alert.alert('Sucesso', 'Patrimônio excluído com sucesso!');
+      showSuccessToast('Patrimônio excluído com sucesso!');
       setItemParaExcluir(null);
       carregarPatrimonios();
     } catch (error) {
       console.error('Erro ao excluir:', error);
-      Alert.alert('Erro', 'Não foi possível excluir o patrimônio');
+      showErrorToast('Não foi possível excluir o patrimônio', 'Erro ao excluir');
     }
   };
 
@@ -98,10 +99,8 @@ export default function Patrimonios() {
 
   if (carregando) {
     return (
-      <Screen
-        style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <Screen>
+        <SkeletonGeneric variant="list" />
       </Screen>
     );
   }

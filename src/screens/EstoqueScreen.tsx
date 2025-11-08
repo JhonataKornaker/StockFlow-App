@@ -22,7 +22,8 @@ import {
   Alert,
   Modal,
 } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
+import { showErrorToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Estoques'>;
 
@@ -55,12 +56,12 @@ export default function Estoques() {
 
     try {
       await deletarInsumo(itemParaExcluir.insumoId);
-      Alert.alert('Sucesso', 'Insumo excluído com sucesso!');
+      showSuccessToast('Insumo excluído com sucesso!');
       setItemParaExcluir(null);
       carregarEstoques();
     } catch (error) {
       console.error('Erro ao excluir:', error);
-      Alert.alert('Erro', 'Não foi possível excluir o insumo');
+      showErrorToast('Não foi possível excluir o insumo', 'Erro ao excluir');
     }
   };
 
@@ -107,10 +108,8 @@ export default function Estoques() {
 
   if (carregando) {
     return (
-      <Screen
-        style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <Screen>
+        <SkeletonGeneric variant="list" />
       </Screen>
     );
   }

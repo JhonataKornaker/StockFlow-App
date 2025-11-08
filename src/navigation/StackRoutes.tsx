@@ -1,6 +1,8 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { theme } from '@/styles/theme';
+import { View, Text } from 'react-native';
+import { ArrowUp, ArrowDown } from 'lucide-react-native';
 
 import InicioScreen from '@/screens/InicioScreen';
 import CautelaScreen from '@/screens/CriarCautelaScreen';
@@ -22,6 +24,95 @@ import EditarPatrimonio from '@/screens/EditarPatrimonioScreen';
 import EditarInsumo from '@/screens/EditarInsumoScreen';
 
 const Stack = createStackNavigator();
+
+// Componente de título customizado para Movimentações
+function MovimentacoesTitle({ route }: any) {
+  const { totalEntradas = 0, totalSaidas = 0 } = route.params || {};
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <Text
+        style={{
+          color: theme.colors.secondary,
+          fontWeight: 'bold',
+          fontSize: 22,
+        }}
+      >
+        Movimentação Insumos
+      </Text>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#22c55e',
+            borderRadius: 12,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            gap: 4,
+          }}
+        >
+          <ArrowUp size={14} color="#fff" />
+          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
+            {totalEntradas}
+          </Text>
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#ef4444',
+            borderRadius: 12,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            gap: 4,
+          }}
+        >
+          <ArrowDown size={14} color="#fff" />
+          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
+            {totalSaidas}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// Componente de título customizado para Cautelas Abertas
+function CautelasAbertasTitle({ route }: any) {
+  const { quantidadeCautelas = 0 } = route.params || {};
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <Text
+        style={{
+          color: theme.colors.secondary,
+          fontWeight: 'bold',
+          fontSize: 22,
+        }}
+      >
+        Cautelas Abertas
+      </Text>
+      {quantidadeCautelas > 0 && (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '#ef4444',
+            borderRadius: 12,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            gap: 4,
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 12 }}>
+            {quantidadeCautelas}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
 
 export default function StackRoutes() {
   return (
@@ -81,7 +172,7 @@ export default function StackRoutes() {
       <Stack.Screen
         name="DetalhesColaborador"
         component={DetalhesColaborador}
-        options={{ title: 'Detalhes do Colaborador' }}
+        options={{ title: 'Historico' }}
       />
       <Stack.Screen
         name="Estoques"
@@ -101,12 +192,18 @@ export default function StackRoutes() {
       <Stack.Screen
         name="CautelasAbertas"
         component={CautelasAbertasScreen}
-        options={{ title: 'Cautelas Abertas' }}
+        options={({ route }) => ({
+          headerTitle: props => (
+            <CautelasAbertasTitle route={route} {...props} />
+          ),
+        })}
       />
       <Stack.Screen
         name="MovimentacaoInsumo"
         component={MovimentacoesScreen}
-        options={{ title: 'Movimentacao Insumos' }}
+        options={({ route }) => ({
+          headerTitle: props => <MovimentacoesTitle route={route} {...props} />,
+        })}
       />
       <Stack.Screen
         name="EditarColaborador"

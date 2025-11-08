@@ -3,21 +3,26 @@ import { Screen } from '@/components/ScreenProps';
 import { MovimentacaoListaDto } from '@/dtos/movimentacaoDto';
 import { listarTodasMovimentacoes } from '@/service/movimentacao.service';
 import { theme } from '@/styles/theme';
-import { useFocusEffect } from '@react-navigation/native';
-import { Search, ArrowUp, ArrowDown, AlertCircle } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { Search, AlertCircle } from 'lucide-react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
   RefreshControl,
-  Alert,
   Image,
 } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
+import { showErrorToast } from '@/util/toast';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { MainStackParamList } from '@/types/MainStackNavigator';
+
+type NavigationProps = StackNavigationProp<MainStackParamList, 'MovimentacaoInsumo'>;
 
 export default function MovimentacoesScreen() {
+  const navigation = useNavigation<NavigationProps>();
   const [movimentacoes, setMovimentacoes] = useState<MovimentacaoListaDto[]>(
     [],
   );
@@ -43,7 +48,7 @@ export default function MovimentacoesScreen() {
       setMovimentacoes(dados);
     } catch (error) {
       console.error('Erro ao buscar movimentações:', error);
-      Alert.alert('Erro', 'Não foi possível carregar as movimentações');
+      showErrorToast('Não foi possível carregar as movimentações', 'Erro');
     } finally {
       setCarregando(false);
       setRecarregando(false);
@@ -90,16 +95,18 @@ export default function MovimentacoesScreen() {
   const totalEntradas = movimentacoes.filter(m => m.tipo === 'ENTRADA').length;
   const totalSaidas = movimentacoes.filter(m => m.tipo === 'SAIDA').length;
 
+  // Atualizar parâmetros da navegação com os totais
+  useEffect(() => {
+    if (!carregando && movimentacoes.length > 0) {
+      navigation.setParams({ totalEntradas, totalSaidas });
+    }
+  }, [totalEntradas, totalSaidas, carregando, movimentacoes.length]);
+
   // Renderizar loading inicial
   if (carregando) {
     return (
-      <Screen
-        style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={{ marginTop: 16, color: theme.colors.primary }}>
-          Carregando movimentações...
-        </Text>
+      <Screen>
+        <SkeletonGeneric variant="list" />
       </Screen>
     );
   }
@@ -122,21 +129,6 @@ export default function MovimentacoesScreen() {
   return (
     <Screen>
       <View style={styles.container}>
-        {/* Header com contadores */}
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>Movimentações</Text>
-          <View style={styles.badgesContainer}>
-            <View style={[styles.badge, styles.badgeEntrada]}>
-              <ArrowUp size={16} color="#fff" />
-              <Text style={styles.badgeText}>{totalEntradas}</Text>
-            </View>
-            <View style={[styles.badge, styles.badgeSaida]}>
-              <ArrowDown size={16} color="#fff" />
-              <Text style={styles.badgeText}>{totalSaidas}</Text>
-            </View>
-          </View>
-        </View>
-
         {/* Campo de busca */}
         <Input
           style={styles.searchInput}
@@ -247,41 +239,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 16,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#19325E',
-  },
-  badgesContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    gap: 4,
-  },
-  badgeEntrada: {
-    backgroundColor: '#22c55e',
-  },
-  badgeSaida: {
-    backgroundColor: '#ef4444',
-  },
-  badgeText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
   },
   searchInput: {
     marginBottom: 12,

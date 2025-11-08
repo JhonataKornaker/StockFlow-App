@@ -61,14 +61,21 @@ export async function atualizarPatrimonio(
     numeroSerie: string;
     marca: string;
     modelo: string;
+    nomeLocadora?: string;
+    dataLocacao?: Date;
   },
 ) {
   const isOnline = await NetworkService.isOnline();
 
   if (isOnline) {
-    const response = await api.put(`/patrimonio/${id}`, data);
-    await StorageService.remove(STORAGE_KEYS.PATRIMONIOS);
-    return response.data;
+    try {
+      const response = await api.put(`/patrimonio/${id}`, data);
+      await StorageService.remove(STORAGE_KEYS.PATRIMONIOS);
+      return response.data;
+    } catch (error: any) {
+      const message = extractApiErrorMessage(error);
+      throw new Error(message);
+    }
   } else {
     await SyncService.addPendingAction({
       type: 'UPDATE',
@@ -94,4 +101,16 @@ export async function deletarPatrimonio(id: number) {
     });
     return { success: true, offline: true };
   }
+}
+
+function extractApiErrorMessage(error: any): string {
+  if (!error) return 'Erro desconhecido.';
+  const response = error?.response;
+  if (response) {
+    const data = response.data;
+    if (typeof data === 'string') return data;
+    if (data?.message) return String(data.message);
+    if (Array.isArray(data?.errors)) return String(data.errors[0] ?? 'Falha na requisição');
+  }
+  return error?.message ?? 'Falha na requisição';
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import {
   Home,
@@ -21,6 +21,7 @@ export default function DrawerMenuContent({ navigation }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [recarregando, setRecarregando] = useState(false);
+  const [userBoxHeight, setUserBoxHeight] = useState(0);
 
   async function buscarUsuario(isReload = false) {
     try {
@@ -52,12 +53,42 @@ export default function DrawerMenuContent({ navigation }) {
     }, []),
   );
 
+  const avatarSize = useMemo(() => {
+    // Define o tamanho como ~60% da altura do card, com limites
+    const computed = Math.floor(userBoxHeight * 0.6);
+    return Math.max(40, Math.min(80, computed || 48));
+  }, [userBoxHeight]);
+
+  const initials = useMemo(() => {
+    const nome = usuario?.nome?.trim() || '';
+    if (!nome) return '';
+    const partes = nome.split(' ').filter(Boolean);
+    const primeira = partes[0]?.[0] || '';
+    const ultima = partes.length > 1 ? partes[partes.length - 1]?.[0] || '' : '';
+    return `${primeira}${ultima}`.toUpperCase();
+  }, [usuario?.nome]);
+
   return (
     <View style={styles.drawer}>
       {/* Header com nome do usuário */}
-      <View style={styles.userBox}>
-        <Text style={styles.userName}>{usuario?.nome}</Text>
-        <Text style={styles.userRole}>{usuario?.funcao}</Text>
+      <View
+        style={styles.userBox}
+        onLayout={e => setUserBoxHeight(e.nativeEvent.layout.height)}
+      >
+        <View style={styles.userHeaderContent}>
+          <View
+            style={[
+              styles.avatar,
+              { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 },
+            ]}
+          >
+            <Text style={styles.avatarText}>{initials}</Text>
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.userName}>{usuario?.nome}</Text>
+            <Text style={styles.userRole}>{usuario?.funcao}</Text>
+          </View>
+        </View>
       </View>
 
       {/* Menu de navegação */}
@@ -158,6 +189,24 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     marginBottom: 20,
+  },
+  userHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: {
+    backgroundColor: '#27406E',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    color: '#C5D4EB',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  userInfo: {
+    flex: 1,
   },
   userName: {
     color: '#C5D4EB',

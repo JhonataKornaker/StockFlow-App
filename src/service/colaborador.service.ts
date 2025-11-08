@@ -3,7 +3,7 @@ import { ColaboradorDto, CriarColaboradorDto } from '@/dtos/colaboradorDto';
 import { StorageService, STORAGE_KEYS } from './storage.service';
 import { NetworkService } from './network.service';
 import { SyncService } from './sync.service';
-import { Alert } from 'react-native';
+// Serviço não deve exibir UI diretamente; tratar erros nas telas
 
 export async function buscarColaboradores(): Promise<ColaboradorDto[]> {
   try {
@@ -106,9 +106,7 @@ export async function deletarColaborador(id: number) {
     const message =
       error.response?.data?.message || 'Erro ao deletar colaborador';
 
-    Alert.alert('Atenção', message);
-
-    // opcional: lançar novamente se quiser tratar em outro lugar
-    throw error;
+    // Propaga erro com mensagem tratada para a camada de UI
+    throw new Error(message);
   }
 }

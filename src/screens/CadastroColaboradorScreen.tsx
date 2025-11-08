@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { CircleAlert } from 'lucide-react-native';
 import { CriarColaboradorDto } from '@/dtos/colaboradorDto';
 import { create } from '@/service/colaborador.service';
-import Toast from 'react-native-toast-message';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/ScreenProps';
@@ -32,24 +32,17 @@ export default function CadastroColaborador() {
     const { nome, funcao, empresa } = formData;
 
     if (!nome || !funcao || !empresa) {
-      Toast.show({
-        type: 'error',
-        text1: 'Campos obrigatórios',
-        text2: 'Preencha todos os campos.',
-      });
+      showInfoToast('Preencha todos os campos.', 'Campos obrigatórios');
       return;
     }
 
     try {
       await create(formData);
+      showSuccessToast('Colaborador cadastrado com sucesso!');
       navigation.goBack();
     } catch (error) {
       console.error('Erro ao salvar colaborador:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Erro',
-        text2: 'Erro ao salvar colaborador.',
-      });
+      showErrorToast('Erro ao salvar colaborador.', 'Erro');
     }
   };
 

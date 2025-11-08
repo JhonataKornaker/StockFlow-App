@@ -9,11 +9,11 @@ import { CircleAlert, User, Briefcase, Building } from 'lucide-react-native';
 import { useState } from 'react';
 import {
   View,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<
   MainStackParamList,
@@ -41,28 +41,27 @@ export default function EditarColaborador() {
     const { nome, funcao, empresa } = formData;
 
     if (!nome.trim()) {
-      Alert.alert('Atenção', 'O nome é obrigatório');
+      showInfoToast('O nome é obrigatório', 'Atenção');
       return;
     }
 
     if (!funcao.trim()) {
-      Alert.alert('Atenção', 'A função é obrigatória');
+      showInfoToast('A função é obrigatória', 'Atenção');
       return;
     }
 
     if (!empresa.trim()) {
-      Alert.alert('Atenção', 'A empresa é obrigatória');
+      showInfoToast('A empresa é obrigatória', 'Atenção');
       return;
     }
 
     try {
       await atualizarColaborador(colaborador.id, formData);
-      Alert.alert('Sucesso', 'Colaborador atualizado com sucesso!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      showSuccessToast('Colaborador atualizado com sucesso!');
+      navigation.goBack();
     } catch (error) {
       console.error('Erro ao atualizar colaborador:', error);
-      Alert.alert('Erro', 'Não foi possível atualizar o colaborador');
+      showErrorToast('Não foi possível atualizar o colaborador', 'Erro');
     }
   };
 

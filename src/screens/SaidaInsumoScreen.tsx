@@ -10,16 +10,9 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { CircleAlert, ArrowDown, User, Package } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
-import {
-  View,
-  Text,
-  Alert,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { View, Text, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
+import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'SaidaInsumo'>;
 
@@ -62,7 +55,7 @@ export default function SaidaInsumo() {
       setColaboradores(colaboradoresData);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
-      Alert.alert('Erro', 'Não foi possível carregar os dados');
+      showErrorToast('Não foi possível carregar os dados', 'Erro ao carregar');
     } finally {
       setCarregando(false);
     }
@@ -106,17 +99,17 @@ export default function SaidaInsumo() {
 
     // Validações
     if (!estoqueId) {
-      Alert.alert('Atenção', 'Selecione o insumo');
+      showInfoToast('Selecione o insumo', 'Atenção');
       return;
     }
 
     if (!quantidade || Number(quantidade) <= 0) {
-      Alert.alert('Atenção', 'Informe a quantidade a ser retirada');
+      showInfoToast('Informe a quantidade a ser retirada', 'Atenção');
       return;
     }
 
     if (!colaboradorId) {
-      Alert.alert('Atenção', 'Selecione o colaborador');
+      showInfoToast('Selecione o colaborador', 'Atenção');
       return;
     }
 
@@ -130,36 +123,28 @@ export default function SaidaInsumo() {
 
       await registrarSaidaInsumo(payload);
 
-      Alert.alert('Sucesso', 'Saída registrada com sucesso!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            // Limpar formulário
-            setFormData({
-              estoqueId: '',
-              quantidade: '',
-              colaboradorId: '',
-              observacao: '',
-            });
-            navigation.goBack();
-          },
-        },
-      ]);
+      showSuccessToast('Saída registrada com sucesso!');
+      // Limpar formulário e voltar
+      setFormData({
+        estoqueId: '',
+        quantidade: '',
+        colaboradorId: '',
+        observacao: '',
+      });
+      navigation.goBack();
     } catch (error: any) {
       console.error('Erro ao registrar saída:', error);
-      Alert.alert(
-        'Erro',
+      showErrorToast(
         error?.response?.data?.message || 'Erro ao registrar saída',
+        'Falha ao registrar saída',
       );
     }
   };
 
   if (carregando) {
     return (
-      <Screen
-        style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}
-      >
-        <ActivityIndicator size="large" color="#19325E" />
+      <Screen>
+        <SkeletonGeneric variant="form" />
       </Screen>
     );
   }
