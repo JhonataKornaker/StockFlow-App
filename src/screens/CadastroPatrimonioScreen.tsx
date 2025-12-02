@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { Platform, Text, TouchableOpacity, View } from 'react-native';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
 
 type NavigationProps = StackNavigationProp<
   MainStackParamList,
@@ -29,6 +30,7 @@ export default function CadastroPatrimonio() {
   const navigation = useNavigation<NavigationProps>();
   const patrimonio = route.params?.patrimonio as PatrimonioDto | undefined;
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [carregando, setCarregando] = useState(true);
 
   const isEdicao = !!patrimonio;
   const [opcao, setOpcao] = useState(patrimonio?.locado ? 'sim' : 'nao');
@@ -41,6 +43,11 @@ export default function CadastroPatrimonio() {
     nomeLocadora: patrimonio?.nomeLocadora || '',
     dataLocacao: patrimonio?.dataLocacao ?? '', // ← ainda como string no input
   });
+
+  useEffect(() => {
+    const t = setTimeout(() => setCarregando(false), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleChange = (field: keyof CriarPatrimonioDto, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -96,6 +103,14 @@ export default function CadastroPatrimonio() {
     if (selectedDate) {
       handleChange('dataLocacao', formatDate(selectedDate));
     }
+  }
+
+  if (carregando) {
+    return (
+      <Screen>
+        <SkeletonCadastroForm fields={4} />
+      </Screen>
+    );
   }
 
   return (

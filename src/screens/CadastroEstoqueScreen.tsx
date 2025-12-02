@@ -7,7 +7,7 @@ import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { CircleAlert, Package, Hash, Tag } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
   Platform,
 } from 'react-native';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
 
 type NavigationProps = StackNavigationProp<
   MainStackParamList,
@@ -64,8 +65,14 @@ export default function CadastroInsumo() {
     valorUnitario: '',
     observacao: '',
   });
+  const [carregando, setCarregando] = useState(true);
 
   const navigation = useNavigation<NavigationProps>();
+
+  useEffect(() => {
+    const t = setTimeout(() => setCarregando(false), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleChange = (field: keyof CadastroInsumoForm, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -120,6 +127,14 @@ export default function CadastroInsumo() {
     }
   };
 
+  if (carregando) {
+    return (
+      <Screen>
+        <SkeletonCadastroForm fields={6} />
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
       <KeyboardAvoidingView
@@ -168,9 +183,12 @@ export default function CadastroInsumo() {
               <Picker
                 selectedValue={formData.unidade}
                 onValueChange={value => handleChange('unidade', value)}
+                mode="dropdown"
+                dropdownIconColor="#19325E"
                 style={{
                   backgroundColor: '#f3f4f6',
                   borderRadius: 8,
+                  color: '#19325E',
                 }}
               >
                 {unidadesDisponiveis.map(unidade => (

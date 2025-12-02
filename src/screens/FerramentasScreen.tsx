@@ -3,7 +3,10 @@ import { Input } from '@/components/Input';
 import ScreenListar from '@/components/ScreenListar';
 import { Screen } from '@/components/ScreenProps';
 import { FerramentasDto } from '@/dtos/ferramentasDto';
-import { listarFerramentas, deletarFerramenta } from '@/service/ferramenta.service';
+import {
+  listarFerramentas,
+  deletarFerramenta,
+} from '@/service/ferramenta.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
@@ -38,12 +41,19 @@ export default function Ferramentas() {
   );
 
   async function carregarFerramentas() {
+    const startedAt = Date.now();
     try {
+      setCarregando(true);
       const dados = await listarFerramentas();
       setListaFerramentas(dados);
     } catch (error) {
       console.error('Erro ao buscar ferramestas: ', error);
     } finally {
+      const elapsed = Date.now() - startedAt;
+      const wait = Math.max(0, 600 - elapsed);
+      if (wait > 0) {
+        await new Promise(res => setTimeout(res, wait));
+      }
       setCarregando(false);
     }
   }
@@ -84,7 +94,10 @@ export default function Ferramentas() {
       carregarFerramentas();
     } catch (error) {
       console.error('Erro ao excluir:', error);
-      const message = error instanceof Error ? error.message : 'Não foi possível excluir a ferramenta';
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível excluir a ferramenta';
       showErrorToast(String(message), 'Erro ao excluir ferramenta');
     }
   };
@@ -92,7 +105,7 @@ export default function Ferramentas() {
   const botaoCadastrar = (
     <Button
       style={{ marginTop: 'auto', alignSelf: 'center', marginBottom: 16 }}
-      title={`Cadastrar Nova Colaborador`}
+      title={`Cadastrar Nova Ferramenta`}
       onPress={handleCadastrar}
     />
   );

@@ -12,6 +12,7 @@ import { CircleAlert, ArrowDown, User, Package } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
+import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'SaidaInsumo'>;
@@ -45,6 +46,7 @@ export default function SaidaInsumo() {
   );
 
   const carregarDados = async () => {
+    const startedAt = Date.now();
     try {
       setCarregando(true);
       const [estoquesData, colaboradoresData] = await Promise.all([
@@ -57,6 +59,11 @@ export default function SaidaInsumo() {
       console.error('Erro ao carregar dados:', error);
       showErrorToast('Não foi possível carregar os dados', 'Erro ao carregar');
     } finally {
+      const elapsed = Date.now() - startedAt;
+      const wait = Math.max(0, 600 - elapsed);
+      if (wait > 0) {
+        await new Promise(res => setTimeout(res, wait));
+      }
       setCarregando(false);
     }
   };
@@ -144,7 +151,7 @@ export default function SaidaInsumo() {
   if (carregando) {
     return (
       <Screen>
-        <SkeletonGeneric variant="form" />
+        <SkeletonCadastroForm fields={4} />
       </Screen>
     );
   }
@@ -273,9 +280,12 @@ export default function SaidaInsumo() {
                   <Picker
                     selectedValue={formData.estoqueId}
                     onValueChange={value => handleChange('estoqueId', value)}
+                    mode="dropdown"
+                    dropdownIconColor="#19325E"
                     style={{
                       backgroundColor: '#f3f4f6',
                       borderRadius: 8,
+                      color: '#19325E',
                     }}
                   >
                     <Picker.Item label="Selecione um insumo" value="" />
@@ -315,9 +325,12 @@ export default function SaidaInsumo() {
               <Picker
                 selectedValue={formData.colaboradorId}
                 onValueChange={value => handleChange('colaboradorId', value)}
+                mode="dropdown"
+                dropdownIconColor="#19325E"
                 style={{
                   backgroundColor: '#f3f4f6',
                   borderRadius: 8,
+                  color: '#19325E',
                 }}
               >
                 <Picker.Item label="Selecione o colaborador" value="" />

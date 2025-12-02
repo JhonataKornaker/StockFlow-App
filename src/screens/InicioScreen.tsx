@@ -19,6 +19,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { buscarCautelas, finalizarCautelas } from '@/service/cautela.service';
 import { CautelaDTO } from '@/dtos/cautelaDto';
 import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
+import { SkeletonInicioDashboard } from '@/components/Skeleton/SkeletonInicioDashboard';
 import { ResumoMovimentacaoEstoque } from '@/dtos/movimentacaoDto';
 import { buscarResumoMovimentacao } from '@/service/movimentacao.service';
 import CardMovimentacao from '@/components/CardMovimentacao';
@@ -49,17 +50,16 @@ export default function InicioScreen() {
     try {
       if (isReload) {
         setRecarregando(true);
-      } else {
-        setCarregando(true);
       }
       const dados = await buscarCautelas();
       if (dados.length > 0) {
         setListaDeCautelas(dados.filter(cautela => !cautela.entregue));
+      } else {
+        setListaDeCautelas([]);
       }
     } catch (error) {
       console.error('Erro ao buscar cautelas:', error);
     } finally {
-      setCarregando(false);
       setRecarregando(false);
     }
   }
@@ -109,13 +109,32 @@ export default function InicioScreen() {
     }
   };
 
+  async function carregarTudo() {
+    const startedAt = Date.now();
+    try {
+      setCarregando(true);
+      await Promise.all([
+        carregarCautelas(),
+        carregarMovimentacao(),
+        carregarResumo(),
+        carregarEstoqueBaixo(),
+        carregarPatrimoniosAlugados(),
+      ]);
+    } catch (error) {
+      // já há logs nos métodos internos
+    } finally {
+      const elapsed = Date.now() - startedAt;
+      const wait = Math.max(0, 600 - elapsed);
+      if (wait > 0) {
+        await new Promise(res => setTimeout(res, wait));
+      }
+      setCarregando(false);
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
-      carregarCautelas();
-      carregarMovimentacao();
-      carregarResumo();
-      carregarEstoqueBaixo();
-      carregarPatrimoniosAlugados();
+      carregarTudo();
     }, []),
   );
 
@@ -131,9 +150,33 @@ export default function InicioScreen() {
 
   if (carregando) {
     return (
-      <Screen>
-        <SkeletonGeneric variant="dashboard" />
-      </Screen>
+      <View
+        style={{
+          flex: 1,
+          paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+          backgroundColor: '#162B4D',
+        }}
+      >
+        {/* HEADER visível durante carregamento */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+          >
+            <Menu color="#C5D4EB" size={24} />
+          </TouchableOpacity>
+
+          <Text style={styles.titleHeader}>StockFlow</Text>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Cautela')}>
+            <CopyPlus size={24} color="#C5D4EB" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Conteúdo com skeleton específico */}
+        <Screen scrollable>
+          <SkeletonInicioDashboard />
+        </Screen>
+      </View>
     );
   }
 

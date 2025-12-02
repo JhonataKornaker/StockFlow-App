@@ -37,6 +37,7 @@ export default function MovimentacoesScreen() {
   );
 
   async function carregarMovimentacoes(isReload = false) {
+    const startedAt = Date.now();
     try {
       if (isReload) {
         setRecarregando(true);
@@ -50,7 +51,16 @@ export default function MovimentacoesScreen() {
       console.error('Erro ao buscar movimentações:', error);
       showErrorToast('Não foi possível carregar as movimentações', 'Erro');
     } finally {
-      setCarregando(false);
+      if (!isReload) {
+        const elapsed = Date.now() - startedAt;
+        const wait = Math.max(0, 600 - elapsed);
+        if (wait > 0) {
+          await new Promise(res => setTimeout(res, wait));
+        }
+        setCarregando(false);
+      } else {
+        setCarregando(false);
+      }
       setRecarregando(false);
     }
   }

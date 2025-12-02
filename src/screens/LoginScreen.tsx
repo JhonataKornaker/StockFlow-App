@@ -10,10 +10,12 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { Screen } from '../components/ScreenProps';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/Button';
 import { login } from '@/service/auth.service';
 import { useNavigation } from '@react-navigation/native';
@@ -26,8 +28,34 @@ export default function LoginScreen() {
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [loading, setLoading] = useState(false); // Estado para controlar o loading
+  const imageOpacity = useRef(new Animated.Value(0)).current;
+  const imageScale = useRef(new Animated.Value(0.96)).current;
   const navigation = useNavigation<any>();
   const { signIn } = useAuth();
+
+  useEffect(() => {
+    const anim = Animated.parallel([
+      Animated.timing(imageOpacity, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.sequence([
+        Animated.timing(imageScale, {
+          toValue: 1.04,
+          duration: 700,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.timing(imageScale, {
+          toValue: 1.0,
+          duration: 600,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]),
+    ]);
+    anim.start();
+    return () => anim.stop();
+  }, [imageOpacity, imageScale]);
 
   async function checkLogin(email: string, senha: string) {
     try {
@@ -69,9 +97,12 @@ export default function LoginScreen() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <Image
+            <Animated.Image
               source={require('../../assets/img_login.png')}
-              style={styles.image}
+              style={[
+                styles.image,
+                { opacity: imageOpacity, transform: [{ scale: imageScale }] },
+              ]}
               resizeMode="contain"
             />
 
@@ -133,10 +164,11 @@ export default function LoginScreen() {
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
 
-      {/* Overlay de loading com skeleton */}
+      {/* Overlay de loading com spinner */}
       {loading && (
         <View style={styles.loadingOverlay}>
-          <SkeletonGeneric variant="auth" />
+          <ActivityIndicator size="large" color="#C5D4EB" />
+          <Text style={{ color: '#C5D4EB', marginTop: 12 }}>Entrando...</Text>
         </View>
       )}
     </Screen>

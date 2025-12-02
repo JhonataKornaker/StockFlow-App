@@ -9,9 +9,10 @@ import { MainStackParamList } from '@/types/MainStackNavigator';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { CircleAlert } from 'lucide-react-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
 
 type NavigationProps = StackNavigationProp<
   MainStackParamList,
@@ -25,7 +26,13 @@ export default function CadastroFerramentas() {
     marca: '',
     modelo: '',
   });
+  const [carregando, setCarregando] = useState(true);
   const navigation = useNavigation<NavigationProps>();
+
+  useEffect(() => {
+    const t = setTimeout(() => setCarregando(false), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleChange = (
     field: keyof CriarFerramentaDto,
@@ -48,6 +55,14 @@ export default function CadastroFerramentas() {
       console.error('Erro ao salvar colaborador:', error);
     }
   };
+
+  if (carregando) {
+    return (
+      <Screen>
+        <SkeletonCadastroForm fields={4} />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>

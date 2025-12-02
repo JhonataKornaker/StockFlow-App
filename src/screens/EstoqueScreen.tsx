@@ -41,12 +41,19 @@ export default function Estoques() {
   );
 
   async function carregarEstoques() {
+    const startedAt = Date.now();
     try {
+      setCarregando(true);
       const dados = await listarEstoques();
       setEstoques(dados);
     } catch (error) {
       console.error('Erro ao carregar estoques:', error);
     } finally {
+      const elapsed = Date.now() - startedAt;
+      const wait = Math.max(0, 600 - elapsed);
+      if (wait > 0) {
+        await new Promise(res => setTimeout(res, wait));
+      }
       setCarregando(false);
     }
   }

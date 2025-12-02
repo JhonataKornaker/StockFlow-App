@@ -1,14 +1,22 @@
 {
-    "build": {
-        "apk": {
-            "android": {
-                "buildType": "apk"
-            }
-        },
-        "production": {
-            "android": {
-                "buildType": "app-bundle"
-            }
-        }
+  "build": {
+    "apk": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "simulator": false
+      }
+    },
+    "ios-simulator": {
+      "ios": {
+        "simulator": true
+      }
     }
+  }
 }

@@ -182,12 +182,12 @@ export default function StackRoutes() {
       <Stack.Screen
         name="CadastroInsumo"
         component={CadastroInsumo}
-        options={{ title: 'Cadastro de Isumos' }}
+        options={{ title: 'Cadastro de Insumos' }}
       />
       <Stack.Screen
         name="SaidaInsumo"
         component={SaidaInsumo}
-        options={{ title: 'Saida de Isumos' }}
+        options={{ title: 'Saida de Insumos' }}
       />
       <Stack.Screen
         name="CautelasAbertas"

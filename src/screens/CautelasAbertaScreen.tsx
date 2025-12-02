@@ -76,6 +76,7 @@ export default function CautelasAbertasScreen() {
   }, [listaDeCautelas, carregando, navigation]);
 
   async function carregarCautelas(isReload = false) {
+    const startedAt = Date.now();
     try {
       if (isReload) {
         setRecarregando(true);
@@ -99,7 +100,16 @@ export default function CautelasAbertasScreen() {
         'Erro ao carregar',
       );
     } finally {
-      setCarregando(false);
+      if (!isReload) {
+        const elapsed = Date.now() - startedAt;
+        const wait = Math.max(0, 600 - elapsed);
+        if (wait > 0) {
+          await new Promise(res => setTimeout(res, wait));
+        }
+        setCarregando(false);
+      } else {
+        setCarregando(false);
+      }
       setRecarregando(false);
     }
   }
