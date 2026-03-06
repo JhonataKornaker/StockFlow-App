@@ -2,6 +2,7 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/ScreenProps';
 import { atualizarPatrimonio } from '@/service/patrimonio.service';
+import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -14,8 +15,10 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Text,
   TouchableOpacity,
 } from 'react-native';
+import { Checkbox } from 'react-native-paper';
 import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<
@@ -39,9 +42,18 @@ export default function EditarPatrimonio() {
     dataLocacao: patrimonio.dataLocacao || '',
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [semNumeroSerie, setSemNumeroSerie] = useState(
+    patrimonio.numeroSerie === 'S/N',
+  );
 
   const handleChange = (field: keyof typeof formData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleToggleSemNumeroSerie = () => {
+    const novo = !semNumeroSerie;
+    setSemNumeroSerie(novo);
+    handleChange('numeroSerie', novo ? 'S/N' : '');
   };
 
   const handleSalvar = async () => {
@@ -52,7 +64,7 @@ export default function EditarPatrimonio() {
       return;
     }
 
-    if (!numeroSerie.trim()) {
+    if (!semNumeroSerie && !numeroSerie.trim()) {
       showInfoToast('O número de série é obrigatório', 'Atenção');
       return;
     }
@@ -121,7 +133,21 @@ export default function EditarPatrimonio() {
               iconColors="#FF001F80"
               value={formData.numeroSerie}
               onChangeText={text => handleChange('numeroSerie', text)}
+              editable={!semNumeroSerie}
             />
+            <TouchableOpacity
+              onPress={handleToggleSemNumeroSerie}
+              style={{ flexDirection: 'row', alignItems: 'center', marginTop: -6 }}
+            >
+              <Checkbox
+                status={semNumeroSerie ? 'checked' : 'unchecked'}
+                onPress={handleToggleSemNumeroSerie}
+                color={theme.colors.primary}
+              />
+              <Text style={{ color: theme.colors.primary, fontSize: 14 }}>
+                Não possui número de série
+              </Text>
+            </TouchableOpacity>
 
             <Input
               placeholder="Marca"
