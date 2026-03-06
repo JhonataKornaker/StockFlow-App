@@ -1,4 +1,5 @@
 import { Screen } from '@/components/ScreenProps';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
 import { HistoricoCautelaColaborador } from '@/dtos/historicoDto';
 import { buscarHistoricoCautelaColaborador } from '@/service/historico.service';
 import { listarTodasMovimentacoes } from '@/service/movimentacao.service';
@@ -21,9 +22,11 @@ export default function DetalhesColaborador() {
   const [historicoInsumos, setHistoricoInsumos] = useState<
     MovimentacaoListaDto[]
   >([]);
+  const [carregando, setCarregando] = useState(true);
 
 const carregarDados = useCallback(async () => {
   try {
+    setCarregando(true);
     const dados = await buscarHistoricoCautelaColaborador(colaborador.id);
     setHistorico(dados);
 
@@ -34,6 +37,8 @@ const carregarDados = useCallback(async () => {
     setHistoricoInsumos(doColaborador);
   } catch (error) {
     console.error('Erro ao buscar dados do colaborador:', error);
+  } finally {
+    setCarregando(false);
   }
 }, [colaborador.id, colaborador.nome]);
 
@@ -85,6 +90,14 @@ useFocusEffect(
     const parsed = tryParseDate(str);
     return parsed ? parsed.toLocaleDateString('pt-BR') : '-';
   };
+
+  if (carregando) {
+    return (
+      <Screen>
+        <SkeletonGeneric variant="list" />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>

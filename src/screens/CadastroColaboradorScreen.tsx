@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { CircleAlert } from 'lucide-react-native';
 import { CriarColaboradorDto } from '@/dtos/colaboradorDto';
@@ -7,6 +7,7 @@ import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/ScreenProps';
+import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { useNavigation } from '@react-navigation/native';
@@ -22,7 +23,13 @@ export default function CadastroColaborador() {
     funcao: '',
     empresa: '',
   });
+  const [carregando, setCarregando] = useState(true);
   const navigation = useNavigation<NavigationProps>();
+
+  useEffect(() => {
+    const t = setTimeout(() => setCarregando(false), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleChange = (field: keyof CriarColaboradorDto, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -45,6 +52,14 @@ export default function CadastroColaborador() {
       showErrorToast('Erro ao salvar colaborador.', 'Erro');
     }
   };
+
+  if (carregando) {
+    return (
+      <Screen>
+        <SkeletonCadastroForm fields={3} />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
