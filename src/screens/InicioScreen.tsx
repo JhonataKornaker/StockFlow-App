@@ -52,11 +52,7 @@ export default function InicioScreen() {
         setRecarregando(true);
       }
       const dados = await buscarCautelas();
-      if (dados.length > 0) {
-        setListaDeCautelas(dados.filter(cautela => !cautela.entregue));
-      } else {
-        setListaDeCautelas([]);
-      }
+      setListaDeCautelas(dados.filter(cautela => !cautela.entregue));
     } catch (error) {
       console.error('Erro ao buscar cautelas:', error);
     } finally {
@@ -140,7 +136,6 @@ export default function InicioScreen() {
 
   async function finalizarCautelaHandler(id: number) {
     try {
-      console.log('Apertou');
       await finalizarCautelas(id);
       await carregarCautelas(true);
     } catch (error) {
@@ -297,8 +292,8 @@ export default function InicioScreen() {
             </Text>
           ) : (
             <>
-              {listaDeCautelas.slice(0, 2).map((item, index) => (
-                <View key={index} style={styles.cardContainer}>
+              {listaDeCautelas.slice(0, 2).map((item) => (
+                <View key={item.id} style={styles.cardContainer}>
                   <CardCautelas
                     cautelas={item}
                     onFinalizar={finalizarCautelaHandler}
@@ -306,7 +301,7 @@ export default function InicioScreen() {
                 </View>
               ))}
 
-              {listaDeCautelas.length > 3 && (
+              {listaDeCautelas.length > 2 && (
                 <TouchableOpacity
                   onPress={() =>
                     navigation.navigate('CautelasAbertas', {
