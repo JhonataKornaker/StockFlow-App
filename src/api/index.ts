@@ -12,13 +12,18 @@ const api = axios.create({
 });
 
 let onTokenExpired: (() => void) | null = null;
+let cachedToken: string | null = null;
 
 export const setTokenExpiredCallback = (callback: () => void) => {
   onTokenExpired = callback;
 };
 
+export const setCachedToken = (token: string | null) => {
+  cachedToken = token;
+};
+
 api.interceptors.request.use(async config => {
-  const token = await AsyncStorage.getItem('token');
+  const token = cachedToken ?? await AsyncStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

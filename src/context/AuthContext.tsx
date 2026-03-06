@@ -5,7 +5,8 @@ import React, {
   ReactNode,
   useContext,
 } from 'react';
-import { saveToken, removeToken, hasToken } from '@/service/auth.service';
+import { saveToken, removeToken, hasToken, getToken } from '@/service/auth.service';
+import { setCachedToken } from '@/api';
 
 type AuthContextData = {
   isLogged: boolean;
@@ -20,19 +21,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function loadToken() {
-      const logged = await hasToken();
-      setIsLogged(logged);
+      const token = await getToken();
+      setCachedToken(token);
+      setIsLogged(!!token);
     }
     loadToken();
   }, []);
 
   async function signIn(token: string) {
     await saveToken(token);
+    setCachedToken(token);
     setIsLogged(true);
   }
 
   async function signOut() {
     await removeToken();
+    setCachedToken(null);
     setIsLogged(false);
   }
 
