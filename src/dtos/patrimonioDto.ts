@@ -5,6 +5,8 @@ export type CriarPatrimonioDto = {
   modelo: string;
   nomeLocadora?: string;
   dataLocacao?: Date;
+  dataDevolucao?: Date;
+  comprovanteUrl?: string;
 };
 
 export type PatrimonioDto = {
@@ -15,5 +17,7 @@ export type PatrimonioDto = {
   modelo: string;
   nomeLocadora?: string;
   dataLocacao?: string;
+  dataDevolucao?: string;
+  comprovanteUrl?: string;
   locado: boolean;
 };

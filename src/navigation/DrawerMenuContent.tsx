@@ -9,6 +9,7 @@ import {
   Shield,
   Package,
   PackageOpen,
+  CalendarClock,
 } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthContext';
 import { Usuario } from '@/dtos/usuarioDto';
@@ -134,6 +135,18 @@ export default function DrawerMenuContent({ navigation }) {
       >
         <Shield color="#C5D4EB" size={20} />
         <Text style={styles.link}>Patrimônios</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() =>
+          navigation.navigate('Home', {
+            screen: 'Locacoes',
+          })
+        }
+      >
+        <CalendarClock color="#C5D4EB" size={20} />
+        <Text style={styles.link}>Locações</Text>
       </TouchableOpacity>
 
       <TouchableOpacity

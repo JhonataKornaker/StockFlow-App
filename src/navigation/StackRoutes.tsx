@@ -22,6 +22,8 @@ import EditarColaborador from '@/screens/EditarColaboradorScreen';
 import EditarFerramenta from '@/screens/EditarFerramentaScreen';
 import EditarPatrimonio from '@/screens/EditarPatrimonioScreen';
 import EditarInsumo from '@/screens/EditarInsumoScreen';
+import LocacoesScreen from '@/screens/LocacoesScreen';
+import DetalhesLocacaoScreen from '@/screens/DetalhesLocacaoScreen';
 
 const Stack = createStackNavigator();
 
@@ -224,6 +226,16 @@ export default function StackRoutes() {
         name="EditarInsumo"
         component={EditarInsumo}
         options={{ title: 'Editar Insumo' }}
+      />
+      <Stack.Screen
+        name="Locacoes"
+        component={LocacoesScreen}
+        options={{ title: 'Equipamentos Alugados' }}
+      />
+      <Stack.Screen
+        name="DetalhesLocacao"
+        component={DetalhesLocacaoScreen}
+        options={{ title: 'Detalhes da Locação' }}
       />
     </Stack.Navigator>
   );

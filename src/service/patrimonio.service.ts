@@ -26,6 +26,15 @@ export async function createPatrimonio(patrimonio: CriarPatrimonioDto) {
   }
 }
 
+export async function listarLocacoes(): Promise<PatrimonioDto[]> {
+  try {
+    const response = await api.get('/patrimonio/locados');
+    return response.data;
+  } catch (error) {
+    return [];
+  }
+}
+
 export async function listarPatrimonio(): Promise<PatrimonioDto[]> {
   try {
     const isOnline = await NetworkService.isOnline();
@@ -63,6 +72,7 @@ export async function atualizarPatrimonio(
     modelo: string;
     nomeLocadora?: string;
     dataLocacao?: Date;
+    dataDevolucao?: Date;
   },
 ) {
   const isOnline = await NetworkService.isOnline();

@@ -40,7 +40,9 @@ export default function EditarPatrimonio() {
     modelo: patrimonio.modelo,
     nomeLocadora: patrimonio.nomeLocadora || '',
     dataLocacao: patrimonio.dataLocacao || '',
+    dataDevolucao: patrimonio.dataDevolucao || '',
   });
+  const [showDevolucaoPicker, setShowDevolucaoPicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [semNumeroSerie, setSemNumeroSerie] = useState(
     patrimonio.numeroSerie === 'S/N',
@@ -80,6 +82,9 @@ export default function EditarPatrimonio() {
         payload.nomeLocadora = formData.nomeLocadora?.trim() || undefined;
         payload.dataLocacao = formData.dataLocacao
           ? parseDateFromBrFormat(formData.dataLocacao)
+          : undefined;
+        payload.dataDevolucao = formData.dataDevolucao
+          ? parseDateFromBrFormat(formData.dataDevolucao)
           : undefined;
       }
 
@@ -202,6 +207,40 @@ export default function EditarPatrimonio() {
                         setFormData(prev => ({
                           ...prev,
                           dataLocacao: formatDate(selectedDate),
+                        }));
+                      }
+                    }}
+                    locale="pt-BR"
+                  />
+                )}
+
+                <TouchableOpacity onPress={() => setShowDevolucaoPicker(true)}>
+                  <Input
+                    placeholder="Prazo de Devolução (opcional)"
+                    icon={CircleAlert}
+                    iconColors="#FF001F80"
+                    iconPosition="right"
+                    value={formData.dataDevolucao || ''}
+                    editable={false}
+                    pointerEvents="none"
+                  />
+                </TouchableOpacity>
+
+                {showDevolucaoPicker && (
+                  <DateTimePicker
+                    value={
+                      formData.dataDevolucao
+                        ? parseDateFromBrFormat(formData.dataDevolucao)
+                        : new Date()
+                    }
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+                    onChange={(event: any, selectedDate?: Date) => {
+                      setShowDevolucaoPicker(false);
+                      if (selectedDate) {
+                        setFormData(prev => ({
+                          ...prev,
+                          dataDevolucao: formatDate(selectedDate),
                         }));
                       }
                     }}

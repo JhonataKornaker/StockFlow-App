@@ -11,7 +11,7 @@ import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Calendar, Contact, Search, Trash2 } from 'lucide-react-native';
+import { Contact, Search, Trash2 } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
   SectionList,
@@ -150,28 +150,32 @@ export default function Patrimonios() {
             onLongPress={() => setItemParaExcluir(item)}
             onPress={() => handleEditar(item)}
             delayLongPress={300}
+            style={{ paddingVertical: 4 }}
           >
-            <Text
-              style={{
-                paddingLeft: 8,
-                paddingVertical: 4,
-                fontSize: 16,
-                color: theme.colors.primary,
-                fontWeight: 'bold',
-              }}
-            >
-              {item.descricao}
-              {item.locado && item.dataLocacao && (
-                <View style={{ flexDirection: 'row', paddingLeft: 8 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Calendar size={16} color="red" />
-                    <Text style={{ marginLeft: 4, fontSize: 14, color: 'red' }}>
-                      {new Date(item.dataLocacao).toLocaleDateString('pt-BR')}
-                    </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 8 }}>
+              <Text
+                style={{
+                  flex: 1,
+                  fontSize: 16,
+                  color: theme.colors.primary,
+                  fontWeight: 'bold',
+                }}
+                numberOfLines={1}
+              >
+                {item.descricao}
+              </Text>
+
+              {item.locado && (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('DetalhesLocacao', { patrimonio: item })}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <View style={styles.locadoBadge}>
+                    <Text style={styles.locadoBadgeText}>L</Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               )}
-            </Text>
+            </View>
 
             <View
               style={{
@@ -179,13 +183,12 @@ export default function Patrimonios() {
                 flexDirection: 'row',
                 alignItems: 'center',
                 flexWrap: 'wrap',
+                paddingLeft: 8,
               }}
             >
-              <Text>Número Série: {item.numeroSerie}</Text>
-              <Text style={{ marginHorizontal: 6 }}>|</Text>
-              <Text>Marca: {item.marca}</Text>
-              <Text style={{ marginHorizontal: 6 }}>|</Text>
-              <Text>Modelo: {item.modelo}</Text>
+              <Text style={{ fontSize: 13, color: '#6b7280' }}>Nº Série: {item.numeroSerie}</Text>
+              <Text style={{ marginHorizontal: 6, color: '#d1d5db' }}>|</Text>
+              <Text style={{ fontSize: 13, color: '#6b7280' }}>{item.marca} · {item.modelo}</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -352,5 +355,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  locadoBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#1d4ed8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  locadoBadgeText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '800',
   },
 });
