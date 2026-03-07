@@ -6,7 +6,7 @@ import React, {
   useContext,
 } from 'react';
 import { saveToken, removeToken, hasToken, getToken } from '@/service/auth.service';
-import { setCachedToken } from '@/api';
+import { setCachedToken, setTokenExpiredCallback } from '@/api';
 
 type AuthContextData = {
   isLogged: boolean;
@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLogged(!!token);
     }
     loadToken();
+    setTokenExpiredCallback(signOut);
   }, []);
 
   async function signIn(token: string) {

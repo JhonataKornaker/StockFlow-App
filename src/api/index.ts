@@ -1,7 +1,6 @@
 import env from '@/config/env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { showErrorToast } from '@/util/toast';
 
 const api = axios.create({
   baseURL: env.API_BASE_URL,
@@ -13,6 +12,7 @@ const api = axios.create({
 
 let onTokenExpired: (() => void) | null = null;
 let cachedToken: string | null = null;
+let handlingExpiry = false;
 
 export const setTokenExpiredCallback = (callback: () => void) => {
   onTokenExpired = callback;
@@ -43,16 +43,17 @@ api.interceptors.response.use(
     );
 
     if (error.response?.status === 401 && !isExcludedEndpoint) {
-      if (!originalRequest._retry) {
-        originalRequest._retry = true;
+      if (!handlingExpiry) {
+        handlingExpiry = true;
 
         await AsyncStorage.multiRemove(['token', 'user']);
-
-        showErrorToast('Sua sessão expirou. Faça login novamente.', 'Sessão Expirada');
+        cachedToken = null;
 
         if (onTokenExpired) {
           onTokenExpired();
         }
+
+        setTimeout(() => { handlingExpiry = false; }, 3000);
       }
     }
     return Promise.reject(error);
