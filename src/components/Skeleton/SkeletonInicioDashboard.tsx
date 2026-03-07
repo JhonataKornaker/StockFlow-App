@@ -1,5 +1,34 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, Platform } from 'react-native';
+import { Animated, Platform, StyleSheet, View } from 'react-native';
+
+function SkeletonBox({
+  width = '100%',
+  height = 16,
+  borderRadius = 8,
+  opacity,
+  style,
+}: {
+  width?: number | string;
+  height?: number;
+  borderRadius?: number;
+  opacity: Animated.AnimatedInterpolation<number>;
+  style?: object;
+}) {
+  return (
+    <Animated.View
+      style={[
+        {
+          width,
+          height,
+          borderRadius,
+          backgroundColor: '#C5D4EB40',
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+}
 
 export function SkeletonInicioDashboard() {
   const animatedValue = useRef(new Animated.Value(0)).current;
@@ -20,9 +49,7 @@ export function SkeletonInicioDashboard() {
       ]),
     );
     loop.start();
-    return () => {
-      loop.stop();
-    };
+    return () => loop.stop();
   }, [animatedValue]);
 
   const opacity = animatedValue.interpolate({
@@ -32,40 +59,49 @@ export function SkeletonInicioDashboard() {
 
   return (
     <View style={styles.container}>
-      {/* Card 1: Resumo Rápido */}
-      <Animated.View style={[styles.title, { opacity }]} />
-      <Animated.View style={[styles.block, { height: 160, marginBottom: 12, opacity }]} />
-      <Animated.View style={[styles.subBlock, { height: 52, marginBottom: 8, opacity }]} />
-      <Animated.View style={[styles.subBlock, { height: 52, marginBottom: 16, opacity }]} />
+      {/* KPI row */}
+      <View style={styles.kpiRow}>
+        {[0, 1, 2].map(i => (
+          <View key={i} style={styles.kpiCard}>
+            <SkeletonBox width={36} height={36} borderRadius={18} opacity={opacity} />
+            <SkeletonBox width={40} height={24} borderRadius={6} opacity={opacity} />
+            <SkeletonBox width={52} height={11} borderRadius={4} opacity={opacity} />
+          </View>
+        ))}
+      </View>
 
-      {/* Card 2: Cautelas Abertas */}
-      <Animated.View style={[styles.title, { width: '55%', opacity }]} />
-      <Animated.View style={[styles.block, { height: 200, marginBottom: 16, opacity }]} />
+      {/* Alertas */}
+      <SkeletonBox height={80} borderRadius={14} opacity={opacity} />
 
-      {/* Card 3: Movimentação do Estoque */}
-      <Animated.View style={[styles.title, { width: '60%', opacity }]} />
-      <Animated.View style={[styles.block, { height: 200, opacity }]} />
+      {/* Atalhos */}
+      <SkeletonBox height={110} borderRadius={14} opacity={opacity} />
+
+      {/* Cautelas */}
+      <SkeletonBox height={180} borderRadius={14} opacity={opacity} />
+
+      {/* Movimentação */}
+      <SkeletonBox height={160} borderRadius={14} opacity={opacity} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 12,
+    gap: 12,
   },
-  title: {
-    height: 24,
-    width: '40%',
-    backgroundColor: '#C5D4EB40',
-    borderRadius: 8,
-    marginBottom: 8,
+  kpiRow: {
+    flexDirection: 'row',
+    gap: 10,
   },
-  block: {
-    backgroundColor: '#C5D4EB40',
+  kpiCard: {
+    flex: 1,
+    backgroundColor: '#ffffff15',
     borderRadius: 12,
-  },
-  subBlock: {
-    backgroundColor: '#C5D4EB30',
-    borderRadius: 10,
+    padding: 12,
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 90,
+    justifyContent: 'center',
   },
 });

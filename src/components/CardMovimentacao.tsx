@@ -9,7 +9,7 @@ interface Props {
 export default function CardMovimentacao({ movimentacao }: Props) {
   const formatarData = (dataString: string) => {
     const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR');
+    return data.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
   };
 
   // Combinar entrada e saída e ordenar por data
