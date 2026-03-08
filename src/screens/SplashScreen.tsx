@@ -38,13 +38,13 @@ export default function SplashScreen() {
         style={[styles.image, { opacity, transform: [{ scale }] }]}
         resizeMode="contain"
       />
-      <ActivityIndicator size="large" color="#C5D4EB" style={{ marginTop: 16 }} />
+      <ActivityIndicator size="large" color="#B0C4DC" style={{ marginTop: 16 }} />
       <View style={styles.loaderBar}>
         <Animated.View
           style={{
             height: 4,
             width: '40%',
-            backgroundColor: '#C5D4EB',
+            backgroundColor: '#B0C4DC',
             borderRadius: 4,
             opacity,
           }}
@@ -57,7 +57,7 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#C5D4EB',
+    backgroundColor: '#B0C4DC',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     width: '80%',
     maxWidth: 320,
     height: 8,
-    backgroundColor: '#C5D4EB22',
+    backgroundColor: '#B0C4DC22',
     borderRadius: 6,
     overflow: 'hidden',
     alignItems: 'flex-start',

@@ -167,8 +167,8 @@ export default function LoginScreen() {
       {/* Overlay de loading com spinner */}
       {loading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#C5D4EB" />
-          <Text style={{ color: '#C5D4EB', marginTop: 12 }}>Entrando...</Text>
+          <ActivityIndicator size="large" color="#B0C4DC" />
+          <Text style={{ color: '#B0C4DC', marginTop: 12 }}>Entrando...</Text>
         </View>
       )}
     </Screen>
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: '#C5D4EB',
+    backgroundColor: '#B0C4DC',
   },
   scrollContainer: {
     flexGrow: 1,

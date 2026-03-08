@@ -9,7 +9,7 @@ export default function DrawerMenuButton() {
     <TouchableOpacity
       onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
     >
-      <Menu size={24} color="#C5D4EB" />
+      <Menu size={24} color="#B0C4DC" />
     </TouchableOpacity>
   );
 }

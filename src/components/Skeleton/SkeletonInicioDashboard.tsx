@@ -21,7 +21,7 @@ function SkeletonBox({
           width,
           height,
           borderRadius,
-          backgroundColor: '#C5D4EB40',
+          backgroundColor: '#B0C4DC40',
           opacity,
         },
         style,

@@ -218,7 +218,7 @@ export default function InicioScreen() {
   const header = (
     <View style={styles.header}>
       <TouchableOpacity onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
-        <Menu color="#C5D4EB" size={24} />
+        <Menu color="#B0C4DC" size={24} />
       </TouchableOpacity>
 
       <View style={styles.headerCenter}>
@@ -229,7 +229,7 @@ export default function InicioScreen() {
       </View>
 
       <TouchableOpacity onPress={() => navigation.navigate('Cautela')}>
-        <CopyPlus size={24} color="#C5D4EB" />
+        <CopyPlus size={24} color="#B0C4DC" />
       </TouchableOpacity>
     </View>
   );
@@ -260,8 +260,8 @@ export default function InicioScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#C5D4EB"
-            colors={['#C5D4EB']}
+            tintColor="#B0C4DC"
+            colors={['#B0C4DC']}
           />
         }
       >
@@ -460,12 +460,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerSaudacao: {
-    color: '#C5D4EB',
+    color: '#B0C4DC',
     fontWeight: 'bold',
     fontSize: 16,
   },
   headerData: {
-    color: '#C5D4EB',
+    color: '#B0C4DC',
     fontSize: 11,
     opacity: 0.7,
     textTransform: 'capitalize',
@@ -474,6 +474,7 @@ const styles = StyleSheet.create({
     padding: 12,
     paddingBottom: 32,
     gap: 12,
+    backgroundColor: '#B0C4DC',
   },
 
   // KPI

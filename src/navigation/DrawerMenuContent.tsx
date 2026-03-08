@@ -10,6 +10,7 @@ import {
   Package,
   PackageOpen,
   CalendarClock,
+  BarChart2,
 } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthContext';
 import { Usuario } from '@/dtos/usuarioDto';
@@ -97,7 +98,7 @@ export default function DrawerMenuContent({ navigation }) {
         style={styles.menuItem}
         onPress={() => navigation.navigate('Home', { screen: 'Inicio' })}
       >
-        <Home color="#C5D4EB" size={20} />
+        <Home color="#B0C4DC" size={20} />
         <Text style={styles.link}>Início</Text>
       </TouchableOpacity>
 
@@ -109,7 +110,7 @@ export default function DrawerMenuContent({ navigation }) {
           })
         }
       >
-        <Hammer color="#C5D4EB" size={20} />
+        <Hammer color="#B0C4DC" size={20} />
         <Text style={styles.link}>Ferramentas</Text>
       </TouchableOpacity>
 
@@ -121,7 +122,7 @@ export default function DrawerMenuContent({ navigation }) {
           })
         }
       >
-        <User color="#C5D4EB" size={20} />
+        <User color="#B0C4DC" size={20} />
         <Text style={styles.link}>Colaboradores</Text>
       </TouchableOpacity>
 
@@ -133,7 +134,7 @@ export default function DrawerMenuContent({ navigation }) {
           })
         }
       >
-        <Shield color="#C5D4EB" size={20} />
+        <Shield color="#B0C4DC" size={20} />
         <Text style={styles.link}>Patrimônios</Text>
       </TouchableOpacity>
 
@@ -145,7 +146,7 @@ export default function DrawerMenuContent({ navigation }) {
           })
         }
       >
-        <CalendarClock color="#C5D4EB" size={20} />
+        <CalendarClock color="#B0C4DC" size={20} />
         <Text style={styles.link}>Locações</Text>
       </TouchableOpacity>
 
@@ -155,7 +156,7 @@ export default function DrawerMenuContent({ navigation }) {
           navigation.navigate('Home', { screen: 'CautelasAbertas' })
         }
       >
-        <ClipboardList color="#C5D4EB" size={20} />
+        <ClipboardList color="#B0C4DC" size={20} />
         <Text style={styles.link}>Cautelas</Text>
       </TouchableOpacity>
 
@@ -163,7 +164,7 @@ export default function DrawerMenuContent({ navigation }) {
         style={styles.menuItem}
         onPress={() => navigation.navigate('Home', { screen: 'Estoques' })}
       >
-        <Package color="#C5D4EB" size={20} />
+        <Package color="#B0C4DC" size={20} />
         <Text style={styles.link}>Estoque</Text>
       </TouchableOpacity>
 
@@ -171,13 +172,29 @@ export default function DrawerMenuContent({ navigation }) {
         style={styles.menuItem}
         onPress={() => navigation.navigate('Home', { screen: 'SaidaInsumo' })}
       >
-        <PackageOpen color="#C5D4EB" size={20} />
+        <PackageOpen color="#B0C4DC" size={20} />
         <Text style={styles.link}>Saida De Insumo</Text>
       </TouchableOpacity>
 
       {/* Botão de sair */}
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => navigation.navigate('Home', { screen: 'RelatorioInsumos' })}
+      >
+        <BarChart2 color="#B0C4DC" size={20} />
+        <Text style={styles.link}>Relatório de Insumos</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => navigation.navigate('Home', { screen: 'RelatorioLocacoes' })}
+      >
+        <CalendarClock color="#B0C4DC" size={20} />
+        <Text style={styles.link}>Relatório de Locações</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={[styles.menuItem, { marginTop: 20 }]}>
-        <LogOut color="#C5D4EB" size={20} />
+        <LogOut color="#B0C4DC" size={20} />
         <Text
           style={styles.link}
           //Resetar a stack de telas e mandar para tela login
@@ -214,7 +231,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: {
-    color: '#C5D4EB',
+    color: '#B0C4DC',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -222,12 +239,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userName: {
-    color: '#C5D4EB',
+    color: '#B0C4DC',
     fontSize: 18,
     fontWeight: 'bold',
   },
   userRole: {
-    color: '#C5D4EB',
+    color: '#B0C4DC',
     fontSize: 14,
     opacity: 0.7,
   },
@@ -238,7 +255,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   link: {
-    color: '#C5D4EB',
+    color: '#B0C4DC',
     fontSize: 18,
   },
 });

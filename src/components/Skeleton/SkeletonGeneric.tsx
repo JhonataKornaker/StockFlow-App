@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   block: {
-    backgroundColor: '#C5D4EB40',
+    backgroundColor: '#B0C4DC40',
     borderRadius: 8,
   },
 });
