@@ -1,13 +1,15 @@
 import { Screen } from '@/components/ScreenProps';
 import { PatrimonioDto } from '@/dtos/patrimonioDto';
-import { listarLocacoes } from '@/service/patrimonio.service';
+import { devolverLocacao, listarLocacoes } from '@/service/patrimonio.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
+import { showErrorToast, showSuccessToast } from '@/util/toast';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Building2, Calendar, CalendarCheck, Package } from 'lucide-react-native';
+import { ArrowDownToLine, Building2, Calendar, CalendarCheck, Package } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import {
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -38,7 +40,15 @@ function getStatusDevolucao(dataDevolucao?: string): {
   return { label: `${dias} dias restantes`, color: '#22c55e' };
 }
 
-function CardLocacao({ item, onPress }: { item: PatrimonioDto; onPress: () => void }) {
+function CardLocacao({
+  item,
+  onPress,
+  onDevolver,
+}: {
+  item: PatrimonioDto;
+  onPress: () => void;
+  onDevolver: () => void;
+}) {
   const status = getStatusDevolucao(item.dataDevolucao);
 
   return (
@@ -86,6 +96,11 @@ function CardLocacao({ item, onPress }: { item: PatrimonioDto; onPress: () => vo
           </View>
         )}
       </View>
+
+      <TouchableOpacity style={styles.devolverBtn} onPress={onDevolver} activeOpacity={0.8}>
+        <ArrowDownToLine size={15} color="#fff" />
+        <Text style={styles.devolverBtnText}>Registrar Devolução</Text>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 }
@@ -100,6 +115,28 @@ export default function LocacoesScreen() {
       carregarLocacoes();
     }, []),
   );
+
+  function handleDevolver(item: PatrimonioDto) {
+    Alert.alert(
+      'Registrar Devolução',
+      `Confirma a devolução de "${item.descricao}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Confirmar',
+          onPress: async () => {
+            try {
+              await devolverLocacao(item.id);
+              showSuccessToast('Devolução registrada com sucesso!');
+              carregarLocacoes();
+            } catch {
+              showErrorToast('Erro ao registrar devolução', 'Erro');
+            }
+          },
+        },
+      ],
+    );
+  }
 
   async function carregarLocacoes() {
     const startedAt = Date.now();
@@ -168,6 +205,7 @@ export default function LocacoesScreen() {
           <CardLocacao
             item={item}
             onPress={() => navigation.navigate('EditarPatrimonio', { patrimonio: item })}
+            onDevolver={() => handleDevolver(item)}
           />
         )}
         contentContainerStyle={{ paddingBottom: 16 }}
@@ -188,6 +226,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
+  },
+  devolverBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#19325E',
+    borderRadius: 8,
+    paddingVertical: 9,
+    marginTop: 12,
+  },
+  devolverBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 13,
   },
   cardHeader: {
     flexDirection: 'row',

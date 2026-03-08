@@ -1,5 +1,5 @@
 import api from '@/api';
-import { CriarPatrimonioDto, PatrimonioDto } from '@/dtos/patrimonioDto';
+import { CriarPatrimonioDto, HistoricoLocacaoDto, PatrimonioDto } from '@/dtos/patrimonioDto';
 import { StorageService, STORAGE_KEYS } from './storage.service';
 import { NetworkService } from './network.service';
 import { SyncService } from './sync.service';
@@ -24,6 +24,23 @@ export async function createPatrimonio(patrimonio: CriarPatrimonioDto) {
       message: 'Será sincronizado quando houver internet',
     };
   }
+}
+
+export async function devolverLocacao(id: number, observacao?: string): Promise<void> {
+  await api.post(`/patrimonio/${id}/devolver`, { observacao });
+}
+
+export async function buscarHistoricoLocacoes(params: {
+  dataInicio?: string;
+  dataFim?: string;
+}): Promise<HistoricoLocacaoDto[]> {
+  const query = new URLSearchParams();
+  if (params.dataInicio) query.append('dataInicio', params.dataInicio);
+  if (params.dataFim) query.append('dataFim', params.dataFim);
+  const response = await api.get<HistoricoLocacaoDto[]>(
+    `/patrimonio/historico-locacoes?${query.toString()}`,
+  );
+  return response.data;
 }
 
 export async function listarLocacoes(): Promise<PatrimonioDto[]> {

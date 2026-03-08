@@ -21,3 +21,21 @@ export type PatrimonioDto = {
   comprovanteUrl?: string;
   locado: boolean;
 };
+
+export interface HistoricoLocacaoDto {
+  id: number;
+  nomeLocadora: string;
+  dataLocacao: string;
+  dataDevolucaoPrevista?: string;
+  dataEfetivaDevolvido: string;
+  comprovanteUrl?: string;
+  observacao?: string;
+  criadoEm: string;
+  patrimonio: {
+    id: number;
+    descricao: string;
+    numeroSerie: string;
+    marca: string;
+    modelo: string;
+  };
+}
