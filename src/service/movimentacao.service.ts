@@ -1,10 +1,27 @@
 import api from '@/api';
 import {
+  MovimentacaoFiltradaDto,
   MovimentacaoListaDto,
   ResumoMovimentacaoEstoque,
+  TipoMovimentacao,
 } from '@/dtos/movimentacaoDto';
 import { StorageService, STORAGE_KEYS } from './storage.service';
 import { NetworkService } from './network.service';
+
+export async function buscarMovimentacoesRelatorio(params: {
+  dataInicio?: string;
+  dataFim?: string;
+  tipo?: TipoMovimentacao | 'TODOS';
+}): Promise<MovimentacaoFiltradaDto[]> {
+  const query = new URLSearchParams();
+  if (params.dataInicio) query.append('dataInicio', params.dataInicio);
+  if (params.dataFim) query.append('dataFim', params.dataFim);
+  if (params.tipo && params.tipo !== 'TODOS') query.append('tipo', params.tipo);
+  const response = await api.get<MovimentacaoFiltradaDto[]>(
+    `controle-estoque/movimentacoes?${query.toString()}`,
+  );
+  return response.data;
+}
 
 export async function buscarResumoMovimentacao(): Promise<ResumoMovimentacaoEstoque> {
   try {

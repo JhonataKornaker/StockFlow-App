@@ -24,6 +24,8 @@ import EditarPatrimonio from '@/screens/EditarPatrimonioScreen';
 import EditarInsumo from '@/screens/EditarInsumoScreen';
 import LocacoesScreen from '@/screens/LocacoesScreen';
 import DetalhesLocacaoScreen from '@/screens/DetalhesLocacaoScreen';
+import RelatorioInsumosScreen from '@/screens/RelatorioInsumosScreen';
+import RelatorioLocacoesScreen from '@/screens/RelatorioLocacoesScreen';
 
 const Stack = createStackNavigator();
 
@@ -236,6 +238,16 @@ export default function StackRoutes() {
         name="DetalhesLocacao"
         component={DetalhesLocacaoScreen}
         options={{ title: 'Detalhes da Locação' }}
+      />
+      <Stack.Screen
+        name="RelatorioInsumos"
+        component={RelatorioInsumosScreen}
+        options={{ title: 'Relatório de Insumos' }}
+      />
+      <Stack.Screen
+        name="RelatorioLocacoes"
+        component={RelatorioLocacoesScreen}
+        options={{ title: 'Relatório de Locações' }}
       />
     </Stack.Navigator>
   );

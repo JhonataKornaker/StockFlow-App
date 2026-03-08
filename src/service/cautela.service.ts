@@ -4,34 +4,26 @@ import { NetworkService } from './network.service';
 import { STORAGE_KEYS, StorageService } from './storage.service';
 import { SyncService } from './sync.service';
 
-/*export async function buscarCautelas(): Promise<CautelaDTO[]> {
-  const response = await api.get('/cautela');
-  return response.data;
-}*/
-
-/*export async function criarCautelas(cautelas: CriarCautelaDto[]) {
-  const response = await api.post('/cautela', cautelas);
-  return response.data;
-}*/
-
 export async function listarItens() {
-  const ferramentas = await api.get('/ferramenta');
-  const patrimonios = await api.get('/patrimonio');
+  const [ferramentas, patrimonios] = await Promise.all([
+    api.get('/ferramenta'),
+    api.get('/patrimonio'),
+  ]);
   return [
     ...ferramentas.data.map((f: any) => ({ ...f, tipo: 'ferramenta' })),
-    ...patrimonios.data.map((p: any) => ({ ...p, tipo: 'patrimonio' })),
+    ...patrimonios.data
+      .filter((p: any) => p.disponivel)
+      .map((p: any) => ({ ...p, tipo: 'patrimonio' })),
   ];
 }
 
 export async function listarColaboradores() {
   const { data } = await api.get('/colaborador');
-  console.log('Colaboradores Service: ', data);
   return data;
 }
 
 export async function finalizarCautelas(id: number) {
   const response = await api.patch(`/cautela/${id}`);
-  console.log('Finalizar Cautela: ', response.data);
   return response.data;
 }
 
@@ -50,7 +42,6 @@ export async function buscarCautelas() {
       return response.data;
     } else {
       // Buscar do cache
-      console.log('📴 Modo offline - buscando do cache');
       const cached = await StorageService.get<{ data: any; timestamp: string }>(
         STORAGE_KEYS.CAUTELAS,
       );
@@ -58,7 +49,6 @@ export async function buscarCautelas() {
     }
   } catch (error) {
     // Se der erro na API, tenta buscar do cache
-    console.log('Erro na API, buscando cache...');
     const cached = await StorageService.get<{ data: any; timestamp: string }>(
       STORAGE_KEYS.CAUTELAS,
     );
@@ -75,7 +65,6 @@ export async function criarCautelas(data: any) {
     return response.data;
   } else {
     // Offline: salva para sincronizar depois
-    console.log('📴 Modo offline - salvando para sincronizar depois');
     await SyncService.addPendingAction({
       type: 'CREATE',
       endpoint: 'cautelas',

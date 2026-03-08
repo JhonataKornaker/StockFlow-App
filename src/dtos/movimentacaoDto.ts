@@ -28,3 +28,31 @@ export interface MovimentacaoListaDto {
   colaborador?: string;
   observacao?: string;
 }
+
+export type TipoMovimentacao = 'ENTRADA' | 'SAIDA' | 'AJUSTE' | 'DEVOLUCAO' | 'TRANSFERENCIA';
+
+export interface MovimentacaoFiltradaDto {
+  id: number;
+  tipo: TipoMovimentacao;
+  quantidade: number;
+  quantidadeAntes: number;
+  quantidadeDepois: number;
+  observacao?: string;
+  fornecedor?: string;
+  valorTotal?: number;
+  criadoEm: string;
+  estoque: {
+    insumo: {
+      descricao: string;
+      unidade: string;
+    };
+  };
+  colaborador?: {
+    nome: string;
+    funcao: string;
+    empresa: string;
+  };
+  usuario: {
+    nome: string;
+  };
+}
