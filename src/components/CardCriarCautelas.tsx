@@ -1,5 +1,4 @@
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,7 +13,7 @@ interface Cautela {
   quantidade: string;
   data: string;
   itemId: number; // ← Mudei de string para number
-  tipo: string; // ← NOVO: tipo do item (ferramenta ou patrimonio)
+  tipo: 'ferramenta' | 'patrimonio';
   colaboradorId: number;
 }
 

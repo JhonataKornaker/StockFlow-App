@@ -1,11 +1,5 @@
-import { CheckCircle } from 'lucide-react-native';
-import {
-  SafeAreaView,
-  Text,
-  TouchableOpacity,
-  View,
-  StyleSheet,
-} from 'react-native';
+import { CheckCircle, Clock, Hammer, Shield } from 'lucide-react-native';
+import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 
 interface Ferramenta {
   descricao: string;
@@ -30,7 +24,7 @@ interface Colaborador {
 interface Cautela {
   id: number;
   tipo: string;
-  data: string; // data formatada, ex: "07/07/2025"
+  data: string;
   entregue: boolean;
   colaborador: Colaborador;
   ferramentas: Ferramenta[];
@@ -42,85 +36,161 @@ interface Props {
   onFinalizar: (id: number) => void;
 }
 
+function diasAbertos(dataStr: string): number {
+  const [dd, mm, yyyy] = dataStr.split('/');
+  const data = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+  return Math.floor((Date.now() - data.getTime()) / 86400000);
+}
+
 export default function CardCautelas({ cautelas, onFinalizar }: Props) {
+  const dias = diasAbertos(cautelas.data);
+  const diasColor = dias >= 8 ? '#ef4444' : dias >= 4 ? '#f97316' : '#6b7280';
+  const diasLabel = dias === 0 ? 'Hoje' : dias === 1 ? '1 dia aberto' : `${dias} dias aberto`;
+
   return (
-    <SafeAreaView style={styles.cardContainer}>
-      <View style={styles.headerContainer}>
-        <Text style={{ fontWeight: '500', fontSize: 16, color: '#19325E' }}>
-          {cautelas.colaborador.funcao}
-        </Text>
-        <Text style={{ fontWeight: '500', fontSize: 16, color: '#19325E' }}>
-          {cautelas.colaborador.nome}
-        </Text>
-        <Text style={{ fontWeight: '500', fontSize: 16, color: '#19325E' }}>
-          {cautelas.colaborador.empresa}
-        </Text>
+    <View style={styles.card}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerInfo}>
+          <Text style={styles.nome}>{cautelas.colaborador.nome}</Text>
+          <Text style={styles.sub}>
+            {cautelas.colaborador.funcao} · {cautelas.colaborador.empresa}
+          </Text>
+        </View>
+        <View style={[styles.diasBadge, { borderColor: diasColor }]}>
+          <Clock size={11} color={diasColor} />
+          <Text style={[styles.diasText, { color: diasColor }]}>{diasLabel}</Text>
+        </View>
       </View>
+
+      <View style={styles.divider} />
 
       {/* Ferramentas */}
       {cautelas.ferramentas.map((item, index) => (
-        <View key={index}>
-          <View style={styles.itemContainer}>
-            <Text>{item.quantidade} UND</Text>
-            <Text style={styles.itemDescription}>{item.descricao}</Text>
-            <Text>{cautelas.data}</Text>
-            <TouchableOpacity>
-              <CheckCircle size={24} onPress={() => onFinalizar(cautelas.id)} />
-            </TouchableOpacity>
-          </View>
-          {index < cautelas.ferramentas.length - 1 && (
-            <View style={styles.separator} />
-          )}
+        <View key={`f-${index}`} style={styles.itemRow}>
+          <Hammer size={14} color="#6b7280" style={styles.itemIcon} />
+          <Text style={styles.itemDesc} numberOfLines={1}>{item.descricao}</Text>
+          <Text style={styles.itemQtd}>{item.quantidade} UND</Text>
+          <Text style={styles.itemData}>{cautelas.data}</Text>
         </View>
       ))}
-
-      <View style={styles.separator} />
 
       {/* Patrimônios */}
       {cautelas.patrimonios.map((item, index) => (
-        <View key={index}>
-          <View style={styles.itemContainer}>
-            <Text>{item.numeroSerie}</Text>
-            <Text style={styles.itemDescription}>{item.descricao}</Text>
-            <Text>{cautelas.data}</Text>
-            <TouchableOpacity onPress={() => onFinalizar(cautelas.id)}>
-              <CheckCircle size={24} />
-            </TouchableOpacity>
-          </View>
-          {index < cautelas.patrimonios.length - 1 && (
-            <View style={styles.separator} />
-          )}
+        <View key={`p-${index}`} style={styles.itemRow}>
+          <Shield size={14} color="#6b7280" style={styles.itemIcon} />
+          <Text style={styles.itemDesc} numberOfLines={1}>{item.descricao}</Text>
+          <Text style={styles.itemQtd} numberOfLines={1}>{item.numeroSerie}</Text>
+          <Text style={styles.itemData}>{cautelas.data}</Text>
         </View>
       ))}
-    </SafeAreaView>
+
+      <View style={styles.divider} />
+
+      {/* Botão Dar Baixa */}
+      <TouchableOpacity
+        style={styles.baixaBtn}
+        onPress={() => onFinalizar(cautelas.id)}
+        activeOpacity={0.8}
+      >
+        <CheckCircle size={18} color="#fff" />
+        <Text style={styles.baixaBtnText}>Dar Baixa</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  cardContainer: {
-    padding: 8,
-    backgroundColor: '#ffffff44',
-    borderRadius: 10,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#19325E',
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  headerContainer: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    alignItems: 'flex-start',
+    marginBottom: 10,
   },
-  itemContainer: {
+  headerInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
+  nome: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#19325E',
+  },
+  sub: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  diasBadge: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 4,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  diasText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  divider: {
+    borderBottomWidth: 1,
+    borderColor: '#f3f4f6',
+    marginVertical: 8,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 5,
     gap: 8,
-    alignItems: 'center',
   },
-  itemDescription: {
+  itemIcon: {
+    width: 18,
+  },
+  itemDesc: {
     flex: 1,
-    textAlign: 'center',
+    fontSize: 13,
+    color: '#374151',
   },
-  separator: {
-    borderBottomWidth: 1,
-    borderColor: '#D1D5DB',
-    marginVertical: 4,
+  itemQtd: {
+    fontSize: 12,
+    color: '#6b7280',
+    maxWidth: 80,
+  },
+  itemData: {
+    fontSize: 12,
+    color: '#9ca3af',
+    minWidth: 64,
+    textAlign: 'right',
+  },
+  baixaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#19325E',
+    borderRadius: 8,
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  baixaBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 14,
   },
 });

@@ -26,9 +26,10 @@ import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 interface Item {
   id: number;
-  uniqueId: string; // ← NOVO: ID único combinando tipo + id
+  uniqueId: string;
   label: string;
-  tipo: string;
+  tipo: 'ferramenta' | 'patrimonio';
+  disponivel?: number;
 }
 
 interface Cautela {
@@ -37,8 +38,8 @@ interface Cautela {
   descricao: string;
   quantidade: string;
   data: string;
-  itemId: number; // ← ID real da ferramenta/patrimônio
-  tipo: string; // ← Tipo do item
+  itemId: number;
+  tipo: 'ferramenta' | 'patrimonio';
   colaboradorId: number;
 }
 
@@ -133,9 +134,9 @@ export default function CautelaScreen() {
   };
 
   // Selecionar item
-  const selecionarItem = (item: Item & { disponivel?: number }) => {
+  const selecionarItem = (item: Item) => {
     if (item.tipo === 'ferramenta') {
-      if ((item as any).disponivel === 0) {
+      if (item.disponivel === 0) {
         showInfoToast('Sem saldo disponível desta ferramenta.', 'Atenção');
         return;
       }
@@ -202,8 +203,6 @@ export default function CautelaScreen() {
         patrimonios: cautela.tipo === 'patrimonio' ? [cautela.itemId] : [],
       }));
 
-      console.log('📤 Enviando cautelas:', cautelasParaSalvar);
-
       await criarCautelas(cautelasParaSalvar);
 
       const elapsedTime = Date.now() - startTime;
@@ -232,7 +231,7 @@ export default function CautelaScreen() {
     }
 
     if (itemSelecionado.tipo === 'ferramenta') {
-      const disponivel = (itemSelecionado as any).disponivel ?? 0;
+      const disponivel = itemSelecionado.disponivel ?? 0;
       const qtd = Number(quantidade);
       if (!qtd || qtd <= 0) {
         showInfoToast('Informe uma quantidade válida.', 'Atenção');
@@ -247,21 +246,29 @@ export default function CautelaScreen() {
       if (quantidade !== '1') setQuantidade('1');
     }
 
-    // ✅ CORREÇÃO: Salvar tipo e id real do item
     const novaCautela: Cautela = {
       id: Date.now().toString(),
       nome: colaboradorAtual?.label || '',
       descricao: itemAtual?.label || '',
       quantidade: quantidade,
       data: data,
-      itemId: itemSelecionado.id, // ← ID real (número)
-      tipo: itemSelecionado.tipo, // ← Tipo correto
+      itemId: itemSelecionado.id,
+      tipo: itemSelecionado.tipo,
       colaboradorId: colaboradorSelecionadoId,
     };
 
-    console.log('➕ Criando cautela:', novaCautela);
-
     setCautelasList(prev => [...prev, novaCautela]);
+
+    // Atualiza disponivel da ferramenta na lista de itens
+    if (itemSelecionado.tipo === 'ferramenta') {
+      const qtd = Number(quantidade);
+      setItens(prev => prev.map(item => {
+        if (item.uniqueId !== itemSelecionado.uniqueId) return item;
+        const novoDisponivel = (item.disponivel ?? 0) - qtd;
+        const baseLabel = item.label.split(' • Disp:')[0];
+        return { ...item, disponivel: novoDisponivel, label: `${baseLabel} • Disp: ${novoDisponivel}` };
+      }));
+    }
 
     // Limpar campos
     setBuscaItem('');
@@ -274,6 +281,16 @@ export default function CautelaScreen() {
   }
 
   function handleRemoverCautela(id: string) {
+    const cautelaRemovida = cautelasList.find(c => c.id === id);
+    if (cautelaRemovida?.tipo === 'ferramenta') {
+      const qtd = Number(cautelaRemovida.quantidade);
+      setItens(prev => prev.map(item => {
+        if (item.id !== cautelaRemovida.itemId || item.tipo !== 'ferramenta') return item;
+        const novoDisponivel = (item.disponivel ?? 0) + qtd;
+        const baseLabel = item.label.split(' • Disp:')[0];
+        return { ...item, disponivel: novoDisponivel, label: `${baseLabel} • Disp: ${novoDisponivel}` };
+      }));
+    }
     setCautelasList(prev => prev.filter(cautela => cautela.id !== id));
   }
 
@@ -339,7 +356,7 @@ export default function CautelaScreen() {
                         >
                           {itensSugeridos.map((item, index) => (
                             <TouchableOpacity
-                              key={`item-${item.uniqueId}-${index}`}
+                              key={item.uniqueId}
                               onPress={() => selecionarItem(item)}
                               style={styles.suggestionItem}
                             >
