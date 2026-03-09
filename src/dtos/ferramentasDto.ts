@@ -8,7 +8,8 @@ export type CriarFerramentaDto = {
 export type FerramentasDto = {
   id: number;
   descricao: string;
-  quantidade: string;
+  quantidade: number;
+  disponivel: number;
   marca: string;
   modelo: string;
 };

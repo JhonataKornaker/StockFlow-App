@@ -1,43 +1,93 @@
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
-import ScreenListar from '@/components/ScreenListar';
 import { Screen } from '@/components/ScreenProps';
+import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
 import { FerramentasDto } from '@/dtos/ferramentasDto';
-import {
-  listarFerramentas,
-  deletarFerramenta,
-} from '@/service/ferramenta.service';
+import { deletarFerramenta, listarFerramentas } from '@/service/ferramenta.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
+import { showErrorToast, showSuccessToast } from '@/util/toast';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import axios from 'axios';
-import { Contact, Package, Search, Trash2 } from 'lucide-react-native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Edit2, Hammer, Package, Search, Trash2 } from 'lucide-react-native';
+import { useCallback, useMemo, useState } from 'react';
 import {
+  Alert,
   SectionList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  Modal,
 } from 'react-native';
-import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Ferramentas'>;
+
+function FerramentaCard({
+  item,
+  onEditar,
+  onExcluir,
+}: {
+  item: FerramentasDto;
+  onEditar: () => void;
+  onExcluir: () => void;
+}) {
+  const emprestado = item.quantidade - item.disponivel;
+  const dispColor = item.disponivel === 0 ? '#ef4444' : item.disponivel <= 2 ? '#f59e0b' : '#22c55e';
+
+  return (
+    <TouchableOpacity style={styles.card} onPress={onEditar} activeOpacity={0.85}>
+      {/* Ícone + info */}
+      <View style={styles.cardMain}>
+        <View style={styles.iconWrap}>
+          <Hammer size={22} color={theme.colors.primary} />
+        </View>
+        <View style={styles.cardInfo}>
+          <Text style={styles.cardNome} numberOfLines={1}>{item.descricao}</Text>
+          <Text style={styles.cardSub} numberOfLines={1}>
+            {item.marca} · {item.modelo}
+          </Text>
+        </View>
+        <View style={styles.qtdGroup}>
+          <View style={[styles.qtdPill, { backgroundColor: dispColor + '18', borderColor: dispColor }]}>
+            <Text style={[styles.qtdNum, { color: dispColor }]}>{item.disponivel}</Text>
+            <Text style={[styles.qtdLabel, { color: dispColor }]}>disp.</Text>
+          </View>
+          {emprestado > 0 && (
+            <View style={[styles.qtdPill, { backgroundColor: '#fff7ed', borderColor: '#f97316' }]}>
+              <Text style={[styles.qtdNum, { color: '#f97316' }]}>{emprestado}</Text>
+              <Text style={[styles.qtdLabel, { color: '#f97316' }]}>emp.</Text>
+            </View>
+          )}
+        </View>
+      </View>
+
+      {/* Ações */}
+      <View style={styles.cardActions}>
+        <TouchableOpacity style={styles.actionBtn} onPress={onEditar} activeOpacity={0.7}>
+          <Edit2 size={16} color="#6b7280" />
+          <Text style={styles.actionLabel}>Editar</Text>
+        </TouchableOpacity>
+        <View style={styles.actionDivider} />
+        <TouchableOpacity style={styles.actionBtn} onPress={onExcluir} activeOpacity={0.7}>
+          <Trash2 size={16} color="#ef4444" />
+          <Text style={[styles.actionLabel, { color: '#ef4444' }]}>Excluir</Text>
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
+  );
+}
 
 export default function Ferramentas() {
   const [busca, setBusca] = useState('');
   const navigation = useNavigation<NavigationProps>();
-  const [listaFerramentas, setListaFerramentas] = useState<FerramentasDto[]>(
-    [],
-  );
+  const [listaFerramentas, setListaFerramentas] = useState<FerramentasDto[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [itemParaExcluir, setItemParaExcluir] = useState<FerramentasDto | null>(
-    null,
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarFerramentas();
+    }, []),
   );
 
   async function carregarFerramentas() {
@@ -47,68 +97,51 @@ export default function Ferramentas() {
       const dados = await listarFerramentas();
       setListaFerramentas(dados);
     } catch (error) {
-      console.error('Erro ao buscar ferramestas: ', error);
+      console.error('Erro ao buscar ferramentas:', error);
     } finally {
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, 600 - elapsed);
-      if (wait > 0) {
-        await new Promise(res => setTimeout(res, wait));
-      }
+      if (wait > 0) await new Promise(res => setTimeout(res, wait));
       setCarregando(false);
     }
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      carregarFerramentas();
-    }, []),
-  );
+  function handleExcluir(item: FerramentasDto) {
+    Alert.alert(
+      'Excluir Ferramenta',
+      `Tem certeza que deseja excluir "${item.descricao}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deletarFerramenta(item.id);
+              showSuccessToast('Ferramenta excluída com sucesso!');
+              carregarFerramentas();
+            } catch (error: any) {
+              const message =
+                error.response?.data?.message ?? 'Não foi possível excluir a ferramenta';
+              showErrorToast(String(message), 'Erro ao excluir ferramenta');
+            }
+          },
+        },
+      ],
+    );
+  }
 
   const itensFiltrados = useMemo(() => {
     const texto = busca.toLowerCase();
-    return listaFerramentas.filter(item =>
-      item.descricao.toLowerCase().includes(texto),
+    return listaFerramentas.filter(
+      item =>
+        item.descricao.toLowerCase().includes(texto) ||
+        item.marca.toLowerCase().includes(texto) ||
+        item.modelo.toLowerCase().includes(texto),
     );
   }, [busca, listaFerramentas]);
 
-  const sections = useMemo(
-    () => agruparPorLetra(itensFiltrados),
-    [itensFiltrados],
-  );
-
-  const handleCadastrar = () => {
-    navigation.navigate('CadastroFerramentas');
-  };
-
-  const handleEditar = (item: FerramentasDto) => {
-    navigation.navigate('EditarFerramenta', { ferramenta: item });
-  };
-
-  const handleExcluir = async () => {
-    if (!itemParaExcluir) return;
-
-    try {
-      await deletarFerramenta(itemParaExcluir.id);
-      showSuccessToast('Ferramenta excluída com sucesso!');
-      setItemParaExcluir(null);
-      carregarFerramentas();
-    } catch (error) {
-      console.error('Erro ao excluir:', error);
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Não foi possível excluir a ferramenta';
-      showErrorToast(String(message), 'Erro ao excluir ferramenta');
-    }
-  };
-
-  const botaoCadastrar = (
-    <Button
-      style={{ marginTop: 'auto', alignSelf: 'center', marginBottom: 16 }}
-      title={`Cadastrar Nova Ferramenta`}
-      onPress={handleCadastrar}
-    />
-  );
+  const sections = useMemo(() => agruparPorLetra(itensFiltrados), [itensFiltrados]);
 
   if (carregando) {
     return (
@@ -125,12 +158,11 @@ export default function Ferramentas() {
           <Package size={64} color="#9ca3af" />
           <Text style={styles.emptyTitle}>Nenhuma ferramenta cadastrada</Text>
           <Text style={styles.emptySubtitle}>
-            Cadastre suas ferramentas para controlar empréstimos e
-            disponibilidade.
+            Cadastre suas ferramentas para controlar empréstimos e disponibilidade.
           </Text>
           <Button
             title="Cadastrar Ferramenta"
-            onPress={handleCadastrar}
+            onPress={() => navigation.navigate('CadastroFerramentas')}
             style={{ marginTop: 20 }}
           />
         </View>
@@ -141,116 +173,38 @@ export default function Ferramentas() {
   return (
     <Screen>
       <Input
-        style={{ marginTop: 8 }}
-        placeholder="Digite para pesquisar..."
+        style={{ marginTop: 8, marginBottom: 4 }}
+        placeholder="Buscar por nome, marca ou modelo..."
         icon={Search}
         value={busca}
         onChangeText={setBusca}
       />
+
       <SectionList
         sections={sections}
-        keyExtractor={(item, index) => item.descricao + index}
+        keyExtractor={item => item.id.toString()}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            onLongPress={() => setItemParaExcluir(item)}
-            onPress={() => handleEditar(item)}
-            delayLongPress={300}
-          >
-            <Text
-              style={{
-                paddingLeft: 8,
-                paddingVertical: 4,
-                fontSize: 16,
-                color: theme.colors.primary,
-                fontWeight: 'bold',
-              }}
-            >
-              {item.descricao}
-            </Text>
-            <View
-              style={{
-                marginBottom: 14,
-                flexDirection: 'row',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-              }}
-            >
-              <Text style={{}}>Estoque: {item.quantidade}</Text>
-              <Text style={{ marginHorizontal: 6 }}>|</Text>
-              <Text>Marca: {item.marca}</Text>
-              <Text style={{ marginHorizontal: 6 }}>|</Text>
-              <Text>Modelo: {item.modelo}</Text>
-            </View>
-          </TouchableOpacity>
+          <FerramentaCard
+            item={item}
+            onEditar={() => navigation.navigate('EditarFerramenta', { ferramenta: item })}
+            onExcluir={() => handleExcluir(item)}
+          />
         )}
         renderSectionHeader={({ section: { title } }) => (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: 12,
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 'bold',
-                fontSize: 20,
-                color: theme.colors.primary,
-              }}
-            >
-              {title}
-            </Text>
-            <Contact size={18} style={{ marginLeft: 8 }} color="#19325E" />
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionLetter}>{title}</Text>
           </View>
         )}
+        contentContainerStyle={{ paddingBottom: 16 }}
+        showsVerticalScrollIndicator={false}
+        stickySectionHeadersEnabled={false}
       />
-      {botaoCadastrar}
 
-      {/* Modal de Confirmação de Exclusão */}
-      <Modal
-        visible={itemParaExcluir !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setItemParaExcluir(null)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setItemParaExcluir(null)}
-        >
-          <View style={styles.modalContent}>
-            <View style={styles.iconContainer}>
-              <Trash2 size={48} color="#ef4444" />
-            </View>
-
-            <Text style={styles.modalTitle}>Excluir Ferramenta</Text>
-
-            <Text style={styles.modalMessage}>
-              Tem certeza que deseja excluir?
-            </Text>
-
-            <Text style={styles.modalItemName}>
-              {itemParaExcluir?.descricao}
-            </Text>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setItemParaExcluir(null)}
-              >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, styles.deleteButton]}
-                onPress={handleExcluir}
-              >
-                <Text style={styles.deleteButtonText}>Excluir</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+      <Button
+        style={{ alignSelf: 'center', marginBottom: 16 }}
+        title="Cadastrar Nova Ferramenta"
+        onPress={() => navigation.navigate('CadastroFerramentas')}
+      />
     </Screen>
   );
 }
@@ -276,74 +230,99 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+  sectionHeader: {
+    paddingTop: 16,
+    paddingBottom: 6,
+    paddingHorizontal: 4,
   },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-    alignItems: 'center',
-  },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#fee2e2',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#19325E',
-    marginBottom: 8,
-  },
-  modalMessage: {
-    fontSize: 15,
+  sectionLetter: {
+    fontSize: 13,
+    fontWeight: '700',
     color: '#6b7280',
-    textAlign: 'center',
-    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
-  modalItemName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#19325E',
-    textAlign: 'center',
-    marginBottom: 24,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+    elevation: 2,
+    overflow: 'hidden',
   },
-  modalButtons: {
+  cardMain: {
     flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
     alignItems: 'center',
+    padding: 14,
+    gap: 12,
   },
-  cancelButton: {
+  iconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#EEF2FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  cardInfo: {
+    flex: 1,
+    gap: 3,
+  },
+  cardNome: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: theme.colors.primary,
+  },
+  cardSub: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  qtdGroup: {
+    flexShrink: 0,
+    gap: 4,
+    alignItems: 'flex-end',
+  },
+  qtdPill: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 2,
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  qtdNum: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  qtdLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  cardActions: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+  },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+  },
+  actionDivider: {
+    width: 1,
     backgroundColor: '#f3f4f6',
   },
-  cancelButtonText: {
-    fontSize: 16,
+  actionLabel: {
+    fontSize: 13,
     fontWeight: '600',
     color: '#6b7280',
-  },
-  deleteButton: {
-    backgroundColor: '#ef4444',
-  },
-  deleteButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
   },
 });
