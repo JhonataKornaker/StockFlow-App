@@ -2,42 +2,87 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/ScreenProps';
 import { ColaboradorDto } from '@/dtos/colaboradorDto';
-import {
-  buscarColaboradores,
-  deletarColaborador,
-} from '@/service/colaborador.service';
+import { buscarColaboradores, deletarColaborador } from '@/service/colaborador.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Contact, Search, Edit, Trash2, Eye } from 'lucide-react-native';
+import { Contact, Edit2, History, Search, Trash2, UserPlus } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
+  Alert,
   SectionList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  Modal,
 } from 'react-native';
 import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
 import { showErrorToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Colaboradores'>;
 
+function getInitials(nome: string) {
+  const parts = nome.trim().split(' ').filter(Boolean);
+  const first = parts[0]?.[0] ?? '';
+  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? '' : '';
+  return `${first}${last}`.toUpperCase();
+}
+
+function ColaboradorCard({
+  item,
+  onHistorico,
+  onEditar,
+  onExcluir,
+}: {
+  item: ColaboradorDto;
+  onHistorico: () => void;
+  onEditar: () => void;
+  onExcluir: () => void;
+}) {
+  const initials = getInitials(item.nome);
+
+  return (
+    <View style={styles.card}>
+      {/* Avatar + info */}
+      <TouchableOpacity style={styles.cardMain} onPress={onHistorico} activeOpacity={0.7}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{initials}</Text>
+        </View>
+        <View style={styles.cardInfo}>
+          <Text style={styles.cardNome} numberOfLines={1}>{item.nome}</Text>
+          <Text style={styles.cardSub} numberOfLines={1}>{item.funcao}</Text>
+          <Text style={styles.cardSub} numberOfLines={1}>{item.empresa}</Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* Ações */}
+      <View style={styles.cardActions}>
+        <TouchableOpacity style={styles.actionBtn} onPress={onHistorico} activeOpacity={0.7}>
+          <History size={18} color={theme.colors.primary} />
+          <Text style={styles.actionLabel}>Histórico</Text>
+        </TouchableOpacity>
+
+        <View style={styles.actionDivider} />
+
+        <TouchableOpacity style={styles.iconBtn} onPress={onEditar} activeOpacity={0.7}>
+          <Edit2 size={18} color="#6b7280" />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.iconBtn} onPress={onExcluir} activeOpacity={0.7}>
+          <Trash2 size={18} color="#ef4444" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 export default function Colaboradores() {
   const [busca, setBusca] = useState('');
   const navigation = useNavigation<NavigationProps>();
-  const [listaColaboradores, setListaColaboradores] = useState<
-    ColaboradorDto[]
-  >([]);
+  const [listaColaboradores, setListaColaboradores] = useState<ColaboradorDto[]>([]);
   const [carregando, setCarregando] = useState(true);
-  // Removido: menuVisible
-  // Adicionado: Estados para o modal
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<ColaboradorDto | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -52,13 +97,11 @@ export default function Colaboradores() {
       const dados = await buscarColaboradores();
       setListaColaboradores(dados);
     } catch (error) {
-      console.error('Erro ao buscar colaboradores: ', error);
+      console.error('Erro ao buscar colaboradores:', error);
     } finally {
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, 600 - elapsed);
-      if (wait > 0) {
-        await new Promise(res => setTimeout(res, wait));
-      }
+      if (wait > 0) await new Promise(res => setTimeout(res, wait));
       setCarregando(false);
     }
   }
@@ -66,37 +109,15 @@ export default function Colaboradores() {
   const itensFiltrados = useMemo(() => {
     const texto = busca.toLowerCase();
     return listaColaboradores.filter(item =>
-      item.nome.toLowerCase().includes(texto),
+      item.nome.toLowerCase().includes(texto) ||
+      item.funcao.toLowerCase().includes(texto) ||
+      item.empresa.toLowerCase().includes(texto),
     );
   }, [busca, listaColaboradores]);
 
-  const sections = useMemo(
-    () => agruparPorLetra(itensFiltrados),
-    [itensFiltrados],
-  );
+  const sections = useMemo(() => agruparPorLetra(itensFiltrados), [itensFiltrados]);
 
-  const handleCadastrar = () => {
-    navigation.navigate('CadastroColaborador');
-  };
-
-  // Modificado: Agora abre o modal em vez de mostrar menu inline
-  const handleLongPress = (item: ColaboradorDto) => {
-    setSelectedItem(item);
-    setModalVisible(true);
-  };
-
-  const handleVerHistorico = (item: ColaboradorDto) => {
-    setModalVisible(false); // Fecha o modal se estiver aberto
-    navigation.navigate('DetalhesColaborador', { colaborador: item });
-  };
-
-  const handleEditar = (item: ColaboradorDto) => {
-    setModalVisible(false);
-    navigation.navigate('EditarColaborador', { colaborador: item });
-  };
-
-  const handleExcluir = (item: ColaboradorDto) => {
-    setModalVisible(false);
+  function handleExcluir(item: ColaboradorDto) {
     Alert.alert(
       'Excluir Colaborador',
       `Tem certeza que deseja excluir "${item.nome}"?`,
@@ -111,29 +132,15 @@ export default function Colaboradores() {
               showSuccessToast('Colaborador excluído com sucesso!');
               carregarColaboradores();
             } catch (error: any) {
-              console.error('Erro ao excluir:', error);
-
-              // Captura a mensagem real do backend (NestJS)
               const message =
-                error.response?.data?.message ||
-                'Não foi possível excluir o colaborador.';
-
-              // Exibe a mensagem do backend (ex: "Colaborador tem cautela em aberto")
+                error.response?.data?.message ?? 'Não foi possível excluir o colaborador.';
               showErrorToast(message, 'Erro ao excluir colaborador');
             }
           },
         },
       ],
     );
-  };
-
-  const botaoCadastrar = (
-    <Button
-      style={{ marginTop: 'auto', alignSelf: 'center', marginBottom: 16 }}
-      title="Cadastrar Novo Colaborador"
-      onPress={handleCadastrar}
-    />
-  );
+  }
 
   if (carregando) {
     return (
@@ -150,12 +157,11 @@ export default function Colaboradores() {
           <Contact size={64} color="#9ca3af" />
           <Text style={styles.emptyTitle}>Nenhum colaborador cadastrado</Text>
           <Text style={styles.emptySubtitle}>
-            Comece cadastrando o primeiro colaborador para gerenciar cautelas e
-            retiradas.
+            Comece cadastrando o primeiro colaborador para gerenciar cautelas e retiradas.
           </Text>
           <Button
             title="Cadastrar Colaborador"
-            onPress={handleCadastrar}
+            onPress={() => navigation.navigate('CadastroColaborador')}
             style={{ marginTop: 20 }}
           />
         </View>
@@ -166,8 +172,8 @@ export default function Colaboradores() {
   return (
     <Screen>
       <Input
-        style={{ marginTop: 8 }}
-        placeholder="Digite para pesquisar..."
+        style={{ marginTop: 8, marginBottom: 4 }}
+        placeholder="Buscar por nome, função ou empresa..."
         icon={Search}
         value={busca}
         onChangeText={setBusca}
@@ -175,123 +181,36 @@ export default function Colaboradores() {
 
       <SectionList
         sections={sections}
-        keyExtractor={(item, index) => item.nome + index}
+        keyExtractor={item => item.id.toString()}
         renderItem={({ item }) => (
-          <View>
-            <TouchableOpacity
-              onPress={() => handleVerHistorico(item)}
-              onLongPress={() => handleLongPress(item)}
-              delayLongPress={500}
-            >
-              <Text
-                style={{
-                  paddingLeft: 8,
-                  paddingVertical: 4,
-                  fontSize: 16,
-                  color: theme.colors.primary,
-                  fontWeight: 'bold',
-                }}
-              >
-                {item.nome}
-              </Text>
-              <View
-                style={{
-                  marginBottom: 14,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <Text>Função: {item.funcao}</Text>
-                <Text style={{ marginHorizontal: 6 }}>|</Text>
-                <Text>Empresa: {item.empresa}</Text>
-              </View>
-            </TouchableOpacity>
-
-            {/* Removido: Menu inline (menuVisible) */}
-          </View>
+          <ColaboradorCard
+            item={item}
+            onHistorico={() => navigation.navigate('DetalhesColaborador', { colaborador: item })}
+            onEditar={() => navigation.navigate('EditarColaborador', { colaborador: item })}
+            onExcluir={() => handleExcluir(item)}
+          />
         )}
         renderSectionHeader={({ section: { title } }) => (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: 12,
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 'bold',
-                fontSize: 20,
-                color: theme.colors.primary,
-              }}
-            >
-              {title}
-            </Text>
-            <Contact size={18} style={{ marginLeft: 8 }} color="#19325E" />
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionLetter}>{title}</Text>
           </View>
         )}
+        contentContainerStyle={{ paddingBottom: 16 }}
+        showsVerticalScrollIndicator={false}
+        stickySectionHeadersEnabled={false}
       />
 
-      {/* Adicionado: Modal elegante */}
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.overlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>
-              Opções para {selectedItem?.nome}
-            </Text>
-
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => selectedItem && handleVerHistorico(selectedItem)}
-            >
-              <Eye size={20} color="#3b82f6" />
-              <Text style={[styles.modalButtonText, { color: '#3b82f6' }]}>
-                Ver Histórico
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => selectedItem && handleEditar(selectedItem)}
-            >
-              <Edit size={20} color="#10b981" />
-              <Text style={[styles.modalButtonText, { color: '#10b981' }]}>
-                Editar
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => selectedItem && handleExcluir(selectedItem)}
-            >
-              <Trash2 size={20} color="#ef4444" />
-              <Text style={[styles.modalButtonText, { color: '#ef4444' }]}>
-                Excluir
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.modalButton, styles.cancelModalButton]}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.cancelModalText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {botaoCadastrar}
+      <Button
+        style={{ alignSelf: 'center', marginBottom: 16 }}
+        title="Cadastrar Novo Colaborador"
+        onPress={() => navigation.navigate('CadastroColaborador')}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  // Empty state
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -312,57 +231,98 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  // Removido: menuContainer, menuButton, menuText, cancelButton, cancelText (não são mais necessários)
 
-  // Adicionado: Estilos para o modal
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fundo com opacidade
-    justifyContent: 'center',
-    alignItems: 'center',
+  // Section header
+  sectionHeader: {
+    paddingTop: 16,
+    paddingBottom: 6,
+    paddingHorizontal: 4,
   },
-  modalContainer: {
+  sectionLetter: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#6b7280',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+
+  // Card
+  card: {
     backgroundColor: '#fff',
-    borderRadius: 12, // Bordas arredondadas
-    padding: 20,
-    width: '80%',
-    maxWidth: 300,
+    borderRadius: 14,
+    marginBottom: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 10, // Sombra para Android
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+    elevation: 2,
+    overflow: 'hidden',
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#374151',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  modalButton: {
+  cardMain: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginVertical: 4,
-    borderRadius: 8,
+    padding: 14,
     gap: 12,
   },
-  modalButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cancelModalButton: {
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    marginTop: 8,
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
-  cancelModalText: {
-    fontSize: 16,
-    fontWeight: '600',
+  avatarText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+  cardInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  cardNome: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: theme.colors.primary,
+  },
+  cardSub: {
+    fontSize: 12,
     color: '#6b7280',
-    textAlign: 'center',
+  },
+
+  // Ações
+  cardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#f3f4f6',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    gap: 4,
+  },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 4,
+  },
+  actionLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  actionDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#e5e7eb',
+    marginHorizontal: 4,
+  },
+  iconBtn: {
+    padding: 8,
+    borderRadius: 8,
   },
 });
