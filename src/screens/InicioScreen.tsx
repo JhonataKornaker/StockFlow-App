@@ -33,6 +33,7 @@ import {
 } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import {
+  Alert,
   Platform,
   RefreshControl,
   ScrollView,
@@ -201,14 +202,30 @@ export default function InicioScreen() {
 
   useFocusEffect(useCallback(() => { carregarTudo(); }, []));
 
-  async function finalizarCautelaHandler(id: number) {
-    try {
-      await finalizarCautelas(id);
-      const dados = await buscarCautelas();
-      setListaDeCautelas(dados.filter(c => !c.entregue));
-    } catch (error) {
-      console.error('Erro ao finalizar cautela:', error);
-    }
+  function finalizarCautelaHandler(id: number) {
+    Alert.alert(
+      'Confirmar Finalização',
+      'Deseja realmente finalizar esta cautela?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Finalizar',
+          onPress: async () => {
+            try {
+              await finalizarCautelas(id);
+              const [dados, resumoAtualizado] = await Promise.all([
+                buscarCautelas(),
+                buscarResumoNumerico(),
+              ]);
+              setListaDeCautelas(dados.filter(c => !c.entregue));
+              setResumo(resumoAtualizado);
+            } catch (error) {
+              console.error('Erro ao finalizar cautela:', error);
+            }
+          },
+        },
+      ],
+    );
   }
 
   const temAlertas = estoqueBaixo.length > 0 || locacoesUrgentes.length > 0;
