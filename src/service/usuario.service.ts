@@ -3,6 +3,21 @@ import { Usuario } from '@/dtos/usuarioDto';
 import { StorageService } from './storage.service';
 import { NetworkService } from './network.service';
 
+export async function atualizarPerfil(data: {
+  nome?: string;
+  funcao?: string;
+}): Promise<Usuario> {
+  const response = await api.patch('usuario/me', data);
+  return response.data;
+}
+
+export async function alterarSenha(
+  senhaAtual: string,
+  novaSenha: string,
+): Promise<void> {
+  await api.patch('usuario/me/senha', { senhaAtual, novaSenha });
+}
+
 export async function buscarUsuarioLogado(): Promise<Usuario> {
   try {
     const isOnline = await NetworkService.isOnline();

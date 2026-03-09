@@ -26,6 +26,7 @@ import LocacoesScreen from '@/screens/LocacoesScreen';
 import DetalhesLocacaoScreen from '@/screens/DetalhesLocacaoScreen';
 import RelatorioInsumosScreen from '@/screens/RelatorioInsumosScreen';
 import RelatorioLocacoesScreen from '@/screens/RelatorioLocacoesScreen';
+import ConfiguracoesScreen from '@/screens/ConfiguracoesScreen';
 
 const Stack = createStackNavigator();
 
@@ -248,6 +249,11 @@ export default function StackRoutes() {
         name="RelatorioLocacoes"
         component={RelatorioLocacoesScreen}
         options={{ title: 'Relatório de Locações' }}
+      />
+      <Stack.Screen
+        name="Configuracoes"
+        component={ConfiguracoesScreen}
+        options={{ title: 'Configurações' }}
       />
     </Stack.Navigator>
   );

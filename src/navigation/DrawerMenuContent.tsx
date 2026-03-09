@@ -6,6 +6,7 @@ import {
   Hammer,
   ClipboardList,
   LogOut,
+  Settings,
   Shield,
   Package,
   PackageOpen,
@@ -193,11 +194,18 @@ export default function DrawerMenuContent({ navigation }) {
         <Text style={styles.link}>Relatório de Locações</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => navigation.navigate('Home', { screen: 'Configuracoes' })}
+      >
+        <Settings color="#B0C4DC" size={20} />
+        <Text style={styles.link}>Configurações</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={[styles.menuItem, { marginTop: 20 }]}>
         <LogOut color="#B0C4DC" size={20} />
         <Text
           style={styles.link}
-          //Resetar a stack de telas e mandar para tela login
           onPress={signOut}
         >
           Sair

@@ -8,6 +8,7 @@ import { EstoqueDto } from '@/dtos/estoqueDto';
 export type MainStackParamList = {
   Login: undefined;
   Inicio: undefined;
+  Configuracoes: undefined;
   Cautela: undefined;
   Colaboradores: undefined;
   Ferramentas: undefined;
