@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
   ActivityIndicator,
@@ -16,46 +15,58 @@ import {
 import { Screen } from '../components/ScreenProps';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/Button';
 import { login } from '@/service/auth.service';
 import { useNavigation } from '@react-navigation/native';
 import { showErrorToast, showInfoToast } from '@/util/toast';
 import { useAuth } from '@/context/AuthContext';
-import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
+
+const PRIMARY = '#162B4D';
+const SECONDARY = '#B0C4DC';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [loading, setLoading] = useState(false); // Estado para controlar o loading
-  const imageOpacity = useRef(new Animated.Value(0)).current;
-  const imageScale = useRef(new Animated.Value(0.96)).current;
+  const [loading, setLoading] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [senhaFocused, setSenhaFocused] = useState(false);
+
+  const headerOpacity = useRef(new Animated.Value(0)).current;
+  const headerTranslateY = useRef(new Animated.Value(-20)).current;
+  const cardOpacity = useRef(new Animated.Value(0)).current;
+  const cardTranslateY = useRef(new Animated.Value(30)).current;
+
   const navigation = useNavigation<any>();
   const { signIn } = useAuth();
 
   useEffect(() => {
-    const anim = Animated.parallel([
-      Animated.timing(imageOpacity, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-      Animated.sequence([
-        Animated.timing(imageScale, {
-          toValue: 1.04,
-          duration: 700,
+    Animated.stagger(150, [
+      Animated.parallel([
+        Animated.timing(headerOpacity, {
+          toValue: 1,
+          duration: 500,
           useNativeDriver: Platform.OS !== 'web',
         }),
-        Animated.timing(imageScale, {
-          toValue: 1.0,
-          duration: 600,
+        Animated.timing(headerTranslateY, {
+          toValue: 0,
+          duration: 500,
           useNativeDriver: Platform.OS !== 'web',
         }),
       ]),
-    ]);
-    anim.start();
-    return () => anim.stop();
-  }, [imageOpacity, imageScale]);
+      Animated.parallel([
+        Animated.timing(cardOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.timing(cardTranslateY, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]),
+    ]).start();
+  }, []);
 
   async function checkLogin(email: string, senha: string) {
     try {
@@ -63,12 +74,11 @@ export default function LoginScreen() {
         showInfoToast('Por favor, preencha todos os campos.', 'Campos obrigatórios');
         return;
       }
-      setLoading(true); // Inicia o loading
+      setLoading(true);
       const token = await login(email, senha);
       await signIn(token);
     } catch (error: any) {
       console.error('Erro ao fazer login:', error);
-      // Melhor tratamento de erros baseado no tipo
       if (
         error.message &&
         (error.message.includes('401') ||
@@ -80,7 +90,7 @@ export default function LoginScreen() {
         showErrorToast('Servidor indisponível. Tente novamente.', 'Erro');
       }
     } finally {
-      setLoading(false); // Finaliza o loading sempre
+      setLoading(false);
     }
   }
 
@@ -89,88 +99,117 @@ export default function LoginScreen() {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContainer}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <Animated.Image
-              source={require('../../assets/img_login.png')}
+          <View style={{ flex: 1 }}>
+            {/* Topo — fundo navy com logo e título */}
+            <Animated.View
               style={[
-                styles.image,
-                { opacity: imageOpacity, transform: [{ scale: imageScale }] },
+                styles.header,
+                { opacity: headerOpacity, transform: [{ translateY: headerTranslateY }] },
               ]}
-              resizeMode="contain"
-            />
-
-            <View style={styles.inputContainer}>
-              <Mail size={20} style={styles.icon} color="#080873" />
-              <TextInput
-                style={styles.input}
-                placeholder="E-mail"
-                placeholderTextColor="rgba(0, 0, 0, 0.25)"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                editable={!loading} // Desabilita inputs durante loading
+            >
+              <Image
+                source={require('../../assets/img_login.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
               />
-            </View>
+              <Text style={styles.appName}>StockFlow</Text>
+              <Text style={styles.appTagline}>Controle de estoque inteligente</Text>
+            </Animated.View>
 
-            <View style={[styles.inputContainer, styles.inputMarginTop]}>
-              <Lock size={20} style={styles.icon} color="#080873" />
+            {/* Card branco sobrepondo o topo */}
+            <Animated.View
+              style={[
+                styles.card,
+                { opacity: cardOpacity, transform: [{ translateY: cardTranslateY }] },
+              ]}
+            >
+              <Text style={styles.cardTitle}>Bem-vindo de volta</Text>
+              <Text style={styles.cardSubtitle}>Entre com suas credenciais para continuar</Text>
 
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                placeholder="Senha"
-                placeholderTextColor="rgba(0, 0, 0, 0.25)"
-                secureTextEntry={!mostrarSenha}
-                value={senha}
-                onChangeText={setSenha}
-                editable={!loading} // Desabilita inputs durante loading
-              />
-
-              <TouchableOpacity
-                style={{ marginRight: 5 }}
-                onPress={() => setMostrarSenha(!mostrarSenha)}
-                disabled={loading} // Desabilita toggle durante loading
+              {/* Input e-mail */}
+              <View
+                style={[
+                  styles.inputContainer,
+                  emailFocused && styles.inputContainerFocused,
+                ]}
               >
-                {mostrarSenha ? (
-                  <EyeOff size={20} color="#080873" />
+                <Mail size={18} color={emailFocused ? PRIMARY : '#9AAFC4'} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="E-mail"
+                  placeholderTextColor="#9AAFC4"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  editable={!loading}
+                  onFocus={() => setEmailFocused(true)}
+                  onBlur={() => setEmailFocused(false)}
+                />
+              </View>
+
+              {/* Input senha */}
+              <View
+                style={[
+                  styles.inputContainer,
+                  styles.inputMarginTop,
+                  senhaFocused && styles.inputContainerFocused,
+                ]}
+              >
+                <Lock size={18} color={senhaFocused ? PRIMARY : '#9AAFC4'} />
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  placeholder="Senha"
+                  placeholderTextColor="#9AAFC4"
+                  secureTextEntry={!mostrarSenha}
+                  value={senha}
+                  onChangeText={setSenha}
+                  editable={!loading}
+                  onFocus={() => setSenhaFocused(true)}
+                  onBlur={() => setSenhaFocused(false)}
+                />
+                <TouchableOpacity
+                  onPress={() => setMostrarSenha(!mostrarSenha)}
+                  disabled={loading}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  {mostrarSenha ? (
+                    <EyeOff size={18} color="#9AAFC4" />
+                  ) : (
+                    <Eye size={18} color="#9AAFC4" />
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              {/* Botão */}
+              <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={() => checkLogin(email, senha)}
+                disabled={loading}
+                activeOpacity={0.85}
+              >
+                {loading ? (
+                  <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Eye size={20} color="#080873" />
+                  <Text style={styles.buttonText}>Entrar</Text>
                 )}
               </TouchableOpacity>
-            </View>
 
-            <Button
-              onPress={() => checkLogin(email, senha)}
-              style={styles.button}
-              title="Entrar"
-              disabled={loading} // Desabilita botão durante loading
-            />
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Esqueceu sua senha?</Text>
-              <Text style={styles.footerText}>
-                Solicite ao administrador para alterá-la
-              </Text>
-            </View>
-          </ScrollView>
+              {/* Footer */}
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>Esqueceu sua senha?</Text>
+                <Text style={styles.footerSubText}>
+                  Solicite ao administrador para alterá-la
+                </Text>
+              </View>
+            </Animated.View>
+          </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
-
-      {/* Overlay de loading com spinner */}
-      {loading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#B0C4DC" />
-          <Text style={{ color: '#B0C4DC', marginTop: 12 }}>Entrando...</Text>
-        </View>
-      )}
     </Screen>
   );
 }
@@ -178,62 +217,115 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    alignItems: 'center',
-    backgroundColor: '#B0C4DC',
+    padding: 0,
+    backgroundColor: PRIMARY,
   },
-  scrollContainer: {
-    flexGrow: 1,
+  header: {
+    flex: 0.42,
     alignItems: 'center',
-    paddingVertical: 20,
+    justifyContent: 'center',
+    paddingBottom: 20,
   },
-  image: {
-    width: '100%',
-    height: 320,
-    marginBottom: 40,
+  logoImage: {
+    width: '85%',
+    height: 200,
+    marginBottom: 10,
+  },
+  appName: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#fff',
+    letterSpacing: 0.5,
+  },
+  appTagline: {
+    fontSize: 13,
+    color: SECONDARY,
+    marginTop: 4,
+    opacity: 0.8,
+  },
+  card: {
+    flex: 0.58,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: 28,
+    paddingTop: 32,
+    paddingBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: PRIMARY,
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    color: '#8A9BB0',
+    marginBottom: 28,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 300,
-    height: 46,
-    borderRadius: 5,
-    backgroundColor: '#f0e1e1ff',
-    paddingHorizontal: 10,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: '#F4F7FB',
+    borderWidth: 1.5,
+    borderColor: '#E4ECF4',
+    paddingHorizontal: 14,
+    gap: 10,
   },
-  icon: {
-    marginLeft: 5,
+  inputContainerFocused: {
+    borderColor: PRIMARY,
+    backgroundColor: '#fff',
   },
   input: {
     flex: 1,
-    marginLeft: 5,
-    marginRight: 10,
+    fontSize: 15,
+    color: PRIMARY,
   },
   inputMarginTop: {
-    marginTop: 30,
+    marginTop: 14,
   },
   button: {
-    marginTop: 50,
-    backgroundColor: '#f0e1e1ff',
-    width: 120,
-    height: 40,
-    borderRadius: 5,
+    marginTop: 28,
+    backgroundColor: PRIMARY,
+    height: 50,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: PRIMARY,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   footer: {
-    marginTop: 50,
+    marginTop: 28,
     alignItems: 'center',
+    gap: 4,
   },
   footerText: {
-    color: 'rgba(0, 0, 0, 0.25)',
-    textAlign: 'center',
+    color: PRIMARY,
+    fontSize: 13,
+    fontWeight: '600',
   },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Cor opaca
-    justifyContent: 'center',
-    alignItems: 'center',
+  footerSubText: {
+    color: '#8A9BB0',
+    fontSize: 12,
+    textAlign: 'center',
   },
 });

@@ -24,7 +24,6 @@ export default function DrawerMenuContent({ navigation }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [recarregando, setRecarregando] = useState(false);
-  const [userBoxHeight, setUserBoxHeight] = useState(0);
 
   async function buscarUsuario(isReload = false) {
     try {
@@ -56,12 +55,6 @@ export default function DrawerMenuContent({ navigation }) {
     }, []),
   );
 
-  const avatarSize = useMemo(() => {
-    // Define o tamanho como ~60% da altura do card, com limites
-    const computed = Math.floor(userBoxHeight * 0.6);
-    return Math.max(40, Math.min(80, computed || 48));
-  }, [userBoxHeight]);
-
   const initials = useMemo(() => {
     const nome = usuario?.nome?.trim() || '';
     if (!nome) return '';
@@ -74,25 +67,21 @@ export default function DrawerMenuContent({ navigation }) {
   return (
     <View style={styles.drawer}>
       {/* Header com nome do usuário */}
-      <View
-        style={styles.userBox}
-        onLayout={e => setUserBoxHeight(e.nativeEvent.layout.height)}
-      >
-        <View style={styles.userHeaderContent}>
-          <View
-            style={[
-              styles.avatar,
-              { width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 },
-            ]}
-          >
+      <View style={styles.userBox}>
+        <View style={styles.avatarWrapper}>
+          <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{usuario?.nome}</Text>
-            <Text style={styles.userRole}>{usuario?.funcao}</Text>
-          </View>
         </View>
+        <Text style={styles.userName}>{usuario?.nome}</Text>
+        {!!usuario?.funcao && (
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleText}>{usuario.funcao}</Text>
+          </View>
+        )}
       </View>
+
+      <View style={styles.divider} />
 
       {/* Menu de navegação */}
       <TouchableOpacity
@@ -219,51 +208,66 @@ const styles = StyleSheet.create({
   drawer: {
     flex: 1,
     backgroundColor: '#162B4D',
-    paddingTop: 40,
-    paddingHorizontal: 10,
+    paddingTop: 48,
+    paddingHorizontal: 16,
   },
   userBox: {
-    backgroundColor: '#19325E',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  userHeaderContent: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  avatarWrapper: {
+    marginBottom: 12,
   },
   avatar: {
-    backgroundColor: '#27406E',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#1E3A6E',
+    borderWidth: 2.5,
+    borderColor: '#B0C4DC',
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     color: '#B0C4DC',
-    fontSize: 18,
+    fontSize: 26,
     fontWeight: 'bold',
-  },
-  userInfo: {
-    flex: 1,
   },
   userName: {
-    color: '#B0C4DC',
+    color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 8,
   },
-  userRole: {
-    color: '#B0C4DC',
-    fontSize: 14,
-    opacity: 0.7,
+  roleBadge: {
+    backgroundColor: '#B0C4DC',
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  roleText: {
+    color: '#162B4D',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#B0C4DC',
+    opacity: 0.15,
+    marginBottom: 12,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
-    gap: 10,
+    marginVertical: 8,
+    gap: 12,
+    paddingHorizontal: 4,
   },
   link: {
     color: '#B0C4DC',
-    fontSize: 18,
+    fontSize: 16,
   },
 });
