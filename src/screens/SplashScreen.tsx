@@ -1,54 +1,139 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Animated, StyleSheet, Platform, ActivityIndicator } from 'react-native';
+import { View, Animated, StyleSheet, Platform, Text, Easing } from 'react-native';
 
-export default function SplashScreen() {
-  const opacity = useRef(new Animated.Value(0)).current;
-  const scale = useRef(new Animated.Value(0.95)).current;
+const NAVY = '#162B4D';
+const ACCENT = '#B0C4DC';
+
+function LoadingDot({ delay }: { delay: number }) {
+  const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const animation = Animated.parallel([
-      Animated.timing(opacity, {
+    Animated.loop(
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 380,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.timing(anim, {
+          toValue: 0,
+          duration: 380,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.delay(300),
+      ]),
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        styles.dot,
+        {
+          opacity: anim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }),
+          transform: [
+            { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1.2] }) },
+          ],
+        },
+      ]}
+    />
+  );
+}
+
+export default function SplashScreen() {
+  const imageOpacity = useRef(new Animated.Value(0)).current;
+  const imageScale = useRef(new Animated.Value(0.82)).current;
+  const textOpacity = useRef(new Animated.Value(0)).current;
+  const glowScale = useRef(new Animated.Value(1)).current;
+  const glowOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // 1. Entrada da imagem
+    Animated.parallel([
+      Animated.timing(imageOpacity, {
         toValue: 1,
         duration: 600,
+        easing: Easing.out(Easing.ease),
         useNativeDriver: Platform.OS !== 'web',
       }),
-      Animated.sequence([
-        Animated.timing(scale, {
-          toValue: 1.06,
-          duration: 700,
-          useNativeDriver: Platform.OS !== 'web',
-        }),
-        Animated.timing(scale, {
-          toValue: 1.0,
-          duration: 600,
-          useNativeDriver: Platform.OS !== 'web',
-        }),
-      ]),
-    ]);
-    animation.start();
-    return () => {
-      animation.stop();
-    };
-  }, [opacity, scale]);
+      Animated.spring(imageScale, {
+        toValue: 1,
+        tension: 55,
+        friction: 8,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+    ]).start(() => {
+      // 2. Texto aparece depois da imagem
+      Animated.timing(textOpacity, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: Platform.OS !== 'web',
+      }).start();
+
+      // 3. Glow pulsante em loop
+      Animated.loop(
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(glowScale, {
+              toValue: 1.25,
+              duration: 1200,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: Platform.OS !== 'web',
+            }),
+            Animated.timing(glowOpacity, {
+              toValue: 0.12,
+              duration: 1200,
+              useNativeDriver: Platform.OS !== 'web',
+            }),
+          ]),
+          Animated.parallel([
+            Animated.timing(glowScale, {
+              toValue: 1,
+              duration: 1200,
+              easing: Easing.inOut(Easing.ease),
+              useNativeDriver: Platform.OS !== 'web',
+            }),
+            Animated.timing(glowOpacity, {
+              toValue: 0.04,
+              duration: 1200,
+              useNativeDriver: Platform.OS !== 'web',
+            }),
+          ]),
+        ]),
+      ).start();
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
+      {/* Glow ring */}
+      <Animated.View
+        style={[
+          styles.glow,
+          { opacity: glowOpacity, transform: [{ scale: glowScale }] },
+        ]}
+      />
+
+      {/* Logo */}
       <Animated.Image
         source={require('../../assets/img_login.png')}
-        style={[styles.image, { opacity, transform: [{ scale }] }]}
+        style={[styles.image, { opacity: imageOpacity, transform: [{ scale: imageScale }] }]}
         resizeMode="contain"
       />
-      <ActivityIndicator size="large" color="#B0C4DC" style={{ marginTop: 16 }} />
-      <View style={styles.loaderBar}>
-        <Animated.View
-          style={{
-            height: 4,
-            width: '40%',
-            backgroundColor: '#B0C4DC',
-            borderRadius: 4,
-            opacity,
-          }}
-        />
+
+      {/* Tagline */}
+      <Animated.View style={{ opacity: textOpacity, alignItems: 'center', marginTop: 12 }}>
+        <Text style={styles.tagline}>Controle de estoque inteligente</Text>
+      </Animated.View>
+
+      {/* Loading dots */}
+      <View style={styles.dotsRow}>
+        <LoadingDot delay={0} />
+        <LoadingDot delay={180} />
+        <LoadingDot delay={360} />
       </View>
     </View>
   );
@@ -57,24 +142,38 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#B0C4DC',
+    backgroundColor: NAVY,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  image: {
-    width: '80%',
-    maxWidth: 380,
-    height: 220,
-    marginBottom: 24,
+  glow: {
+    position: 'absolute',
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: ACCENT,
   },
-  loaderBar: {
-    width: '80%',
-    maxWidth: 320,
+  image: {
+    width: '92%',
+    maxWidth: 420,
+    height: 260,
+  },
+  tagline: {
+    color: ACCENT,
+    fontSize: 13,
+    opacity: 0.75,
+    letterSpacing: 0.3,
+  },
+  dotsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 40,
+  },
+  dot: {
+    width: 8,
     height: 8,
-    backgroundColor: '#B0C4DC22',
-    borderRadius: 6,
-    overflow: 'hidden',
-    alignItems: 'flex-start',
+    borderRadius: 4,
+    backgroundColor: ACCENT,
   },
 });
