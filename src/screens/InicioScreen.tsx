@@ -20,6 +20,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   AlertTriangle,
   CalendarClock,
+  ChevronDown,
+  ChevronUp,
   ClipboardList,
   CopyPlus,
   Hammer,
@@ -87,12 +89,14 @@ function KpiCard({
   Icon: any;
 }) {
   return (
-    <View style={[styles.kpiCard, { borderTopColor: color }]}>
-      <View style={[styles.kpiIconWrapper, { backgroundColor: color + '18' }]}>
-        <Icon size={18} color={color} />
+    <View style={[styles.kpiCard, { backgroundColor: color + '14', borderColor: color + '30' }]}>
+      <View style={[styles.kpiIconWrapper, { backgroundColor: color + '28' }]}>
+        <Icon size={20} color={color} />
       </View>
-      <Text style={styles.kpiValue}>{value}</Text>
-      <Text style={styles.kpiLabel}>{label}</Text>
+      <View style={styles.kpiTextCol}>
+        <Text style={[styles.kpiValue, { color }]}>{value}</Text>
+        <Text style={styles.kpiLabel}>{label}</Text>
+      </View>
     </View>
   );
 }
@@ -145,6 +149,7 @@ export default function InicioScreen() {
   const [locacoesUrgentes, setLocacoesUrgentes] = useState<PatrimonioDto[]>([]);
   const [patrimoniosAlugados, setPatrimoniosAlugados] = useState<PatrimonioDto[]>([]);
   const [nomeUsuario, setNomeUsuario] = useState('');
+  const [expandidoAtalhos, setExpandidoAtalhos] = useState(false);
 
   async function carregarDados() {
     const startedAt = Date.now();
@@ -355,10 +360,26 @@ export default function InicioScreen() {
             <AtalhoBtn Icon={Hammer} label="Ferramentas" onPress={() => navigation.navigate('Ferramentas')} />
             <AtalhoBtn Icon={User} label="Colaboradores" onPress={() => navigation.navigate('Colaboradores')} />
             <AtalhoBtn Icon={Shield} label="Patrimônios" onPress={() => navigation.navigate('Patrimonios')} />
-            <AtalhoBtn Icon={Package} label="Estoque" onPress={() => navigation.navigate('Estoques')} />
-            <AtalhoBtn Icon={CalendarClock} label="Locações" onPress={() => navigation.navigate('Locacoes')} />
-            <AtalhoBtn Icon={PackageOpen} label="Saída" onPress={() => navigation.navigate('SaidaInsumo')} />
+            {expandidoAtalhos && (
+              <>
+                <AtalhoBtn Icon={Package} label="Estoque" onPress={() => navigation.navigate('Estoques')} />
+                <AtalhoBtn Icon={CalendarClock} label="Locações" onPress={() => navigation.navigate('Locacoes')} />
+                <AtalhoBtn Icon={PackageOpen} label="Saída" onPress={() => navigation.navigate('SaidaInsumo')} />
+              </>
+            )}
           </View>
+          <TouchableOpacity
+            style={styles.expandirBtn}
+            onPress={() => setExpandidoAtalhos(prev => !prev)}
+            activeOpacity={0.7}
+          >
+            {expandidoAtalhos
+              ? <ChevronUp size={16} color={theme.colors.primary} />
+              : <ChevronDown size={16} color={theme.colors.primary} />}
+            <Text style={styles.expandirText}>
+              {expandidoAtalhos ? 'Ver menos' : 'Ver mais'}
+            </Text>
+          </TouchableOpacity>
         </SectionCard>
 
         {/* Cautelas abertas */}
@@ -406,14 +427,20 @@ export default function InicioScreen() {
               const dias = p.dataDevolucao ? diasParaDevolucao(p.dataDevolucao) : null;
               const cor =
                 dias === null ? '#9ca3af' : dias < 0 ? '#ef4444' : dias <= 3 ? '#f97316' : '#22c55e';
+              const label =
+                dias === null
+                  ? 'Sem data'
+                  : dias < 0
+                  ? `Vencido há ${Math.abs(dias)}d`
+                  : dias === 0
+                  ? 'Vence hoje!'
+                  : `${dias}d restantes`;
               return (
-                <View key={p.id} style={styles.locacaoRow}>
+                <View key={p.id} style={[styles.locacaoCard, { borderLeftColor: cor }]}>
                   <Text style={styles.locacaoNome} numberOfLines={1}>{p.descricao}</Text>
-                  {dias !== null && (
-                    <Text style={[styles.locacaoDias, { color: cor }]}>
-                      {dias < 0 ? `Vencido ${Math.abs(dias)}d` : dias === 0 ? 'Hoje!' : `${dias}d`}
-                    </Text>
-                  )}
+                  <View style={[styles.locacaoBadge, { backgroundColor: cor + '22' }]}>
+                    <Text style={[styles.locacaoBadgeText, { color: cor }]}>{label}</Text>
+                  </View>
                 </View>
               );
             })}
@@ -497,40 +524,37 @@ const styles = StyleSheet.create({
   // KPI
   kpiRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   kpiCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    borderTopWidth: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    gap: 10,
+    borderWidth: 1,
   },
   kpiIconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
+  },
+  kpiTextCol: {
+    flex: 1,
   },
   kpiValue: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '800',
-    color: theme.colors.primary,
+    lineHeight: 26,
   },
   kpiLabel: {
     fontSize: 11,
     color: '#6b7280',
     fontWeight: '500',
-    textAlign: 'center',
+    marginTop: 1,
   },
 
   // Section card
@@ -595,19 +619,42 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // Locações row
-  locacaoRow: {
+  // Atalhos expandir
+  expandirBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 4,
+    justifyContent: 'center',
+    paddingTop: 4,
+    gap: 4,
+  },
+  expandirText: {
+    color: theme.colors.primary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
+  // Locações cards
+  locacaoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    padding: 12,
+    borderLeftWidth: 4,
+    gap: 8,
   },
   locacaoNome: {
     flex: 1,
     fontSize: 14,
     color: theme.colors.primary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  locacaoDias: {
+  locacaoBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+  },
+  locacaoBadgeText: {
     fontSize: 12,
     fontWeight: '700',
   },

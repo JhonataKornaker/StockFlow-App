@@ -1,6 +1,6 @@
 import { ResumoMovimentacaoEstoque } from '@/dtos/movimentacaoDto';
-import { Image, StyleSheet, Text, View } from 'react-native';
-import { ArrowUp, ArrowDown } from 'lucide-react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { ArrowDown, ArrowUp } from 'lucide-react-native';
 
 interface Props {
   movimentacao: ResumoMovimentacaoEstoque;
@@ -8,21 +8,23 @@ interface Props {
 
 export default function CardMovimentacao({ movimentacao }: Props) {
   const formatarData = (dataString: string) => {
-    const data = new Date(dataString);
-    return data.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    return new Date(dataString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      timeZone: 'America/Sao_Paulo',
+    });
   };
 
-  // Combinar entrada e saída e ordenar por data
   const movimentacoes = [
     movimentacao.ultimaEntrada && {
-      tipo: 'entrada',
+      tipo: 'entrada' as const,
       data: movimentacao.ultimaEntrada.data,
       quantidade: movimentacao.ultimaEntrada.quantidade,
       insumo: movimentacao.ultimaEntrada.insumo,
       responsavel: movimentacao.ultimaEntrada.fornecedor,
     },
     movimentacao.ultimaSaida && {
-      tipo: 'saida',
+      tipo: 'saida' as const,
       data: movimentacao.ultimaSaida.data,
       quantidade: movimentacao.ultimaSaida.quantidade,
       insumo: movimentacao.ultimaSaida.insumo,
@@ -30,138 +32,104 @@ export default function CardMovimentacao({ movimentacao }: Props) {
     },
   ]
     .filter(Boolean)
-    .sort((a, b) => new Date(b!.data).getTime() - new Date(a!.data).getTime());
+    .sort((a, b) => new Date(b!.data).getTime() - new Date(a!.data).getTime()) as NonNullable<typeof movimentacoes[number]>[];
 
   if (movimentacoes.length === 0) {
     return (
-      <View style={styles.container}>
+      <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>Nenhuma movimentação registrada</Text>
       </View>
     );
   }
 
-  // Agrupar por data
-  const movimentacoesPorData = movimentacoes.reduce(
-    (acc, mov) => {
-      if (!mov) return acc;
-      const dataFormatada = formatarData(mov.data);
-      if (!acc[dataFormatada]) {
-        acc[dataFormatada] = [];
-      }
-      acc[dataFormatada].push(mov);
-      return acc;
-    },
-    {} as Record<string, any[]>,
-  );
-
   return (
     <View style={styles.container}>
-      {Object.entries(movimentacoesPorData).map(([data, movs]) => (
-        <View key={data}>
-          {/* Cabeçalho da Data */}
-          <View style={styles.dateHeader}>
-            <Text style={styles.dateText}>{data}</Text>
-          </View>
-
-          {/* Lista de Movimentações */}
-          {movs.map((mov, index) => (
-            <View key={index} style={styles.itemContainer}>
-              {/* Quantidade e Insumo */}
-
-              <Text style={styles.quantidadeText}>
-                {mov.quantidade.toString().padStart(2, '0')} und
-              </Text>
-              <Text style={styles.insumoText}>{mov.insumo}</Text>
-
-              {/* Responsável */}
-              <View style={styles.centerContent}>
-                <Text style={styles.responsavelText}>{mov.responsavel}</Text>
-              </View>
-
-              {/* Ícone (Entrada/Saída) */}
-              <View style={styles.iconContainer}>
-                <Image
-                  source={require('../../assets/img_movimentacao.png')}
-                  style={[
-                    styles.iconImage,
-                    {
-                      tintColor:
-                        mov.tipo === 'entrada'
-                          ? 'rgba(34, 197, 94, 0.7)'
-                          : 'rgba(239, 68, 68, 0.7)', // muda a cor
-                      transform: [
-                        { rotate: mov.tipo === 'entrada' ? '0deg' : '180deg' },
-                      ], // inverte
-                    },
-                  ]}
-                />
-              </View>
+      {movimentacoes.map((mov, index) => {
+        const isEntrada = mov.tipo === 'entrada';
+        const cor = isEntrada ? '#22c55e' : '#ef4444';
+        const bgCor = isEntrada ? '#f0fdf4' : '#fef2f2';
+        return (
+          <View
+            key={index}
+            style={[styles.row, { backgroundColor: bgCor, borderLeftColor: cor }]}
+          >
+            <View style={[styles.iconCircle, { backgroundColor: cor + '22' }]}>
+              {isEntrada
+                ? <ArrowUp size={16} color={cor} />
+                : <ArrowDown size={16} color={cor} />}
             </View>
-          ))}
-        </View>
-      ))}
+
+            <View style={styles.info}>
+              <Text style={styles.insumoText} numberOfLines={1}>{mov.insumo}</Text>
+              {mov.responsavel ? (
+                <Text style={styles.responsavelText} numberOfLines={1}>{mov.responsavel}</Text>
+              ) : null}
+            </View>
+
+            <View style={styles.rightCol}>
+              <Text style={[styles.qtdText, { color: cor }]}>
+                {isEntrada ? '+' : '-'}{mov.quantidade}
+              </Text>
+              <Text style={styles.dataText}>{formatarData(mov.data)}</Text>
+            </View>
+          </View>
+        );
+      })}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ffffff44',
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginVertical: 8,
+    gap: 8,
   },
-  dateHeader: {
-    backgroundColor: '#ffffff44',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  dateText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#19325E',
-    textAlign: 'center',
-  },
-  itemContainer: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderLeftWidth: 3,
+    gap: 10,
   },
-  quantidadeText: {
+  iconCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  info: {
     flex: 1,
-    fontSize: 15,
-    marginBottom: 2,
-    paddingLeft: 10,
+    gap: 2,
   },
   insumoText: {
-    flex: 2,
-    fontSize: 15,
-  },
-  centerContent: {
-    flex: 2,
-    paddingHorizontal: 8,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#162B4D',
   },
   responsavelText: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  rightCol: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
+  qtdText: {
     fontSize: 15,
-    color: '#19325E',
+    fontWeight: '700',
   },
-  iconContainer: {
-    flex: 1,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
+  dataText: {
+    fontSize: 11,
+    color: '#9ca3af',
+  },
+  emptyContainer: {
+    paddingVertical: 16,
     alignItems: 'center',
-  },
-  iconImage: {
-    width: 20,
-    height: 20,
-    resizeMode: 'contain',
   },
   emptyText: {
     fontSize: 14,
-    textAlign: 'center',
-    paddingVertical: 24,
+    color: '#9ca3af',
   },
 });
