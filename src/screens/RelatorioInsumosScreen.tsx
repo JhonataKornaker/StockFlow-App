@@ -107,50 +107,102 @@ function gerarHTML(
   periodoLabel: string,
   totais: { entradas: number; saidas: number },
 ): string {
-  const linhas = movimentacoes
-    .map(m => {
-      const cfg = TIPO_CONFIG[m.tipo];
-      const responsavel = m.colaborador?.nome ?? m.fornecedor ?? m.usuario.nome;
+  // Agrupa por insumo
+  const porInsumo = new Map<string, { descricao: string; unidade: string; movs: MovimentacaoFiltradaDto[] }>();
+  for (const m of movimentacoes) {
+    const key = m.estoque.insumo.descricao;
+    if (!porInsumo.has(key)) {
+      porInsumo.set(key, { descricao: key, unidade: m.estoque.insumo.unidade, movs: [] });
+    }
+    porInsumo.get(key)!.movs.push(m);
+  }
+
+  const blocos = Array.from(porInsumo.values())
+    .map(grupo => {
+      const linhas = grupo.movs
+        .map((m, i) => {
+          const cfg = TIPO_CONFIG[m.tipo];
+          const responsavel = m.colaborador?.nome ?? m.fornecedor ?? m.usuario.nome ?? '—';
+          const sinal = (m.tipo === 'SAIDA' || m.tipo === 'TRANSFERENCIA') ? '−' : '+';
+          const isLast = i === grupo.movs.length - 1;
+          return `
+            <tr>
+              <td style="padding:8px 12px;border-bottom:${isLast ? '2px solid #e5e7eb' : '1px solid #f3f4f6'};color:#6b7280;font-size:11px;white-space:nowrap">
+                ${formatarData(m.criadoEm)}
+              </td>
+              <td style="padding:8px 12px;border-bottom:${isLast ? '2px solid #e5e7eb' : '1px solid #f3f4f6'}">
+                <span style="background:${cfg.bg};color:${cfg.color};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">
+                  ${cfg.label}
+                </span>
+              </td>
+              <td style="padding:8px 12px;border-bottom:${isLast ? '2px solid #e5e7eb' : '1px solid #f3f4f6'};font-weight:700;color:${cfg.color};text-align:right;white-space:nowrap">
+                ${sinal}${m.quantidade} ${grupo.unidade}
+              </td>
+              <td style="padding:8px 12px;border-bottom:${isLast ? '2px solid #e5e7eb' : '1px solid #f3f4f6'};color:#374151;font-size:12px">
+                ${responsavel}
+              </td>
+              ${m.observacao ? `<td style="padding:8px 12px;border-bottom:${isLast ? '2px solid #e5e7eb' : '1px solid #f3f4f6'};color:#9ca3af;font-size:11px;font-style:italic">${m.observacao}</td>` : '<td style="border-bottom:1px solid #f3f4f6"></td>'}
+            </tr>`;
+        })
+        .join('');
+
       return `
         <tr>
-          <td><span style="background:${cfg.bg};color:${cfg.color};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${cfg.label}</span></td>
-          <td>${m.estoque.insumo.descricao}</td>
-          <td style="text-align:center">${m.quantidade} ${m.estoque.insumo.unidade}</td>
-          <td style="text-align:center">${m.quantidadeAntes} → ${m.quantidadeDepois}</td>
-          <td>${responsavel}</td>
-          <td>${formatarData(m.criadoEm)}</td>
-        </tr>`;
+          <td colspan="5" style="padding:14px 12px 6px;background:#f8faff;border-top:2px solid #19325E">
+            <span style="font-size:13px;font-weight:700;color:#19325E">${grupo.descricao}</span>
+            <span style="font-size:11px;color:#9ca3af;margin-left:8px">${grupo.movs.length} movimentação(ões)</span>
+          </td>
+        </tr>
+        ${linhas}`;
     })
     .join('');
 
   return `
     <!DOCTYPE html><html><head><meta charset="utf-8">
     <style>
-      body { font-family: Arial, sans-serif; padding: 24px; color: #1f2937; }
-      h1 { color: #19325E; font-size: 20px; margin-bottom: 4px; }
-      .sub { color: #6b7280; font-size: 13px; margin-bottom: 20px; }
-      .resumo { display: flex; gap: 16px; margin-bottom: 20px; }
-      .resumo-item { background: #f9fafb; border-radius: 8px; padding: 10px 16px; flex: 1; }
-      .resumo-label { font-size: 11px; color: #6b7280; }
-      .resumo-valor { font-size: 20px; font-weight: 700; color: #19325E; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: Arial, sans-serif; padding: 28px; color: #1f2937; background: #fff; }
+      .header { border-bottom: 3px solid #19325E; padding-bottom: 14px; margin-bottom: 20px; }
+      h1 { color: #19325E; font-size: 18px; font-weight: 700; }
+      .sub { color: #6b7280; font-size: 12px; margin-top: 4px; }
+      .resumo { display: flex; gap: 12px; margin-bottom: 24px; }
+      .resumo-item { background: #f8faff; border-radius: 8px; padding: 12px 16px; flex: 1; border: 1px solid #e5e7eb; }
+      .resumo-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+      .resumo-valor { font-size: 22px; font-weight: 700; color: #19325E; margin-top: 2px; }
       table { width: 100%; border-collapse: collapse; font-size: 12px; }
-      th { background: #19325E; color: #fff; padding: 8px 10px; text-align: left; }
-      td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; }
-      tr:nth-child(even) td { background: #f9fafb; }
+      .footer { margin-top: 24px; text-align: center; color: #9ca3af; font-size: 10px; border-top: 1px solid #f3f4f6; padding-top: 12px; }
     </style></head><body>
-    <h1>Relatório de Movimentação de Insumos</h1>
-    <p class="sub">Período: ${periodoLabel} &nbsp;|&nbsp; Gerado em ${new Date().toLocaleString('pt-BR')}</p>
+    <div class="header">
+      <h1>Relatório de Movimentação de Insumos</h1>
+      <div class="sub">Período: ${periodoLabel} &nbsp;·&nbsp; Gerado em ${new Date().toLocaleString('pt-BR')}</div>
+    </div>
     <div class="resumo">
-      <div class="resumo-item"><div class="resumo-label">Total</div><div class="resumo-valor">${movimentacoes.length}</div></div>
-      <div class="resumo-item"><div class="resumo-label">Entradas</div><div class="resumo-valor" style="color:#16a34a">${totais.entradas}</div></div>
-      <div class="resumo-item"><div class="resumo-label">Saídas</div><div class="resumo-valor" style="color:#dc2626">${totais.saidas}</div></div>
+      <div class="resumo-item">
+        <div class="resumo-label">Total de movimentações</div>
+        <div class="resumo-valor">${movimentacoes.length}</div>
+      </div>
+      <div class="resumo-item">
+        <div class="resumo-label">Entradas</div>
+        <div class="resumo-valor" style="color:#16a34a">${totais.entradas}</div>
+      </div>
+      <div class="resumo-item">
+        <div class="resumo-label">Saídas</div>
+        <div class="resumo-valor" style="color:#dc2626">${totais.saidas}</div>
+      </div>
     </div>
     <table>
-      <thead><tr>
-        <th>Tipo</th><th>Insumo</th><th>Quantidade</th><th>Saldo</th><th>Responsável</th><th>Data</th>
-      </tr></thead>
-      <tbody>${linhas}</tbody>
+      <thead>
+        <tr style="background:#f3f4f6">
+          <th style="padding:8px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Data</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Tipo</th>
+          <th style="padding:8px 12px;text-align:right;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Quantidade</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Responsável</th>
+          <th style="padding:8px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Observação</th>
+        </tr>
+      </thead>
+      <tbody>${blocos}</tbody>
     </table>
+    <div class="footer">StockFlow &nbsp;·&nbsp; Relatório gerado automaticamente</div>
     </body></html>`;
 }
 
@@ -230,6 +282,7 @@ export default function RelatorioInsumosScreen() {
   function renderItem({ item }: { item: MovimentacaoFiltradaDto }) {
     const cfg = TIPO_CONFIG[item.tipo];
     const responsavel = item.colaborador?.nome ?? item.fornecedor ?? item.usuario.nome;
+    const sinal = (item.tipo === 'SAIDA' || item.tipo === 'TRANSFERENCIA') ? '−' : '+';
     return (
       <View style={styles.item}>
         <View style={styles.itemHeader}>
@@ -238,21 +291,20 @@ export default function RelatorioInsumosScreen() {
           </View>
           <Text style={styles.itemData}>{formatarDataHora(item.criadoEm)}</Text>
         </View>
+
         <Text style={styles.itemInsumo}>{item.estoque.insumo.descricao}</Text>
+
         <View style={styles.itemFooter}>
-          <Text style={styles.itemQtd}>
-            {item.tipo === 'SAIDA' || item.tipo === 'TRANSFERENCIA' ? '−' : '+'}
-            {item.quantidade} {item.estoque.insumo.unidade}
-          </Text>
-          <Text style={styles.itemSaldo}>
-            {item.quantidadeAntes} → {item.quantidadeDepois}
+          <Text style={[styles.itemQtd, { color: cfg.color }]}>
+            {sinal}{item.quantidade} {item.estoque.insumo.unidade}
           </Text>
           {responsavel ? (
             <Text style={styles.itemResponsavel} numberOfLines={1}>{responsavel}</Text>
           ) : null}
         </View>
+
         {item.observacao ? (
-          <Text style={styles.itemObs} numberOfLines={1}>obs: {item.observacao}</Text>
+          <Text style={styles.itemObs} numberOfLines={1}>{item.observacao}</Text>
         ) : null}
       </View>
     );
@@ -560,14 +612,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#374151',
-  },
-  itemSaldo: {
-    fontSize: 12,
-    color: '#6b7280',
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 6,
   },
   itemResponsavel: {
     fontSize: 12,

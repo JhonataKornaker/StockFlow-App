@@ -1,11 +1,17 @@
 {
   "build": {
     "apk": {
+      "env": {
+        "API_BASE_URL": "https://stockflow-api-3md4.onrender.com"
+      },
       "android": {
         "buildType": "apk"
       }
     },
     "production": {
+      "env": {
+        "API_BASE_URL": "https://stockflow-api-3md4.onrender.com"
+      },
       "android": {
         "buildType": "app-bundle"
       },
