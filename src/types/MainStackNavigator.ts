@@ -27,6 +27,7 @@ export type MainStackParamList = {
   EditarFerramenta: { ferramenta: FerramentasDto };
   EditarPatrimonio: { patrimonio: PatrimonioDto };
   EditarInsumo: { insumo: EstoqueDto };
+  ReabastecerInsumo: { estoque: EstoqueDto };
   CadastroColaborador: undefined;
   CadastroPatrimonio?: { patrimonio?: Patrimonio };
   DetalhesColaborador: { colaborador: Colaborador };

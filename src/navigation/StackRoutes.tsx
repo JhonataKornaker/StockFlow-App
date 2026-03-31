@@ -22,6 +22,7 @@ import EditarColaborador from '@/screens/EditarColaboradorScreen';
 import EditarFerramenta from '@/screens/EditarFerramentaScreen';
 import EditarPatrimonio from '@/screens/EditarPatrimonioScreen';
 import EditarInsumo from '@/screens/EditarInsumoScreen';
+import ReabastecerInsumo from '@/screens/ReabastecerInsumoScreen';
 import LocacoesScreen from '@/screens/LocacoesScreen';
 import DetalhesLocacaoScreen from '@/screens/DetalhesLocacaoScreen';
 import RelatorioInsumosScreen from '@/screens/RelatorioInsumosScreen';
@@ -193,6 +194,11 @@ export default function StackRoutes() {
         name="SaidaInsumo"
         component={SaidaInsumo}
         options={{ title: 'Saida de Insumos' }}
+      />
+      <Stack.Screen
+        name="ReabastecerInsumo"
+        component={ReabastecerInsumo}
+        options={{ title: 'Reabastecer Insumo' }}
       />
       <Stack.Screen
         name="CautelasAbertas"

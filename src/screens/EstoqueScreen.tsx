@@ -10,7 +10,7 @@ import { agruparPorLetra } from '@/util/agrupadores';
 import { showErrorToast, showSuccessToast } from '@/util/toast';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AlertTriangle, Edit2, MapPin, Package, Search, Trash2 } from 'lucide-react-native';
+import { AlertTriangle, MapPin, Package, PackagePlus, Search, Trash2 } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
@@ -27,10 +27,12 @@ function EstoqueCard({
   item,
   onEditar,
   onExcluir,
+  onReabastecer,
 }: {
   item: EstoqueDto;
   onEditar: () => void;
   onExcluir: () => void;
+  onReabastecer: () => void;
 }) {
   const baixo = item.estoqueBaixo;
   const iconColor = baixo ? '#ef4444' : theme.colors.primary;
@@ -43,7 +45,6 @@ function EstoqueCard({
 
   return (
     <TouchableOpacity style={styles.card} onPress={onEditar} activeOpacity={0.85}>
-      {/* Ícone + info */}
       <View style={styles.cardMain}>
         <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
           {baixo
@@ -67,7 +68,6 @@ function EstoqueCard({
             )}
           </View>
 
-          {/* Quantidade */}
           <View style={styles.qtdRow}>
             <Text style={styles.qtdText}>
               <Text style={[styles.qtdNum, { color: barColor }]}>{item.quantidadeAtual}</Text>
@@ -75,14 +75,12 @@ function EstoqueCard({
             </Text>
           </View>
 
-          {/* Barra de progresso */}
           {pct !== null && (
             <View style={styles.progressBg}>
               <View style={[styles.progressFill, { width: `${pct * 100}%`, backgroundColor: barColor }]} />
             </View>
           )}
 
-          {/* Info secundária */}
           <View style={styles.metaRow}>
             {item.insumo.marca && (
               <Text style={styles.metaText}>{item.insumo.marca}</Text>
@@ -95,19 +93,26 @@ function EstoqueCard({
             )}
           </View>
         </View>
-      </View>
 
-      {/* Ações */}
-      <View style={styles.cardActions}>
-        <TouchableOpacity style={styles.actionBtn} onPress={onEditar} activeOpacity={0.7}>
-          <Edit2 size={16} color="#6b7280" />
-          <Text style={styles.actionLabel}>Editar</Text>
-        </TouchableOpacity>
-        <View style={styles.actionDivider} />
-        <TouchableOpacity style={styles.actionBtn} onPress={onExcluir} activeOpacity={0.7}>
-          <Trash2 size={16} color="#ef4444" />
-          <Text style={[styles.actionLabel, { color: '#ef4444' }]}>Excluir</Text>
-        </TouchableOpacity>
+        {/* Ícones de ação à direita */}
+        <View style={styles.cardIcons}>
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={e => { e.stopPropagation?.(); onReabastecer(); }}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <PackagePlus size={20} color="#162B4D" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={e => { e.stopPropagation?.(); onExcluir(); }}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Trash2 size={20} color="#ef4444" />
+          </TouchableOpacity>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -228,6 +233,7 @@ export default function Estoques() {
             item={item}
             onEditar={() => navigation.navigate('EditarInsumo', { insumo: item })}
             onExcluir={() => handleExcluir(item)}
+            onReabastecer={() => navigation.navigate('ReabastecerInsumo', { estoque: item })}
           />
         )}
         renderSectionHeader={({ section: { title } }) => (
@@ -376,26 +382,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#9ca3af',
   },
-  cardActions: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
-  },
-  actionBtn: {
-    flex: 1,
+  cardIcons: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 10,
+    gap: 4,
+    paddingLeft: 8,
   },
-  actionDivider: {
-    width: 1,
-    backgroundColor: '#f3f4f6',
-  },
-  actionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#6b7280',
+  iconBtn: {
+    padding: 4,
   },
 });

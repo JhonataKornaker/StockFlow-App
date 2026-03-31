@@ -112,6 +112,30 @@ export async function cadastrarInsumoComEntrada(data: {
   }
 }
 
+export async function registrarEntradaInsumo(data: {
+  estoqueId: number;
+  quantidade: number;
+  fornecedor?: string;
+  valorUnitario?: number;
+  observacao?: string;
+}) {
+  const isOnline = await NetworkService.isOnline();
+
+  if (isOnline) {
+    const response = await api.post('controle-estoque/entrada', data);
+    await StorageService.remove(STORAGE_KEYS.ESTOQUES);
+    await StorageService.remove(STORAGE_KEYS.MOVIMENTACOES);
+    return response.data;
+  } else {
+    await SyncService.addPendingAction({
+      type: 'CREATE',
+      endpoint: 'controle-estoque/entrada',
+      data,
+    });
+    return { success: true, offline: true };
+  }
+}
+
 export async function registrarSaidaInsumo(data: SaidaInsumoDto) {
   const isOnline = await NetworkService.isOnline();
 
