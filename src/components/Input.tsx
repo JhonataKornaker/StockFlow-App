@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextInput, TextInputProps, View, StyleSheet } from 'react-native';
+import { TextInput, TextInputProps, View, Text, StyleSheet } from 'react-native';
 import { Search, Mail, AlertCircle, LucideIcon } from 'lucide-react-native';
 
 interface InputProps extends TextInputProps {
@@ -9,6 +9,7 @@ interface InputProps extends TextInputProps {
   required?: boolean;
   value?: string;
   onChangeText?: (text: string) => void;
+  errorMessage?: string;
 }
 
 export function Input({
@@ -20,41 +21,49 @@ export function Input({
   style,
   value,
   onChangeText,
+  errorMessage,
   ...props
 }: InputProps) {
+  const hasError = !!errorMessage;
+
   return (
-    <View style={[styles.container, style]}>
-      {Icon && iconPosition === 'left' && (
-        <Icon
-          size={20}
-          style={styles.iconLeft}
-          color={iconColors || '#9CA3AF'}
-        />
-      )}
+    <View style={style}>
+      <View style={[styles.container, hasError && styles.containerError]}>
+        {Icon && iconPosition === 'left' && (
+          <Icon
+            size={20}
+            style={styles.iconLeft}
+            color={hasError ? '#DC2626' : (iconColors || '#9CA3AF')}
+          />
+        )}
 
-      <TextInput
-        style={styles.input}
-        placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
-        value={value}
-        onChangeText={onChangeText}
-        {...props}
-      />
-
-      {Icon && iconPosition === 'right' && (
-        <Icon
-          size={20}
-          style={styles.iconRight}
-          color={iconColors || '#9CA3AF'}
+        <TextInput
+          style={styles.input}
+          placeholder={placeholder}
+          placeholderTextColor="#9CA3AF"
+          value={value}
+          onChangeText={onChangeText}
+          {...props}
         />
-      )}
 
-      {!Icon && required && (
-        <AlertCircle
-          size={20}
-          style={styles.alertIcon}
-          color={iconColors || '#FF001F80'}
-        />
+        {Icon && iconPosition === 'right' && (
+          <Icon
+            size={20}
+            style={styles.iconRight}
+            color={hasError ? '#DC2626' : (iconColors || '#9CA3AF')}
+          />
+        )}
+
+        {!Icon && required && (
+          <AlertCircle
+            size={20}
+            style={styles.alertIcon}
+            color={iconColors || '#FF001F80'}
+          />
+        )}
+      </View>
+      {hasError && (
+        <Text style={styles.errorText}>{errorMessage}</Text>
       )}
     </View>
   );
@@ -71,6 +80,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
+  containerError: {
+    borderColor: '#DC2626',
+    borderWidth: 1.5,
+    backgroundColor: '#FFF8F8',
+  },
   input: {
     flex: 1,
     fontSize: 16,
@@ -84,5 +98,11 @@ const styles = StyleSheet.create({
   },
   alertIcon: {
     marginLeft: 8,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });
