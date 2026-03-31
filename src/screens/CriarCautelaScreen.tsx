@@ -309,24 +309,18 @@ export default function CautelaScreen() {
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
       >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {
-            setItensSugeridos([]);
-            setColaboradoresSugeridos([]);
-          }}
-          style={{ flex: 1 }}
-        >
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
             keyboardShouldPersistTaps="handled"
+            onScrollBeginDrag={() => {
+              setItensSugeridos([]);
+              setColaboradoresSugeridos([]);
+            }}
           >
             <View style={styles.container}>
               {/* Buscar Item */}
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Item *</Text>
-
                 {/* Se não tiver item selecionado, mostra busca */}
                 {!itemAtual ? (
                   <>
@@ -419,8 +413,6 @@ export default function CautelaScreen() {
 
               {/* Buscar Colaborador */}
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Colaborador *</Text>
-
                 {/* Se não tiver colaborador selecionado, mostra busca */}
                 {!colaboradorAtual ? (
                   <>
@@ -520,7 +512,6 @@ export default function CautelaScreen() {
               {/* Removido spinner para manter padrão sem ícone de carregamento */}
             </View>
           </ScrollView>
-        </TouchableOpacity>
       </KeyboardAvoidingView>
     </Screen>
   );

@@ -1,12 +1,12 @@
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Screen } from '@/components/ScreenProps';
+import { SelectPicker } from '@/components/SelectPicker';
 import {
   atualizarEstoqueInsumo,
   atualizarInsumo,
 } from '@/service/controleEstoque.service';
 import { MainStackParamList } from '@/types/MainStackNavigator';
-import { Picker } from '@react-native-picker/picker';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { CircleAlert, Hash, Tag, Package } from 'lucide-react-native';
@@ -14,7 +14,6 @@ import { useState } from 'react';
 import {
   View,
   Text,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -116,12 +115,6 @@ export default function EditarInsumo() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ marginTop: 20, gap: 14 }}>
-            <Text
-              style={{ fontSize: 18, fontWeight: 'bold', color: '#19325E' }}
-            >
-              Dados do Insumo
-            </Text>
-
             <Input
               placeholder="Descrição *"
               icon={CircleAlert}
@@ -144,23 +137,12 @@ export default function EditarInsumo() {
               onChangeText={text => handleChange('marca', text)}
             />
 
-            <View style={{ marginVertical: 8 }}>
-              <Text style={{ marginBottom: 4, color: '#666' }}>
-                Unidade de Medida *
-              </Text>
-              <Picker
-                selectedValue={formData.unidade}
-                onValueChange={value => handleChange('unidade', value)}
-                style={{
-                  backgroundColor: '#f3f4f6',
-                  borderRadius: 8,
-                }}
-              >
-                {unidadesDisponiveis.map(unidade => (
-                  <Picker.Item key={unidade} label={unidade} value={unidade} />
-                ))}
-              </Picker>
-            </View>
+            <SelectPicker
+              label="Unidade de Medida *"
+              value={formData.unidade}
+              options={unidadesDisponiveis}
+              onChange={value => handleChange('unidade', value)}
+            />
 
             <Input
               placeholder="Categoria (opcional)"
