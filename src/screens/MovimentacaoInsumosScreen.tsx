@@ -102,7 +102,7 @@ export default function MovimentacoesScreen() {
   }, [movimentacoesFiltradas]);
 
   // Contadores
-  const totalEntradas = movimentacoes.filter(m => m.tipo === 'ENTRADA').length;
+  const totalEntradas = movimentacoes.filter(m => m.tipo === 'ENTRADA' || m.tipo === 'INVENTARIO_INICIAL').length;
   const totalSaidas = movimentacoes.filter(m => m.tipo === 'SAIDA').length;
 
   // Atualizar parâmetros da navegação com os totais
@@ -191,8 +191,8 @@ export default function MovimentacoesScreen() {
                   {/* Responsável */}
                   <View style={styles.responsavelContainer}>
                     <Text style={styles.responsavelText} numberOfLines={1}>
-                      {mov.tipo === 'ENTRADA'
-                        ? mov.fornecedor || 'Não informado'
+                      {mov.tipo === 'ENTRADA' || mov.tipo === 'INVENTARIO_INICIAL'
+                        ? mov.fornecedor || (mov.tipo === 'INVENTARIO_INICIAL' ? 'Inv. inicial' : 'Não informado')
                         : mov.colaborador || 'Não informado'}
                     </Text>
                   </View>
@@ -205,13 +205,13 @@ export default function MovimentacoesScreen() {
                         styles.iconImage,
                         {
                           tintColor:
-                            mov.tipo === 'ENTRADA'
+                            mov.tipo === 'ENTRADA' || mov.tipo === 'INVENTARIO_INICIAL'
                               ? 'rgba(34, 197, 94, 0.7)'
                               : 'rgba(239, 68, 68, 0.7)',
                           transform: [
                             {
                               rotate:
-                                mov.tipo === 'ENTRADA' ? '0deg' : '180deg',
+                                mov.tipo === 'ENTRADA' || mov.tipo === 'INVENTARIO_INICIAL' ? '0deg' : '180deg',
                             },
                           ],
                         },

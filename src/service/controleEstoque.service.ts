@@ -84,6 +84,7 @@ export async function cadastrarInsumoComEntrada(data: {
   localizacao?: string;
   fornecedor?: string;
   valorUnitario?: number;
+  tipoEntrada?: string;
 }) {
   const isOnline = await NetworkService.isOnline();
 

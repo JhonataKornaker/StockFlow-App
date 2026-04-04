@@ -19,7 +19,7 @@ export interface ResumoMovimentacaoEstoque {
 
 export interface MovimentacaoListaDto {
   id: number;
-  tipo: 'ENTRADA' | 'SAIDA' | 'AJUSTE' | 'DEVOLUCAO' | 'TRANSFERENCIA';
+  tipo: 'ENTRADA' | 'INVENTARIO_INICIAL' | 'SAIDA' | 'AJUSTE' | 'DEVOLUCAO' | 'TRANSFERENCIA';
   quantidade: number;
   data: string;
   insumo: string;
@@ -29,7 +29,7 @@ export interface MovimentacaoListaDto {
   observacao?: string;
 }
 
-export type TipoMovimentacao = 'ENTRADA' | 'SAIDA' | 'AJUSTE' | 'DEVOLUCAO' | 'TRANSFERENCIA';
+export type TipoMovimentacao = 'ENTRADA' | 'INVENTARIO_INICIAL' | 'SAIDA' | 'AJUSTE' | 'DEVOLUCAO' | 'TRANSFERENCIA';
 
 export interface MovimentacaoFiltradaDto {
   id: number;

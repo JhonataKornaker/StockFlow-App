@@ -4,9 +4,9 @@ import { Screen } from '@/components/ScreenProps';
 import { SelectPicker } from '@/components/SelectPicker';
 import { cadastrarInsumoComEntrada } from '@/service/controleEstoque.service';
 import { MainStackParamList } from '@/types/MainStackNavigator';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { CircleAlert, Package, Hash, Tag, Trash2, ListOrdered } from 'lucide-react-native';
+import { CircleAlert, Package, Hash, Tag, Trash2, ListOrdered, ClipboardList } from 'lucide-react-native';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import {
   View,
@@ -23,6 +23,7 @@ import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'CadastroInsumo'>;
+type RouteProps = RouteProp<MainStackParamList, 'CadastroInsumo'>;
 
 interface CadastroInsumoForm {
   descricao: string;
@@ -82,6 +83,8 @@ export default function CadastroInsumo() {
   const [modalFilaVisivel, setModalFilaVisivel] = useState(false);
 
   const navigation = useNavigation<NavigationProps>();
+  const route = useRoute<RouteProps>();
+  const modoInventarioInicial = route.params?.modoInventarioInicial ?? false;
 
   useEffect(() => {
     const t = setTimeout(() => setCarregando(false), 300);
@@ -93,10 +96,10 @@ export default function CadastroInsumo() {
       headerRight: () =>
         fila.length > 0 ? (
           <TouchableOpacity
-            style={{ marginRight: 16 }}
+            style={styles.headerBtn}
             onPress={() => setModalFilaVisivel(true)}
           >
-            <ListOrdered size={22} color="#B0C4DC" />
+            <ListOrdered size={28} color="#B0C4DC" />
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{fila.length}</Text>
             </View>
@@ -124,6 +127,7 @@ export default function CadastroInsumo() {
     quantidadeEntrada: Number(formData.quantidadeEntrada),
     fornecedor: formData.fornecedor.trim() || undefined,
     valorUnitario: formData.valorUnitario ? Number(formData.valorUnitario) : undefined,
+    tipoEntrada: modoInventarioInicial ? 'INVENTARIO_INICIAL' : 'ENTRADA',
   });
 
   const validar = () => {
@@ -227,6 +231,15 @@ export default function CadastroInsumo() {
           contentContainerStyle={{ paddingBottom: 20 }}
           keyboardShouldPersistTaps="handled"
         >
+          {modoInventarioInicial && (
+            <View style={styles.bannerInventario}>
+              <ClipboardList size={18} color="#1d4ed8" />
+              <Text style={styles.bannerInventarioText}>
+                Modo inventário inicial — registros marcados como estoque de abertura
+              </Text>
+            </View>
+          )}
+
           <View style={{ marginTop: 20, gap: 14 }}>
             <Input
               placeholder="Descrição *"
@@ -316,17 +329,17 @@ export default function CadastroInsumo() {
             />
           </View>
 
-          <View style={{ marginTop: 24, gap: 10, alignItems: 'center' }}>
+          <View style={styles.botoesRow}>
             <Button
               onPress={handleAdicionarNaFila}
               title="Adicionar"
-              style={{ marginBottom: 0 }}
+              style={styles.botaoMetade}
               disabled={salvando}
             />
             <Button
               onPress={handleSalvarUnico}
-              title="Salvar apenas este"
-              style={{ marginBottom: 12 }}
+              title="Salvar"
+              style={styles.botaoMetade}
               disabled={salvando}
             />
           </View>
@@ -397,22 +410,39 @@ const styles = StyleSheet.create({
     color: '#19325E',
     marginTop: 8,
   },
+  headerBtn: {
+    marginRight: 16,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   badge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
+    top: -6,
+    right: -8,
     backgroundColor: '#CC0000',
-    borderRadius: 8,
-    minWidth: 16,
-    height: 16,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 3,
+    paddingHorizontal: 4,
   },
   badgeText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
+  },
+  botoesRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+    marginBottom: 12,
+    justifyContent: 'center',
+  },
+  botaoMetade: {
+    width: '44%',
   },
   modalOverlay: {
     flex: 1,
@@ -480,5 +510,21 @@ const styles = StyleSheet.create({
   },
   filaCardRemover: {
     padding: 4,
+  },
+  bannerInventario: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#dbeafe',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 12,
+  },
+  bannerInventarioText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#1d4ed8',
+    lineHeight: 18,
   },
 });

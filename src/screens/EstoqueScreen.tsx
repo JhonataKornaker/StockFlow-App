@@ -210,6 +210,11 @@ export default function Estoques() {
             onPress={() => navigation.navigate('CadastroInsumo')}
             style={{ marginTop: 20 }}
           />
+          <Button
+            title="Registrar Inventário Inicial"
+            onPress={() => navigation.navigate('CadastroInsumo', { modoInventarioInicial: true })}
+            style={{ marginTop: 8, backgroundColor: '#eff6ff' }}
+          />
         </View>
       </Screen>
     );
@@ -241,15 +246,17 @@ export default function Estoques() {
             <Text style={styles.sectionLetter}>{title}</Text>
           </View>
         )}
+        ListFooterComponent={
+          <View style={styles.listFooter}>
+            <Button
+              title="Cadastrar Novo Insumo"
+              onPress={() => navigation.navigate('CadastroInsumo')}
+            />
+          </View>
+        }
         contentContainerStyle={{ paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         stickySectionHeadersEnabled={false}
-      />
-
-      <Button
-        style={{ alignSelf: 'center', marginBottom: 16 }}
-        title="Cadastrar Novo Insumo"
-        onPress={() => navigation.navigate('CadastroInsumo')}
       />
     </Screen>
   );
@@ -275,6 +282,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  listFooter: {
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 8,
   },
   sectionHeader: {
     paddingTop: 16,
