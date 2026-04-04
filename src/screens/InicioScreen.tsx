@@ -287,27 +287,29 @@ export default function InicioScreen() {
           />
         }
       >
-        {/* KPIs */}
-        <View style={styles.kpiRow}>
-          <KpiCard
-            label="Entradas"
-            value={resumo?.totalEntradas ?? 0}
-            color="#22c55e"
-            Icon={TrendingUp}
-          />
-          <KpiCard
-            label="Saídas"
-            value={resumo?.totalSaidas ?? 0}
-            color="#ef4444"
-            Icon={TrendingDown}
-          />
-          <KpiCard
-            label="Cautelas"
-            value={resumo?.cautelasAbertas ?? 0}
-            color="#f59e0b"
-            Icon={ClipboardList}
-          />
-        </View>
+        {/* KPIs — só exibe quando há ao menos um dado */}
+        {resumo && (resumo.totalEntradas > 0 || resumo.totalSaidas > 0 || resumo.cautelasAbertas > 0) && (
+          <View style={styles.kpiRow}>
+            <KpiCard
+              label="Entradas"
+              value={resumo.totalEntradas}
+              color="#2563EB"
+              Icon={TrendingUp}
+            />
+            <KpiCard
+              label="Saídas"
+              value={resumo.totalSaidas}
+              color="#0891B2"
+              Icon={TrendingDown}
+            />
+            <KpiCard
+              label="Cautelas"
+              value={resumo.cautelasAbertas}
+              color="#475569"
+              Icon={ClipboardList}
+            />
+          </View>
+        )}
 
         {/* Alertas */}
         {temAlertas && (
@@ -515,6 +517,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   scrollContent: {
+    flexGrow: 1,
     padding: 12,
     paddingBottom: 32,
     gap: 12,
