@@ -27,7 +27,11 @@ import LocacoesScreen from '@/screens/LocacoesScreen';
 import DetalhesLocacaoScreen from '@/screens/DetalhesLocacaoScreen';
 import RelatorioInsumosScreen from '@/screens/RelatorioInsumosScreen';
 import RelatorioLocacoesScreen from '@/screens/RelatorioLocacoesScreen';
+import RelatoriosScreen from '@/screens/RelatoriosScreen';
 import ConfiguracoesScreen from '@/screens/ConfiguracoesScreen';
+import InventariosScreen from '@/screens/InventariosScreen';
+import ContarInventarioScreen from '@/screens/ContarInventarioScreen';
+import DetalhesInventarioScreen from '@/screens/DetalhesInventarioScreen';
 
 const Stack = createStackNavigator();
 
@@ -247,6 +251,11 @@ export default function StackRoutes() {
         options={{ title: 'Detalhes da Locação' }}
       />
       <Stack.Screen
+        name="Relatorios"
+        component={RelatoriosScreen}
+        options={{ title: 'Relatórios' }}
+      />
+      <Stack.Screen
         name="RelatorioInsumos"
         component={RelatorioInsumosScreen}
         options={{ title: 'Relatório de Insumos' }}
@@ -260,6 +269,21 @@ export default function StackRoutes() {
         name="Configuracoes"
         component={ConfiguracoesScreen}
         options={{ title: 'Configurações' }}
+      />
+      <Stack.Screen
+        name="Inventarios"
+        component={InventariosScreen}
+        options={{ title: 'Inventários' }}
+      />
+      <Stack.Screen
+        name="ContarInventario"
+        component={ContarInventarioScreen}
+        options={{ title: 'Novo Inventário' }}
+      />
+      <Stack.Screen
+        name="DetalhesInventario"
+        component={DetalhesInventarioScreen}
+        options={{ title: 'Detalhes do Inventário' }}
       />
     </Stack.Navigator>
   );
