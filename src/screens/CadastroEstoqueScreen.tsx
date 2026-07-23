@@ -19,7 +19,7 @@ import {
   Modal,
   StyleSheet,
 } from 'react-native';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'CadastroInsumo'>;
@@ -202,10 +202,7 @@ export default function CadastroInsumo() {
       showSuccessToast('Insumo cadastrado com sucesso!');
       navigation.goBack();
     } catch (error: any) {
-      showErrorToast(
-        error?.response?.data?.message || 'Erro ao cadastrar insumo',
-        'Erro ao cadastrar',
-      );
+      showErrorToast(parseApiError(error, 'Erro ao cadastrar insumo'), 'Erro ao cadastrar');
     } finally {
       setSalvando(false);
     }

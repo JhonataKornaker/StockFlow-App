@@ -16,7 +16,7 @@ import {
   ActivityIndicator,
   StyleSheet,
 } from 'react-native';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'ReabastecerInsumo'>;
 type RouteProps = RouteProp<MainStackParamList, 'ReabastecerInsumo'>;
@@ -51,10 +51,7 @@ export default function ReabastecerInsumo() {
       showSuccessToast('Entrada registrada com sucesso!');
       navigation.goBack();
     } catch (error: any) {
-      showErrorToast(
-        error?.response?.data?.message || 'Erro ao registrar entrada',
-        'Erro',
-      );
+      showErrorToast(parseApiError(error, 'Erro ao registrar entrada.'), 'Erro');
     } finally {
       setSalvando(false);
     }

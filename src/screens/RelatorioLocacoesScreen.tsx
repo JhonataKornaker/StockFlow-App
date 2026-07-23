@@ -1,7 +1,7 @@
 import { Screen } from '@/components/ScreenProps';
 import { HistoricoLocacaoDto } from '@/dtos/patrimonioDto';
 import { buscarHistoricoLocacoes } from '@/service/patrimonio.service';
-import { showErrorToast } from '@/util/toast';
+import { parseApiError, showErrorToast } from '@/util/toast';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Building2, CalendarCheck, Clock, FileText, RefreshCcw } from 'lucide-react-native';
@@ -167,8 +167,8 @@ export default function RelatorioLocacoesScreen() {
       const dados = await buscarHistoricoLocacoes({ dataInicio, dataFim });
       setHistorico(dados);
       setBuscado(true);
-    } catch {
-      showErrorToast('Erro ao buscar histórico de locações', 'Erro');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Erro ao buscar histórico de locações.'), 'Erro');
     } finally {
       setCarregando(false);
     }

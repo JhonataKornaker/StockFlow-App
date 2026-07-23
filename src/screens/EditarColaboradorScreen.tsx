@@ -13,7 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<
   MainStackParamList,
@@ -60,8 +60,7 @@ export default function EditarColaborador() {
       showSuccessToast('Colaborador atualizado com sucesso!');
       navigation.goBack();
     } catch (error) {
-      console.error('Erro ao atualizar colaborador:', error);
-      showErrorToast('Não foi possível atualizar o colaborador', 'Erro');
+      showErrorToast(parseApiError(error, 'Não foi possível atualizar o colaborador.'), 'Erro ao atualizar');
     }
   };
 

@@ -19,7 +19,7 @@ import {
   View,
 } from 'react-native';
 import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Colaboradores'>;
 
@@ -97,7 +97,7 @@ export default function Colaboradores() {
       const dados = await buscarColaboradores();
       setListaColaboradores(dados);
     } catch (error) {
-      console.error('Erro ao buscar colaboradores:', error);
+      showErrorToast(parseApiError(error, 'Não foi possível carregar os colaboradores.'), 'Erro ao carregar');
     } finally {
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, 600 - elapsed);
@@ -132,9 +132,7 @@ export default function Colaboradores() {
               showSuccessToast('Colaborador excluído com sucesso!');
               carregarColaboradores();
             } catch (error: any) {
-              const message =
-                error.response?.data?.message ?? 'Não foi possível excluir o colaborador.';
-              showErrorToast(message, 'Erro ao excluir colaborador');
+              showErrorToast(parseApiError(error, 'Não foi possível excluir o colaborador.'), 'Erro ao excluir');
             }
           },
         },

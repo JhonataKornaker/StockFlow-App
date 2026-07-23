@@ -19,7 +19,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Checkbox } from 'react-native-paper';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<
   MainStackParamList,
@@ -93,12 +93,7 @@ export default function EditarPatrimonio() {
       showSuccessToast('Patrimônio atualizado com sucesso!');
       navigation.goBack();
     } catch (error) {
-      console.error('Erro ao atualizar patrimônio:', error);
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Não foi possível atualizar o patrimônio';
-      showErrorToast(String(message), 'Erro ao atualizar');
+      showErrorToast(parseApiError(error, 'Não foi possível atualizar o patrimônio.'), 'Erro ao atualizar');
     }
   };
 

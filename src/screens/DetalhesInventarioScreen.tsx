@@ -4,7 +4,7 @@ import { ItemInventarioDto, StatusInventario } from '@/dtos/inventarioDto';
 import { buscarInventario } from '@/service/inventario.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
-import { showErrorToast } from '@/util/toast';
+import { parseApiError, showErrorToast } from '@/util/toast';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as Print from 'expo-print';
@@ -138,8 +138,8 @@ export default function DetalhesInventarioScreen() {
     try {
       const dados = await buscarInventario(inventarioId);
       setInventario(dados);
-    } catch {
-      showErrorToast('Erro ao carregar inventário', 'Erro');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Erro ao carregar inventário.'), 'Erro');
     } finally {
       setCarregando(false);
     }
@@ -153,7 +153,7 @@ export default function DetalhesInventarioScreen() {
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
     } catch {
-      showErrorToast('Erro ao gerar PDF', 'Erro');
+      showErrorToast('Erro ao gerar o PDF. Tente novamente.', 'Erro');
     } finally {
       setExportando(false);
     }

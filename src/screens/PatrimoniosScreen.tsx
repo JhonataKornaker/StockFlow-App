@@ -7,7 +7,7 @@ import { deletarPatrimonio, listarPatrimonio } from '@/service/patrimonio.servic
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showSuccessToast } from '@/util/toast';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { CalendarClock, Contact, Edit2, Search, Shield, Trash2 } from 'lucide-react-native';
@@ -107,7 +107,7 @@ export default function Patrimonios() {
       const dados = await listarPatrimonio();
       setListaPatrimonios(dados);
     } catch (error) {
-      console.error('Erro ao buscar patrimônios:', error);
+      showErrorToast(parseApiError(error, 'Não foi possível carregar os patrimônios.'), 'Erro ao carregar');
     } finally {
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, 600 - elapsed);
@@ -131,9 +131,7 @@ export default function Patrimonios() {
               showSuccessToast('Patrimônio excluído com sucesso!');
               carregarPatrimonios();
             } catch (error: any) {
-              const message =
-                error.response?.data?.message ?? 'Não foi possível excluir o patrimônio';
-              showErrorToast(message, 'Erro ao excluir');
+              showErrorToast(parseApiError(error, 'Não foi possível excluir o patrimônio.'), 'Erro ao excluir');
             }
           },
         },

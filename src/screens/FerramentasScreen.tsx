@@ -7,7 +7,7 @@ import { deletarFerramenta, listarFerramentas } from '@/service/ferramenta.servi
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showSuccessToast } from '@/util/toast';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Edit2, Hammer, Package, Search, Trash2 } from 'lucide-react-native';
@@ -97,7 +97,7 @@ export default function Ferramentas() {
       const dados = await listarFerramentas();
       setListaFerramentas(dados);
     } catch (error) {
-      console.error('Erro ao buscar ferramentas:', error);
+      showErrorToast(parseApiError(error, 'Não foi possível carregar as ferramentas.'), 'Erro ao carregar');
     } finally {
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, 600 - elapsed);
@@ -121,9 +121,7 @@ export default function Ferramentas() {
               showSuccessToast('Ferramenta excluída com sucesso!');
               carregarFerramentas();
             } catch (error: any) {
-              const message =
-                error.response?.data?.message ?? 'Não foi possível excluir a ferramenta';
-              showErrorToast(String(message), 'Erro ao excluir ferramenta');
+              showErrorToast(parseApiError(error, 'Não foi possível excluir a ferramenta.'), 'Erro ao excluir');
             }
           },
         },

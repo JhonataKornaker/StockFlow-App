@@ -3,7 +3,7 @@ import { Screen } from '@/components/ScreenProps';
 import { useAuth } from '@/context/AuthContext';
 import { atualizarPerfil, alterarSenha, buscarUsuarioLogado } from '@/service/usuario.service';
 import { theme } from '@/styles/theme';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showSuccessToast } from '@/util/toast';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   ChevronRight,
@@ -75,8 +75,8 @@ export default function ConfiguracoesScreen() {
       setNome(usuario.nome);
       setFuncao(usuario.funcao);
       setEmail(usuario.email);
-    } catch {
-      showErrorToast('Não foi possível carregar os dados do perfil');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Não foi possível carregar os dados do perfil.'));
     } finally {
       setCarregando(false);
     }
@@ -91,8 +91,8 @@ export default function ConfiguracoesScreen() {
       setSalvandoPerfil(true);
       await atualizarPerfil({ nome: nome.trim(), funcao: funcao.trim() });
       showSuccessToast('Perfil atualizado com sucesso!');
-    } catch {
-      showErrorToast('Não foi possível atualizar o perfil');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Não foi possível atualizar o perfil.'));
     } finally {
       setSalvandoPerfil(false);
     }
@@ -120,11 +120,7 @@ export default function ConfiguracoesScreen() {
       setConfirmarSenha('');
       setSenhaAberta(false);
     } catch (err: any) {
-      const msg =
-        err?.response?.status === 401
-          ? 'Senha atual incorreta'
-          : 'Não foi possível alterar a senha';
-      showErrorToast(msg);
+      showErrorToast(parseApiError(err, 'Não foi possível alterar a senha.'));
     } finally {
       setSalvandoSenha(false);
     }

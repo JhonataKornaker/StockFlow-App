@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { CircleAlert } from 'lucide-react-native';
 import { CriarColaboradorDto } from '@/dtos/colaboradorDto';
 import { create } from '@/service/colaborador.service';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import { Input } from '@/components/Input';
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/ScreenProps';
@@ -48,8 +48,7 @@ export default function CadastroColaborador() {
       showSuccessToast('Colaborador cadastrado com sucesso!');
       navigation.goBack();
     } catch (error) {
-      console.error('Erro ao salvar colaborador:', error);
-      showErrorToast('Erro ao salvar colaborador.', 'Erro');
+      showErrorToast(parseApiError(error, 'Erro ao salvar colaborador.'), 'Erro');
     }
   };
 

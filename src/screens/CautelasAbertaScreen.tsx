@@ -18,7 +18,7 @@ import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { buscarCautelas, finalizarCautelas } from '@/service/cautela.service';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showSuccessToast } from '@/util/toast';
 
 interface Ferramenta {
   descricao: string;
@@ -94,11 +94,7 @@ export default function CautelasAbertasScreen() {
         setListaDeCautelas([]);
       }
     } catch (error) {
-      console.error('Erro ao buscar cautelas:', error);
-      showErrorToast(
-        'Não foi possível carregar as cautelas',
-        'Erro ao carregar',
-      );
+      showErrorToast(parseApiError(error, 'Não foi possível carregar as cautelas.'), 'Erro ao carregar');
     } finally {
       if (!isReload) {
         const elapsed = Date.now() - startedAt;
@@ -131,11 +127,7 @@ export default function CautelasAbertasScreen() {
               showSuccessToast('Cautela finalizada com sucesso!');
               carregarCautelas();
             } catch (error) {
-              console.error('Erro ao finalizar cautela:', error);
-              showErrorToast(
-                'Não foi possível finalizar a cautela',
-                'Erro ao finalizar',
-              );
+              showErrorToast(parseApiError(error, 'Não foi possível finalizar a cautela.'), 'Erro ao finalizar');
             }
           },
         },

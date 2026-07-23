@@ -18,7 +18,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'EditarInsumo'>;
 
@@ -94,11 +94,7 @@ export default function EditarInsumo() {
       showSuccessToast('Insumo atualizado com sucesso!');
       navigation.goBack();
     } catch (error: any) {
-      console.error('Erro ao atualizar insumo:', error);
-      showErrorToast(
-        error?.response?.data?.message || 'Erro ao atualizar insumo',
-        'Erro ao atualizar',
-      );
+      showErrorToast(parseApiError(error, 'Erro ao atualizar insumo.'), 'Erro ao atualizar');
     }
   };
 

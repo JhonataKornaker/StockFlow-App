@@ -1,7 +1,7 @@
 import { Screen } from '@/components/ScreenProps';
 import { MovimentacaoFiltradaDto, TipoMovimentacao } from '@/dtos/movimentacaoDto';
 import { buscarMovimentacoesRelatorio } from '@/service/movimentacao.service';
-import { showErrorToast } from '@/util/toast';
+import { parseApiError, showErrorToast } from '@/util/toast';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import {
@@ -254,8 +254,8 @@ export default function RelatorioInsumosScreen() {
       const dados = await buscarMovimentacoesRelatorio({ dataInicio, dataFim, tipo });
       setMovimentacoes(dados);
       setBuscado(true);
-    } catch {
-      showErrorToast('Erro ao buscar movimentações', 'Erro');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Erro ao buscar movimentações.'), 'Erro');
     } finally {
       setCarregando(false);
     }

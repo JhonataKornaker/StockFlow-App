@@ -13,7 +13,7 @@ import { useCallback, useState } from 'react';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
 import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'SaidaInsumo'>;
 
@@ -56,8 +56,7 @@ export default function SaidaInsumo() {
       setEstoques(estoquesData);
       setColaboradores(colaboradoresData);
     } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-      showErrorToast('Não foi possível carregar os dados', 'Erro ao carregar');
+      showErrorToast(parseApiError(error, 'Não foi possível carregar os dados.'), 'Erro ao carregar');
     } finally {
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, 600 - elapsed);
@@ -140,11 +139,7 @@ export default function SaidaInsumo() {
       });
       navigation.goBack();
     } catch (error: any) {
-      console.error('Erro ao registrar saída:', error);
-      showErrorToast(
-        error?.response?.data?.message || 'Erro ao registrar saída',
-        'Falha ao registrar saída',
-      );
+      showErrorToast(parseApiError(error, 'Erro ao registrar saída.'), 'Falha ao registrar saída');
     }
   };
 

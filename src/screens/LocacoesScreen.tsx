@@ -3,7 +3,7 @@ import { PatrimonioDto } from '@/dtos/patrimonioDto';
 import { devolverLocacao, listarLocacoes } from '@/service/patrimonio.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showSuccessToast } from '@/util/toast';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ArrowDownToLine, Building2, Calendar, CalendarCheck, Package } from 'lucide-react-native';
@@ -129,8 +129,8 @@ export default function LocacoesScreen() {
               await devolverLocacao(item.id);
               showSuccessToast('Devolução registrada com sucesso!');
               carregarLocacoes();
-            } catch {
-              showErrorToast('Erro ao registrar devolução', 'Erro');
+            } catch (error: any) {
+              showErrorToast(parseApiError(error, 'Não foi possível registrar a devolução.'), 'Erro');
             }
           },
         },
@@ -145,7 +145,7 @@ export default function LocacoesScreen() {
       const dados = await listarLocacoes();
       setLocacoes(dados);
     } catch (error) {
-      console.error('Erro ao buscar locações:', error);
+      showErrorToast(parseApiError(error, 'Não foi possível carregar as locações.'), 'Erro ao carregar');
     } finally {
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, 600 - elapsed);

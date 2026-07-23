@@ -13,7 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<
   MainStackParamList,
@@ -62,9 +62,7 @@ export default function EditarFerramenta() {
       showSuccessToast('Ferramenta atualizada com sucesso!');
       navigation.goBack();
     } catch (error) {
-      console.error('Erro ao atualizar ferramenta:', error);
-      const message = error instanceof Error ? error.message : 'Não foi possível atualizar a ferramenta';
-      showErrorToast(String(message), 'Erro ao atualizar');
+      showErrorToast(parseApiError(error, 'Não foi possível atualizar a ferramenta.'), 'Erro ao atualizar');
     }
   };
 

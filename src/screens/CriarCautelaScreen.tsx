@@ -22,7 +22,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 
 interface Item {
   id: number;
@@ -109,8 +109,7 @@ export default function CautelaScreen() {
         setItens(mappedItens);
         setColaboradores(mappedColaboradores);
       } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        showErrorToast('Erro ao carregar dados. Tente novamente.', 'Erro');
+        showErrorToast(parseApiError(error, 'Erro ao carregar dados.'), 'Erro ao carregar');
       } finally {
         setIsLoadingData(false);
       }
@@ -216,8 +215,7 @@ export default function CautelaScreen() {
       setCautelasList([]);
       navigation.navigate('Inicio');
     } catch (error) {
-      console.error('Erro ao salvar cautelas:', error);
-      showErrorToast('Erro ao salvar cautelas. Tente novamente.', 'Erro');
+      showErrorToast(parseApiError(error, 'Erro ao salvar cautelas.'), 'Erro');
     } finally {
       setIsSaving(false);
     }

@@ -4,7 +4,7 @@ import { InventarioResumoDto, StatusInventario } from '@/dtos/inventarioDto';
 import { cancelarInventario, listarInventarios } from '@/service/inventario.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showSuccessToast } from '@/util/toast';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
@@ -112,8 +112,8 @@ export default function InventariosScreen() {
       else setCarregando(true);
       const dados = await listarInventarios();
       setInventarios(dados);
-    } catch {
-      showErrorToast('Não foi possível carregar os inventários', 'Erro');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Não foi possível carregar os inventários.'), 'Erro');
     } finally {
       setCarregando(false);
       setRecarregando(false);
@@ -134,8 +134,8 @@ export default function InventariosScreen() {
               await cancelarInventario(item.id);
               showSuccessToast('Inventário cancelado');
               carregar();
-            } catch {
-              showErrorToast('Erro ao cancelar inventário', 'Erro');
+            } catch (error) {
+              showErrorToast(parseApiError(error, 'Erro ao cancelar inventário.'), 'Erro');
             }
           },
         },

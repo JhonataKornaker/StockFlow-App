@@ -17,7 +17,7 @@ import { Eye, EyeOff, Lock, Mail } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { login } from '@/service/auth.service';
 import { useNavigation } from '@react-navigation/native';
-import { showErrorToast, showInfoToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast } from '@/util/toast';
 import { useAuth } from '@/context/AuthContext';
 
 const PRIMARY = '#162B4D';
@@ -78,17 +78,7 @@ export default function LoginScreen() {
       const token = await login(email, senha);
       await signIn(token);
     } catch (error: any) {
-      console.error('Erro ao fazer login:', error);
-      if (
-        error.message &&
-        (error.message.includes('401') ||
-          error.message.includes('credenciais') ||
-          error.message.includes('invalid'))
-      ) {
-        showErrorToast('Verifique seu e-mail e senha.', 'Credenciais inválidas');
-      } else {
-        showErrorToast('Servidor indisponível. Tente novamente.', 'Erro');
-      }
+      showErrorToast(parseApiError(error, 'Servidor indisponível. Tente novamente.'), 'Erro ao entrar');
     } finally {
       setLoading(false);
     }

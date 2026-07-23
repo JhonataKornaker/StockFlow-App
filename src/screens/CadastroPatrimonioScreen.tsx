@@ -28,7 +28,7 @@ import {
   View,
 } from 'react-native';
 import { Checkbox } from 'react-native-paper';
-import { showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
 
@@ -170,8 +170,7 @@ export default function CadastroPatrimonio() {
       showSuccessToast('Patrimônio cadastrado com sucesso!');
       navigation.goBack();
     } catch (error) {
-      console.error('Erro ao salvar patrimônio:', error);
-      showErrorToast('Erro ao salvar patrimônio.', 'Erro');
+      showErrorToast(parseApiError(error, 'Erro ao salvar patrimônio.'), 'Erro');
     } finally {
       setSalvando(false);
       setUploadProgress(null);

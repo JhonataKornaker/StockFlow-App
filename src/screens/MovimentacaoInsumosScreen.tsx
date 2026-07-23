@@ -14,7 +14,7 @@ import {
   RefreshControl,
   Image,
 } from 'react-native';
-import { showErrorToast } from '@/util/toast';
+import { parseApiError, showErrorToast } from '@/util/toast';
 import { SkeletonGeneric } from '@/components/Skeleton/SkeletonGeneric';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { MainStackParamList } from '@/types/MainStackNavigator';
@@ -48,8 +48,7 @@ export default function MovimentacoesScreen() {
       const dados = await listarTodasMovimentacoes();
       setMovimentacoes(dados);
     } catch (error) {
-      console.error('Erro ao buscar movimentações:', error);
-      showErrorToast('Não foi possível carregar as movimentações', 'Erro');
+      showErrorToast(parseApiError(error, 'Não foi possível carregar as movimentações.'), 'Erro ao carregar');
     } finally {
       if (!isReload) {
         const elapsed = Date.now() - startedAt;

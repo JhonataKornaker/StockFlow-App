@@ -7,7 +7,7 @@ import { deletarInsumo, listarEstoques } from '@/service/controleEstoque.service
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { agruparPorLetra } from '@/util/agrupadores';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showSuccessToast } from '@/util/toast';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AlertTriangle, MapPin, Package, PackagePlus, Search, Trash2 } from 'lucide-react-native';
@@ -137,7 +137,7 @@ export default function Estoques() {
       const dados = await listarEstoques();
       setEstoques(dados);
     } catch (error) {
-      console.error('Erro ao carregar estoques:', error);
+      showErrorToast(parseApiError(error, 'Não foi possível carregar os insumos.'), 'Erro ao carregar');
     } finally {
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, 600 - elapsed);
@@ -161,9 +161,7 @@ export default function Estoques() {
               showSuccessToast('Insumo excluído com sucesso!');
               carregarEstoques();
             } catch (error: any) {
-              const message =
-                error.response?.data?.message ?? 'Não foi possível excluir o insumo';
-              showErrorToast(message, 'Erro ao excluir');
+              showErrorToast(parseApiError(error, 'Não foi possível excluir o insumo.'), 'Erro ao excluir');
             }
           },
         },

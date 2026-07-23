@@ -11,7 +11,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { CircleAlert } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
-import Toast from 'react-native-toast-message';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import { SkeletonCadastroForm } from '@/components/Skeleton/SkeletonCadastroForm';
 
 type NavigationProps = StackNavigationProp<
@@ -45,14 +45,15 @@ export default function CadastroFerramentas() {
     const { descricao, quantidade, marca, modelo } = formData;
 
     if (!descricao) {
-      console.error('Preencher pelo menos a descrição da ferramenta');
+      showInfoToast('Informe ao menos a descrição da ferramenta.', 'Campo obrigatório');
       return;
     }
     try {
       await createFerramentas(formData);
+      showSuccessToast('Ferramenta cadastrada com sucesso!');
       navigation.goBack();
     } catch (error) {
-      console.error('Erro ao salvar colaborador:', error);
+      showErrorToast(parseApiError(error, 'Erro ao salvar ferramenta.'), 'Erro');
     }
   };
 

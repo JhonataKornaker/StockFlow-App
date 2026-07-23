@@ -11,7 +11,7 @@ import {
 import { buscarUsuarioLogado } from '@/service/usuario.service';
 import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
-import { showErrorToast, showSuccessToast } from '@/util/toast';
+import { parseApiError, showErrorToast, showInfoToast, showSuccessToast } from '@/util/toast';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as ImagePicker from 'expo-image-picker';
@@ -38,7 +38,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { showInfoToast } from '@/util/toast';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'ContarInventario'>;
 type RouteProps = RouteProp<MainStackParamList, 'ContarInventario'>;
@@ -85,8 +84,8 @@ export default function ContarInventarioScreen() {
     try {
       const dados = await listarEstoques();
       setEstoques(dados);
-    } catch {
-      showErrorToast('Erro ao carregar insumos', 'Erro');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Erro ao carregar insumos.'), 'Erro ao carregar');
     } finally {
       setCarregando(false);
     }
@@ -105,8 +104,8 @@ export default function ContarInventarioScreen() {
       setInventarioId(inv.id);
       await carregarEstoques();
       setEtapa('contagem');
-    } catch {
-      showErrorToast('Erro ao criar inventário', 'Erro');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Erro ao criar inventário.'), 'Erro');
     } finally {
       setCriando(false);
     }
@@ -122,8 +121,8 @@ export default function ContarInventarioScreen() {
     if (!inventarioId) return;
     try {
       await salvarItemInventario(inventarioId, estoqueId, Number(val));
-    } catch {
-      showErrorToast('Erro ao salvar item', 'Erro');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Erro ao salvar item.'), 'Erro');
     }
   }
 
@@ -168,8 +167,8 @@ export default function ContarInventarioScreen() {
       setFotoUri(uri);
       await atualizarFotoInventario(inventarioId, json.secure_url);
       showSuccessToast('Foto salva com sucesso!');
-    } catch {
-      showErrorToast('Erro ao enviar foto', 'Erro');
+    } catch (error) {
+      showErrorToast(parseApiError(error, 'Erro ao enviar foto.'), 'Erro');
     } finally {
       setUploadandoFoto(false);
     }
@@ -201,8 +200,8 @@ export default function ContarInventarioScreen() {
               await finalizarInventario(inventarioId);
               showSuccessToast('Inventário finalizado com sucesso!');
               navigation.replace('DetalhesInventario', { inventarioId });
-            } catch {
-              showErrorToast('Erro ao finalizar inventário', 'Erro');
+            } catch (error) {
+              showErrorToast(parseApiError(error, 'Erro ao finalizar inventário.'), 'Erro');
             } finally {
               setSalvando(false);
             }
