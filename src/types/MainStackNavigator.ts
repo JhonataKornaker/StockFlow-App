@@ -17,6 +17,7 @@ export type MainStackParamList = {
   DetalhesLocacao: { patrimonio: PatrimonioDto };
   RelatorioInsumos: undefined;
   RelatorioLocacoes: undefined;
+  HistoricoCautelas: undefined;
   Relatorios: undefined;
   Inventarios: undefined;
   ContarInventario: { inventarioId?: number } | undefined;

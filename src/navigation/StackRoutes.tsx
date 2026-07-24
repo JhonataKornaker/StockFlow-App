@@ -28,6 +28,7 @@ import DetalhesLocacaoScreen from '@/screens/DetalhesLocacaoScreen';
 import RelatorioInsumosScreen from '@/screens/RelatorioInsumosScreen';
 import RelatorioLocacoesScreen from '@/screens/RelatorioLocacoesScreen';
 import RelatoriosScreen from '@/screens/RelatoriosScreen';
+import HistoricoCautelasScreen from '@/screens/HistoricoCautelasScreen';
 import ConfiguracoesScreen from '@/screens/ConfiguracoesScreen';
 import InventariosScreen from '@/screens/InventariosScreen';
 import ContarInventarioScreen from '@/screens/ContarInventarioScreen';
@@ -264,6 +265,11 @@ export default function StackRoutes() {
         name="RelatorioLocacoes"
         component={RelatorioLocacoesScreen}
         options={{ title: 'Relatório de Locações' }}
+      />
+      <Stack.Screen
+        name="HistoricoCautelas"
+        component={HistoricoCautelasScreen}
+        options={{ title: 'Histórico de Cautelas' }}
       />
       <Stack.Screen
         name="Configuracoes"

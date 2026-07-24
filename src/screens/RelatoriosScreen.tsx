@@ -3,7 +3,7 @@ import { theme } from '@/styles/theme';
 import { MainStackParamList } from '@/types/MainStackNavigator';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { BarChart2, CalendarClock, ChevronRight, FileText } from 'lucide-react-native';
+import { BarChart2, CalendarClock, ChevronRight, ClipboardList, FileText } from 'lucide-react-native';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type NavigationProps = StackNavigationProp<MainStackParamList, 'Relatorios'>;
@@ -24,6 +24,14 @@ const relatorios = [
     icon: CalendarClock,
     cor: '#0891B2',
     bg: '#ECFEFF',
+  },
+  {
+    key: 'HistoricoCautelas' as const,
+    titulo: 'Histórico de Cautelas',
+    descricao: 'Todas as cautelas por data com status e colaboradores',
+    icon: ClipboardList,
+    cor: '#7C3AED',
+    bg: '#F5F3FF',
   },
 ];
 
