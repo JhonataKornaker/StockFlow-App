@@ -195,10 +195,12 @@ export default function CautelaScreen() {
     try {
       // ✅ CORREÇÃO: Usar o tipo correto de cada cautela
       const cautelasParaSalvar = cautelasList.map(cautela => ({
-        tipo: cautela.tipo, // ← Usa o tipo salvo na cautela
+        tipo: cautela.tipo,
         entregue: false,
         colaboradorId: cautela.colaboradorId,
-        ferramentas: cautela.tipo === 'ferramenta' ? [cautela.itemId] : [],
+        ferramentas: cautela.tipo === 'ferramenta'
+          ? [{ ferramentaId: cautela.itemId, quantidade: Number(cautela.quantidade) }]
+          : [],
         patrimonios: cautela.tipo === 'patrimonio' ? [cautela.itemId] : [],
       }));
 

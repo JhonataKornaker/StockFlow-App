@@ -11,9 +11,7 @@ export async function listarItens() {
   ]);
   return [
     ...ferramentas.data.map((f: any) => ({ ...f, tipo: 'ferramenta' })),
-    ...patrimonios.data
-      .filter((p: any) => p.disponivel)
-      .map((p: any) => ({ ...p, tipo: 'patrimonio' })),
+    ...patrimonios.data.map((p: any) => ({ ...p, tipo: 'patrimonio' })),
   ];
 }
 

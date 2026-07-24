@@ -3,6 +3,7 @@ export type CautelaDTO = {
   tipo: string;
   data: string;
   entregue: boolean;
+  colaboradorId: number;
   colaborador: {
     nome: string;
     funcao: string;
@@ -26,6 +27,6 @@ export type CriarCautelaDto = {
   tipo: string;
   entregue: boolean;
   colaboradorId: number;
-  ferramentas?: number[];
+  ferramentas?: { ferramentaId: number; quantidade: number }[];
   patrimonios?: number[];
 };
