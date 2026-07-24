@@ -30,11 +30,12 @@ const TIPO_CONFIG: Record<
   TipoMovimentacao,
   { label: string; color: string; bg: string }
 > = {
-  ENTRADA:      { label: 'Entrada',      color: '#16a34a', bg: '#dcfce7' },
-  SAIDA:        { label: 'Saída',        color: '#dc2626', bg: '#fee2e2' },
-  AJUSTE:       { label: 'Ajuste',       color: '#f97316', bg: '#ffedd5' },
-  DEVOLUCAO:    { label: 'Devolução',    color: '#2563eb', bg: '#dbeafe' },
-  TRANSFERENCIA:{ label: 'Transferência',color: '#7c3aed', bg: '#ede9fe' },
+  ENTRADA:           { label: 'Entrada',           color: '#16a34a', bg: '#dcfce7' },
+  SAIDA:             { label: 'Saída',             color: '#dc2626', bg: '#fee2e2' },
+  AJUSTE:            { label: 'Ajuste',            color: '#f97316', bg: '#ffedd5' },
+  DEVOLUCAO:         { label: 'Devolução',         color: '#2563eb', bg: '#dbeafe' },
+  TRANSFERENCIA:     { label: 'Transferência',     color: '#7c3aed', bg: '#ede9fe' },
+  INVENTARIO_INICIAL:{ label: 'Inv. Inicial',      color: '#0891b2', bg: '#cffafe' },
 };
 
 function formatarData(iso: string): string {
