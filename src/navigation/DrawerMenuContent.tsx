@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import {
-  Home,
   User,
   Hammer,
   ClipboardList,
@@ -104,8 +103,6 @@ export default function DrawerMenuContent({ navigation }) {
 
       {/* ── Nav ────────────────────────────────────────── */}
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-        <MenuItem icon={Home} label="Início" onPress={nav('Inicio')} />
-
         <SectionLabel label="GESTÃO" />
         <MenuItem icon={Hammer} label="Ferramentas" onPress={nav('Ferramentas')} />
         <MenuItem icon={User} label="Colaboradores" onPress={nav('Colaboradores')} />
